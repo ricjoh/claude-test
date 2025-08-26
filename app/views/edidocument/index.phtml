@@ -1,0 +1,81 @@
+<?php
+
+$rContent = '';
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title,
+		'headerIcon' => 'edi',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+<style>
+	.edimenu {
+		font-size: 1.5em;
+		width: fit-content;
+	}
+</style>
+
+<div class="row">
+	<div class="col-md-12">
+		<div role="tabpanel" id="tabpanel">
+			<ul class="list-unstyled nav nav-tabs edimenu">
+				<?php foreach ($menu as $name => $url) : ?>
+					<?php if ($url === 'tab') : ?>
+						<?php if ($name === array_key_first($menu)) : ?>
+							<li role="presentation" class="active">
+							<?php else : ?>
+							<li role="presentation">
+							<?php endif ?>
+							<a href="#<?= preg_replace("~ +\([^\d]*(\d+)[^\d]*\)| +~", '', $name) ?>" data-toggle="tab"><?= $name ?></a>
+							</li>
+						<?php endif ?>
+					<?php endforeach ?>
+					<li>
+						<a href="/edidocument/list/">EDI Management</a>
+					</li>
+					<!-- <li>
+						<a href="/edidocument/inventoryadjust">Inventory Adjustment</a>
+					</li> -->
+			</ul>
+
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="Deliveries">
+					<ul class="list-unstyled nav edimenu">
+						<?php foreach ($menu as $name => $url) : ?>
+							<?php if ($url === 'tab' && $name !== array_key_first($menu)) : ?>
+					</ul>
+				</div>
+				<div role="tabpanel" class="tab-pane" id="<?= preg_replace("~ +\([^\d]*(\d+)[^\d]*\)| +~", '', $name) ?>">
+					<ul class="list-unstyled nav edimenu">
+					<?php else : ?>
+						<?php if ($url !== 'tab') : ?>
+							<li><a href="<?= $url ?>"><?= $name ?></a></li>
+						<?php endif ?>
+					<?php endif ?>
+				<?php endforeach ?>
+				</div>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+
+<script>
+	jQuery(document).ready(function($) {
+
+	});
+</script>
+
+
+
+<?php
+$this->partial("include/footer_end");

@@ -1,0 +1,43 @@
+<?php
+if ( count($contacts) ) // begin show contacts
+{
+		$activeSeen = 0;
+		$inactiveSeen = 0;
+?>
+				<table width="100%" class="table table-striped">
+				<?php foreach ( $contacts as $c ) : ?>
+<?php
+				if ( $c->Active && !$activeSeen ) {
+					$activeSeen = 1;
+					echo '<tr><td colspan="5" style="background: white; border: none;"><h4>Active</h4></td></tr>';
+				}
+				if ( !$c->Active && !$inactiveSeen ) {
+					$inactiveSeen = 1;
+					echo '<tr><td colspan="5" style="background: white; border: none;"><h4>Inactive</h4></td></tr>';
+				}
+?>
+				<tr>
+					<td width="25%">
+						<?= $c->LastName ?>, <?= $c->FirstName ?>
+					</td>
+					<td width="15%">
+						<?= $c->BusPhone ?>
+					</td>
+					<td width="30%">
+						<?= $c->BusEmail ?>
+					</td>
+					<td width="5%">
+						<a href="#" class="editContact" data-contact-id="<?= $c->ContactID ?>">Edit</a>
+					</td>
+					<td width="25%">
+						<a href="#" class="deleteContact" data-contact-id="<?= $c->ContactID ?>" data-name="<?= $c->FirstName ?> <?= $c->LastName ?>">Delete</a>
+					</td>
+				</tr>
+				<?php endforeach ?>
+				</table>
+<?php
+} // end show contacts
+else {
+	echo 'This customer has no contacts assigned at this time. Use the "Add Contact" button above to add a contact.';
+}
+?>

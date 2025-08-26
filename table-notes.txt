@@ -1,0 +1,10 @@
+Bootstrap Table Extensions:
+http://bootstrap-table.wenzhixin.net.cn/extensions/
+http://bootstrap-table.wenzhixin.net.cn/
+
+X-Editable (included in Bootstrap Table Extensions):
+http://vitalets.github.io/x-editable/
+http://vitalets.github.io/x-editable/docs.html#editable
+http://vitalets.github.io/x-editable/demo-bs3.html
+http://vitalets.github.io/x-editable/demo-bs3.html?c=inline
+

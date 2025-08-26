@@ -1,0 +1,776 @@
+<?php
+
+$widths = array('30%', '13%', '15%', '7%', '10%', '10%', '5%');
+
+$this->partial(
+	"include/header",
+	array(
+		'title' => 'OCS Cheese Tracker',
+		'header' => 'OCS Cheese Tracker',
+		'hideQuickSearch' => 1
+	)
+);
+
+?>
+<style>
+	th,
+	td,
+	td a {
+		font-family: 'Open Sans Condensed', sans-serif;
+		font-weight: 700;
+	}
+
+	.printBtn {
+		display: none;
+	}
+
+	.imgLoader {
+		text-align: center;
+	}
+</style>
+<div class="row">
+	<div class="col-md-12">
+
+		<!-- TABS docs: http://getbootstrap.com/javascript/#tabs -->
+		<div role="tabpanel" id="tabpanel">
+			<div style="margin-right: 20px; font-size: 1.5em;  float: left; padding-top: 7px;">Search for:</div>
+			<ul class="nav nav-tabs">
+				<li role="presentation" <?php echo !$selectTab ? 'class="active"' : '' ?>><a href="#all">Quick</a></li>
+				<li role="presentation" <?php echo $selectTab == 'inventory' ? 'class="active"' : '' ?>><a href="#inventory">Inventory</a></li>
+				<li role="presentation" <?php echo $selectTab == 'offers' ? 'class="active"' : '' ?>><a href="#offers">Offers</a></li>
+				<li role="presentation" <?php echo $selectTab == 'customers' ? 'class="active"' : '' ?>><a href="#customers">Customers</a></li>
+				<li role="presentation" <?php echo $selectTab == 'vendors' ? 'class="active"' : '' ?>><a href="#vendors">Vendors</a></li>
+				<li role="presentation" <?php echo $selectTab == 'factories' ? 'class="active"' : '' ?>><a href="#factories">Factories</a></li>
+				<li role="presentation" <?php echo $selectTab == 'bols' ? 'class="active"' : '' ?>><a href="#bols">BOLs</a></li>
+			</ul>
+
+			<!-- Tab panes -->
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane <?php echo !$selectTab ? 'active' : '' ?>" id="all">
+					<input type="text" name="quickSearch" id="quickSearch" value="" placeholder="Search By Customer Name/Lot #" class="form-control">
+				</div>
+				<div role="tabpanel" class="tab-pane <?php echo $selectTab == 'inventory' ? 'active' : '' ?>" id="inventory">
+
+
+					<form class="form-horizontal" action="/lot/printsearch" id="lotSearchForm" method="post" target="_blank">
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Lot #:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control lotNumberSearch" name="LotNumber">
+							</div>
+
+							<label class="col-sm-3 control-label">Customer:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control customerSearch onlyActive" name="CustomerIDDisplay" id="lotCustomerId">
+								<input type="hidden" class="CustomerIDHidden" value="" name="CustomerID" id="lotCustomerIdHidden">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Description:</label>
+							<div class="col-sm-3">
+								<select class="form-control" name="DescriptionPID">
+									<option value="">-Select One-</option>
+									<?php foreach ($lotDescriptions as $l) : ?>
+										<?php if (trim($l['Value1'])) : ?>
+											<option value="<?= $l['ParameterID'] ?>"><?= $l['Value1'] ?></option>
+										<?php endif ?>
+									<?php endforeach ?>
+								</select>
+							</div>
+
+							<label class="col-sm-3 control-label">Room #:</label>
+							<div class="col-sm-3">
+								<select class="form-control" name="RoomPID">
+									<option value="">-Select One-</option>
+									<?php foreach ($lotRooms as $l) : ?>
+										<?php if (trim($l['Value1'])) : ?>
+											<option value="<?= $l['ParameterID'] ?>"><?= $l['Value1'] ?></option>
+										<?php endif ?>
+									<?php endforeach ?>
+								</select>
+							</div>
+						</div>
+
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Vendor:</label>
+							<div class="col-sm-3">
+								<select class="form-control" name="VendorID">
+									<option value="">-Select One-</option>
+									<?php foreach ($lotVendors as $l) : ?>
+										<option value="<?= $l->VendorID ?>"><?= $l->Name ?></option>
+									<?php endforeach ?>
+								</select>
+							</div>
+
+							<label class="col-sm-3 control-label">Factory:</label>
+							<div class="col-sm-3">
+								<select class="form-control" name="FactoryID">
+									<option value="">-Select One-</option>
+									<?php foreach ($lotFactories as $l) : ?>
+										<option value="<?= $l->FactoryID ?>"><?= $l->Name ?></option>
+									<?php endforeach ?>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Inventory Type:</label>
+							<div class="col-sm-3">
+								<select class="form-control" name="InventoryTypePID">
+									<option value="">-Select One-</option>
+									<?php foreach ($inventoryTypes as $l) : ?>
+										<option value="<?= $l['ParameterID'] ?>"><?= $l['Value1'] ?></option>
+									<?php endforeach ?>
+								</select>
+							</div>
+
+							<label class="col-sm-3 control-label">Inventory Status:</label>
+							<div class="col-sm-3">
+								<select class="form-control" name="OnlyAvailable">
+									<option value="">All (Includes zero qty)</option>
+									<option value="available" selected="selected">Only Available</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Make Date From:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="MakeDateFrom">
+							</div>
+
+							<label class="col-sm-3 control-label">Make Date To:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="MakeDateTo">
+							</div>
+						</div>
+
+
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Date In From:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="DateInFrom">
+							</div>
+
+							<label class="col-sm-3 control-label">Date In To:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="DateInTo">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Product Code:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control" name="ProductCode">
+							</div>
+
+							<label class="col-sm-3 control-label">PO #:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control" name="CustomerPONumber">
+							</div>
+						</div>
+						<style>
+							.warehouse-checkboxes .btn-default.active {
+								outline: 0;
+								-webkit-box-shadow: none;
+								box-shadow: none;
+								color: white;
+								background-color: #680000;
+								border-color: #4f0000;
+							}
+
+							.warehouse-checkboxes .btn-default.active:hover {
+								color: #aaaaaa;
+								opacity: 0.65;
+							}
+
+							.warehouse-checkboxes .btn-default {
+								border-radius: 14px;
+								border-color: #aaaaaa;
+								color: #aaaaaa;
+								background-color: #FEF9F3;
+							}
+
+							.warehouse-checkboxes .btn-default:hover {
+								border-color: #4e0101;
+								color: #4f0000;
+							}
+						</style>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Warehouse:</label>
+							<div class="col-sm-3">
+								<div class="warehouse-checkboxes" data-toggle="buttons">
+									<?php foreach ($lotWarehouses as $l) : ?>
+										<label class="btn btn-default active">
+											<input type="checkbox" name="WarehouseID[]" value="<?= $l->WarehouseID ?>" checked="checked" /><?= $l->Name ?>
+										</label>
+									<?php endforeach ?>
+								</div>
+							</div>
+
+							<label class="col-sm-3 control-label">Owned By:</label>
+							<div class="col-sm-3">
+								<div class="warehouse-checkboxes" data-toggle="buttons">
+									<?php foreach ($lotWarehouses as $l) : ?>
+										<label class="btn btn-default">
+											<input type="checkbox" name="OwnedBy[]" value="<?= $l->WarehouseID ?>" /><?= $l->Name ?>
+										</label>
+									<?php endforeach ?>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Temperature:</label>
+							<div class="col-sm-3">
+								<select class="form-control" name="RoomTemperature">
+									<option value="">-Select One-</option>
+									<?php foreach ($roomTemperatures as $temp) : ?>
+										<option value="<?= htmlentities($temp) ?>"><?= htmlentities($temp) ?></option>
+									<?php endforeach ?>
+								</select>
+							</div>
+
+							<div class="col-sm-6">
+								<div>
+									<div class="include-soldunshipped" style="padding-left: 10rem; vertical-align: middle; text-align:right; width: fit-content; display: inline-block;">
+										<input type="checkbox" id="includeSoldUnshipped" class="form-control" name="IncludeSoldUnshipped" value="1"/>
+									</div>
+									<label class="control-label" style="vertical-align: middle; padding-left: 1rem;">Include Items that are sold, but not shipped yet</label>
+								</div>
+								<div>
+									<div class="show-archived" style="padding-left: 10rem; vertical-align: middle; text-align:right; width: fit-content;  display: inline-block;">
+										<input type="checkbox" id="showArchived" class="form-control" name="ShowArchived" />
+									</div>
+									<label class="control-label"style="vertical-align: middle; padding-left: 1rem;">Show Archived</label>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+
+							<div class="col-sm-12">
+								<div class="pull-right">
+									<input type="hidden" id="lotSortList" class="sortList" name="sortList">
+
+									<input class="btn btn-default printBtn" type="submit" name="PrintSummary" value="Print Summary">
+									<input class="btn btn-default printBtn" type="submit" name="PrintSummaryWCost" value="Print Summary With Cost">
+									<input class="btn btn-default printBtn" type="submit" name="PrintSummaryWTemp" value="Print Summary With Temp">
+									<input class="btn btn-default printBtn" type="submit" name="PrintSummaryWPallets" value="Print Summary With Pallets">
+									<button type="submit" class="btn btn-primary doSearch" data-loading-text="Searching..." data-submit-url="/search/lots" data-search-results-id="lotResults">Search</button>
+								</div>
+							</div>
+						</div>
+					</form>
+
+					<div class="searchResults" id="lotResults"></div>
+
+				</div>
+				<div role="tabpanel" class="tab-pane <?php echo $selectTab == 'offers' ? 'active' : '' ?>" id="offers">
+
+					<form class="form-horizontal">
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Customer:</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control customerSearch onlyActive" name="CustomerIDDisplay" id="offerCustomerId">
+								<input type="hidden" class="CustomerIDHidden" value="" name="CustomerID" id="offerCustomerIdHidden">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Offer Status:</label>
+							<div class="col-sm-9">
+								<select class="form-control" name="OfferStatusPID">
+									<option value="">-Select One-</option>
+									<?php foreach ($offerStatuses as $o) : ?>
+										<option value="<?= $o['ParameterID'] ?>"><?= $o['Value1'] ?></option>
+									<?php endforeach ?>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Lot #:</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control ui-autocomplete-input lotNumberSearch" name="LotNumber" autocomplete="off" value="<?= $lot ?>">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Warehouse:</label>
+							<div class="col-sm-3">
+								<div class="warehouse-checkboxes" data-toggle="buttons">
+									<?php foreach ($lotWarehouses as $l) : ?>
+										<label class="btn btn-default active">
+											<input type="checkbox" name="WarehouseID[]" value="<?= $l->WarehouseID ?>" checked="checked" /><?= $l->Name ?>
+										</label>
+									<?php endforeach ?>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Offer Date From:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="OfferDateFrom">
+							</div>
+
+							<label class="col-sm-3 control-label">Offer Date To:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="OfferDateTo">
+							</div>
+						</div>
+
+						<!-- <div class="form-group">
+							<label class="col-sm-3 control-label">Items to Show:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control" value="100" name="MaxItems">
+							</div>
+						</div> -->
+
+						<div class="form-group">
+							<div class="col-sm-6"></div>
+							<div class="col-sm-6">
+								<div class="pull-right">
+									<button type="submit" class="btn btn-primary doSearch" data-loading-text="Searching..." data-submit-url="/search/offers" data-search-results-id="offerResults">Search</button>
+								</div>
+							</div>
+						</div>
+
+
+					</form>
+
+					<div class="searchResults" id="offerResults"></div>
+
+				</div>
+				<div role="tabpanel" class="tab-pane <?php echo $selectTab == 'customers' ? 'active' : '' ?>" id="customers">
+
+					<form class="form-horizontal">
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Customer Name:</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control customerSearch" id="customerOverview">
+							</div>
+						</div>
+
+					</form>
+				</div>
+				<div role="tabpanel" class="tab-pane <?php echo $selectTab == 'vendors' ? 'active' : '' ?>" id="vendors">
+					<form class="form-horizontal">
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Vendor Name:</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control" id="vendorSearch">
+							</div>
+						</div>
+
+					</form>
+				</div>
+				<div role="tabpanel" class="tab-pane <?php echo $selectTab == 'factories' ? 'active' : '' ?>" id="factories">
+					<form class="form-horizontal">
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Factory Name:</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control" id="factorySearch">
+							</div>
+						</div>
+
+					</form>
+				</div>
+				<div role="tabpanel" class="tab-pane <?php echo $selectTab == 'bols' ? 'active' : '' ?>" id="bols">
+
+					<form class="form-horizontal">
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Shipper Number:</label>
+							<div class="col-sm-9">
+								<input type="text" class="form-control" name="ShipperNumber" id="ShipperNumber">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Ship Date From:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="BOLDateFrom">
+							</div>
+
+							<label class="col-sm-3 control-label">Ship Date To:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="BOLDateTo">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Create Date From:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="CreateDateFrom">
+							</div>
+
+							<label class="col-sm-3 control-label">Create Date To:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control datepicker" name="CreateDateTo">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Items To Show:</label>
+							<div class="col-sm-3">
+								<input type="text" class="form-control" value="100" name="MaxItems">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<div class="col-sm-6">
+							</div>
+
+							<div class="col-sm-6">
+								<div class="pull-right">
+									<button type="submit" class="btn btn-primary doSearch" data-loading-text="Searching..." data-submit-url="/search/bols" data-search-results-id="bolResults">Search</button>
+								</div>
+							</div>
+						</div>
+
+					</form>
+
+					<div class="searchResults" id="bolResults"></div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<script>
+	$(document).ready(function() {
+
+		$(".datepicker").datepicker({
+			dateFormat: "mm/dd/y"
+		});
+
+		$(".customerSearch").autocomplete({
+			source: function(request, response) {
+
+				var cssClasses = $($(this)[0].element[0])[0].className; // css classes of the input field
+
+				var onlyActive = 0;
+				var match = /onlyActive/.test(cssClasses);
+				if (match) {
+					onlyActive = 1;
+				}
+
+				$.ajax({
+					url: "/search/customername",
+					type: "POST",
+					dataType: "json",
+					data: {
+						searchVal: request.term,
+						onlyActive: onlyActive
+					},
+					success: function(data) {
+						response($.map(data, function(item) {
+							return {
+								label: item.name,
+								id: item.id,
+								abbrev: item.name
+							};
+						}));
+					}
+				});
+			},
+			autoFocus: true,
+			minLength: 2,
+			select: function(event, ui) {
+
+				var hiddenField = $('#' + $(event.target)[0].id + 'Hidden');
+				hiddenField.val(ui.item.id);
+
+				if ($(event.target)[0].id == 'customerOverview') {
+					url = '/customer/overview/' + ui.item.id;
+					document.location = url;
+				}
+
+			}
+
+		});
+
+		$("#vendorSearch").autocomplete({
+			source: function(request, response) {
+				$.ajax({
+					url: "/search/vendorname",
+					type: "POST",
+					dataType: "json",
+					data: {
+						searchVal: request.term
+					},
+					success: function(data) {
+						response($.map(data, function(item) {
+							return {
+								label: item.name,
+								id: item.id,
+								abbrev: item.name
+							};
+						}));
+					}
+				});
+			},
+			minLength: 2,
+			autoFocus: true,
+			select: function(event, ui) {
+				var vendorId = ui.item.id;
+				document.location = '/vendor/list/' + vendorId;
+			}
+
+		});
+
+		$("#factorySearch").autocomplete({
+			source: function(request, response) {
+				$.ajax({
+					url: "/search/factoryname",
+					type: "POST",
+					dataType: "json",
+					data: {
+						searchVal: request.term
+					},
+					success: function(data) {
+						response($.map(data, function(item) {
+							return {
+								label: item.name,
+								id: item.id,
+								abbrev: item.name
+							};
+						}));
+					}
+				});
+			},
+			minLength: 2,
+			autoFocus: true,
+			select: function(event, ui) {
+				var factoryId = ui.item.id;
+				document.location = '/factory/list/' + factoryId;
+			}
+
+		});
+
+		$(".lotNumberSearch").autocomplete({
+			source: function(request, response) {
+				$.ajax({
+					url: "/search/lotnumber",
+					type: "POST",
+					dataType: "json",
+					data: {
+						searchVal: request.term
+					},
+					success: function(data) {
+						response($.map(data, function(item) {
+							return {
+								label: item.name,
+								id: item.id,
+								abbrev: item.name
+							};
+						}));
+					}
+				});
+			},
+			minLength: 2,
+			autoFocus: true
+
+		});
+
+		$("#ShipperNumber").autocomplete({
+			source: function(request, response) {
+				$.ajax({
+					url: "/search/shippernumber",
+					type: "POST",
+					dataType: "json",
+					data: {
+						searchVal: request.term
+					},
+					success: function(data) {
+						response($.map(data, function(item) {
+							return {
+								label: item.name,
+								id: item.id,
+								abbrev: item.name
+							};
+						}));
+					}
+				});
+			},
+			minLength: 2,
+			autoFocus: true
+
+		});
+
+		$('#tabpanel a').click(function(e) {
+			e.preventDefault();
+			$(this).tab('show');
+		});
+
+		$.tablesorter.addParser({
+			// set a unique id
+			id: 'thousands',
+			is: function(s) {
+				// return false so this parser is not auto detected
+				return false;
+			},
+			format: function(s) {
+				// format your data for normalization
+				return s.replace(/,/g, '');
+			},
+			// set type, either numeric or text
+			type: 'numeric'
+		});
+
+		$.tablesorter.addParser({
+			id: 'alphanum',
+			is: function(s) {
+				return false;
+			},
+			format: function(s) {
+				var str = s.replace(/(\d{1,2})/g, function(a) {
+					return pad(a);
+				});
+
+				return str;
+			},
+			type: 'text'
+		});
+
+		function pad(num) {
+			var s = '00000' + num;
+			return s.substr(s.length - 5);
+		}
+
+		$('.doSearch').click(function() {
+
+			var printButtons = $(this).parent().find('.printBtn');
+			var sortListHidden = $(this).parent().find('input.sortList');
+			var $btn = $(this).button('loading');
+			var url = $(this).data('submit-url');
+			var lotButton = $(this).data('search-results-id'); //new line
+
+			var results = $('#' + $(this).data('search-results-id'));
+			results.html('<div class="imgLoader"><img src="/public/images/search_loader.gif" /></div>');
+
+			if (!results.parent().hasClass('search-results-container')) {
+				console.log("Moving Search Results");
+				var out_of_containment = $(
+					'<div class="row">' +
+					'<div class="col-md-offset-1 col-md-10 search-results-container tab-pane">' +
+					'</div>' +
+					'</div>'
+				);
+
+				$('#footerNav').before(out_of_containment);
+
+				out_of_containment.find('.search-results-container').append(results);
+			}
+
+			var theForm = $(this).closest('form');
+
+			sortListHidden.val('');
+
+			// clear hidden customer id if customer field is blank
+			if (theForm.find('.customerSearch').length > 0 && theForm.find('.customerSearch').val() == '') {
+				theForm.find('.CustomerIDHidden').val('');
+			}
+
+			$.ajax({
+				url: url,
+				type: "POST",
+				dataType: "html",
+				data: theForm.serialize(),
+				success: function(data) {
+					printButtons.show();
+					$btn.button('reset');
+					results.html(data);
+
+					if (lotButton == "lotResults") {
+						console.log(lotButton);
+						var $resultsTable = results.find(".tablesorter");
+						$resultsTable.tablesorter({
+							headers: {
+								// 0: {sorter: 'alphanum'},
+								6: {
+									sorter: 'thousands'
+								},
+								7: {
+									sorter: 'thousands'
+								},
+								8: {
+									sorter: 'thousands'
+								},
+								9: {
+									sorter: 'thousands'
+								},
+							}
+						});
+
+					} else {
+						var $resultsTable = results.find(".tablesorter");
+						$resultsTable.tablesorter();
+					}
+
+					if (sortListHidden.length > 0) {
+						$resultsTable.on("sortEnd", function(event) {
+							var sortList = event.target.config.sortList;
+							console.log(JSON.stringify(sortList));
+
+							var orderBy = [];
+
+							for (var i = 0; i < sortList.length; i++) {
+								var headerIdx = sortList[i][0] + 1; // nth-child is 1-indexed
+								var ascDesc = sortList[i][1] === 1 ? 'DESC' : 'ASC';
+
+								var column = $resultsTable.find("thead th:nth-child(" + headerIdx + ")").data('sort-column');
+
+								if (column) {
+									orderBy.push(column + ' ' + ascDesc);
+								}
+							}
+
+							console.log(orderBy.join(', '));
+							sortListHidden.val(orderBy.join(', '));
+						});
+					}
+				}
+			});
+
+			return false;
+		});
+
+		<?php
+		if ($autosearch && $selectTab) {
+		?>
+			$("#<?= $selectTab ?> .doSearch").click();
+		<?php
+		}
+		?>
+
+		$("body").on("click", ".linkRow", function() {
+			var url = $(this).data('url');
+			if ($(this).data('new-win') != undefined) {
+				window.open(url, '_blank');
+			} else {
+				document.location = url;
+			}
+		});
+
+	});
+</script>
+
+<?php
+$this->partial("include/footer_end");

@@ -1,0 +1,146 @@
+<?php
+
+// Check if the URI contains the substring '/clients'
+if ( strpos($_SERVER['REQUEST_URI'], '/clients') !== false ) {
+	$pfx = 'client_';
+	$reportcontroller = 'clients';
+} else {
+	$pfx = '';
+	$reportcontroller = 'customer';
+
+}
+
+$rContent = '<a id="dlXLSButton" type="button" class="btn btn-primary" href="/' . $reportcontroller . '/inventoryxls' .
+	($invType ? "?invType=$invType" : '') . '">Download Excel Spreadsheet</a>';
+
+$header = 'Inventory Report';
+if ($invType) $header .= " (Only $invType)";
+
+
+$this->partial(
+	"include/{$pfx}header",
+	array(
+		'title' => 'Inventory Report',
+		'header' => $header,
+		'rightContent' => $rContent
+	)
+);
+
+?>
+<style>
+.container {
+    width: 100%;
+    max-width: 1500px;
+}
+</style>
+<div class="row">
+	<div class="col-md-12">
+		<!-- access for <?php // echo $this->session->customerAuth['Name'] ?>
+
+		<h1>Inventory Report</h1>
+		<a href="/clients/inventorycsv">Download CSV</a> -->
+
+		<?php
+		// echo $custid;
+
+		if (count($inventory) > 0) {
+			?>
+			<table id="inventoryTable" width="100%" class="table tablesorter table-striped thick-rounded-border">
+				<thead>
+					<tr>
+						<th data-column="CustomerPONumber">
+							PO&nbsp;#
+						</th>
+						<th data-column="LotNumber">
+							Lot&nbsp;#
+						</th>
+						<th data-column="LotDescription">
+							Description
+						</th>
+						<th data-column="MakeDate">
+							Make Date
+						</th>
+						<th data-column="FactoryName">
+							Factory
+						</th>
+						<th data-column="Pieces">
+							Pieces
+						</th>
+						<th data-column="Weight">
+							Weight
+						</th>
+						<th data-column="DateIn">
+							Date In
+						</th>
+						<th data-column="ProductCode">
+							Product Code
+						</th>
+						<th data-column="RoomName">
+							Location
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					foreach ($inventory as $row) {
+						$makeDate = $this->utils->slashDate($row['MakeDate']);
+						$dateIn = $this->utils->slashDate($row['DateIn']);
+
+						echo <<<HTML
+						<tr>
+							<td>$row[CustomerPONumber]</td>
+							<td>$row[LotNumber]</td>
+							<td>$row[LotDescription]</td>
+							<td>$makeDate</td>
+							<td>$row[FactoryName]</td>
+							<td>$row[Pieces]</td>
+							<td>$row[Weight]</td>
+							<td>$dateIn</td>
+							<td>$row[ProductCode]</td>
+							<td>$row[RoomName]</td>
+						</tr>
+HTML;
+					}
+					?>
+				</tbody>
+			</table>
+			<?php
+		} else {
+			echo '<p>Nothing to report</p>';
+		}
+		?>
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/{$pfx}footer_start");
+?>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$(".tablesorter").tablesorter();
+	});
+
+	$('#inventoryTable').on('sortEnd', function(e) {
+		var sortList = e.target.config.sortList;
+
+		if (sortList.length) {
+			var newList = [];
+
+			for (var i = 0; i < sortList.length; i++) {
+				var n = sortList[i][0] + 1;
+				var $col = $('#inventoryTable th:nth-child('+n+')');
+
+				newList.push([$col.data('column'), sortList[i][1]]);
+			}
+
+			$('#dlXLSButton').attr('href', '/<?= $reportcontroller ?>/inventoryxls?<?= $invType ? "invType=$invType&" : '' ?>sort='+encodeURIComponent(JSON.stringify(newList)));
+		} else {
+			$('#dlXLSButton').attr('href', '/<?= $reportcontroller ?>/inventoryxls<?= $invType ? "?invType=$invType" : '' ?>');
+		}
+
+
+	});
+</script>
+<?php
+$this->partial("include/{$pfx}footer_end");

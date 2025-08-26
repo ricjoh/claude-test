@@ -1,0 +1,96 @@
+<?php
+
+$rContent = '';
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title,
+		'headerIcon' => 'edi',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+
+<?php
+if ( isset( $details ) ) {
+	$this->partial(
+		"table/details",
+		array(
+			'details' => $details
+		)
+	);
+}
+
+$this->partial(
+	"table/builder",
+	array(
+		'headers' => $headers,
+		'data' => $data,
+		'cols' => $cols
+	)
+);
+?>
+
+<?php
+$this->partial("include/footer_start");
+?>
+<style>
+.bootbox-body h5 {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: left;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: .5rem;
+}
+
+.transfer-link {
+	text-decoration: underline;
+}
+</style>
+<script>
+jQuery(document).ready(function($) {
+	$( '#autotable tr' ).click( function(){
+		rowid = $( this ).attr( 'id' ); // OfferID
+		parts = rowid.split( ':' );
+		location.href = '/lot/edit/' + parts[1];
+	});
+
+	$( ".deleteLot" ).on( "click", function(e) {
+		e.stopPropagation();
+		let lotId = $( this ).data( 'lotid' );
+		bootbox.confirm( 'Are you sure you want to delete this lot?', function(result) {
+			if ( result )
+			{
+				$.ajax({
+					url: "/lot/delete",
+					type: "POST",
+					data: {
+						LotID : lotId
+					},
+					dataType: "json",
+					success: function(data) {
+						if ( data.success == 1 )
+						{
+							location.reload();
+						}
+						else
+						{
+							bootbox.alert( data.msg );
+						}
+					}
+				});
+			}
+		});
+	});
+});
+</script>
+
+
+
+
+<?php
+$this->partial("include/footer_end");

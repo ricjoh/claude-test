@@ -1,0 +1,192 @@
+<?php
+$this->partial(
+	"include/header",
+	array(
+		'title' => "{$customer->Name} - Billing Reports",
+		'header' => "{$customer->Name}"
+	)
+);
+?>
+<style>
+.report-list {
+    list-style: none;
+    padding: 1rem 9rem;
+    font-size: 15px;
+    line-height: 1.6;
+}
+.btn {
+	padding: 6px 8px;
+}
+</style>
+<div class="row">
+	<div class="col-md-6">
+		<h5>Storage Billing Report</h5>
+
+		<form id="storageReportForm" class="form-horizontal" style="display: block;" method="post" action="/customer/storagereportxls/<?= $customer->CustomerID ?>" novalidate>
+			<div class="form-group control-group">
+				<label class="col-sm-4 control-label nopadding">Start Date</label>
+				<div class="col-sm-6 nopadding">
+					<input type="text" class="form-control datepicker"
+							id="StartDate"
+							name="StartDate"
+							required
+							autocomplete="off"
+							data-validation-required-message="Start Date is required">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-4 control-label nopadding">End Date</label>
+				<div class="col-sm-6 nopadding">
+					<input type="text" class="form-control datepicker"
+							id="EndDate"
+							name="EndDate"
+							required
+							autocomplete="off"
+							data-validation-required-message="End Date is required">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Warehouse:</label>
+				<div class="col-sm-6">
+					<div class="warehouse-checkboxes" data-toggle="buttons">
+						<?php foreach ( $lotWarehouses as $l ) : ?>
+							<label class="btn btn-default active">
+								<input type="checkbox" name="WarehouseID[]" value="<?= $l->WarehouseID ?>" checked="checked" /><?= $l->Name ?>
+							</label>
+						<?php endforeach ?>
+					</div>
+				</div>
+				<div class="col-sm-6"></div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-4 control-label nopadding" for="BillingFrequency">Billing Frequency</label>
+				<div class="col-sm-6 nopadding">
+					<select
+						id="BillingFrequency"
+						name="BillingFrequency"
+						class="form-control"
+						required>
+						<?php
+							foreach ($billingFrequencyArray as $frequency) {
+								echo '<option value="' . $frequency . '">' . $frequency . '</option>';
+							}
+						?>
+					</select>
+					<input type="submit" class="btn btn-primary" style="margin: 2rem 0 0 4rem;" value="Get Storage Report">
+				</div>
+			</div>
+
+		</form>
+	</div>
+
+	<div class="col-md-6" style="border-left: 1px solid #d6bd99;">
+		<h5>Curing Billing Report</h5>
+
+		<form id="curingReportForm" class="form-horizontal" style="display: block;" method="post" action="/customer/curingreportxls/<?= $customer->CustomerID ?>" novalidate>
+			<div class="form-group control-group">
+				<label class="col-sm-4 control-label nopadding">Start Date</label>
+				<div class="col-sm-6 nopadding">
+					<input type="text" class="form-control datepicker"
+							id="CuringStartDate"
+							name="StartDate"
+							required
+							autocomplete="off"
+							data-validation-required-message="Start Date is required">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-4 control-label nopadding">End Date</label>
+				<div class="col-sm-6 nopadding">
+					<input type="text" class="form-control datepicker"
+							id="CuringEndDate"
+							name="EndDate"
+							required
+							autocomplete="off"
+							data-validation-required-message="End Date is required">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Warehouse:</label>
+				<div class="col-sm-6">
+					<div class="warehouse-checkboxes" data-toggle="buttons">
+						<?php foreach ( $lotWarehouses as $l ) : ?>
+							<label class="btn btn-default active">
+								<input type="checkbox" name="WarehouseID[]" value="<?= $l->WarehouseID ?>" checked="checked" /><?= $l->Name ?>
+							</label>
+						<?php endforeach ?>
+
+						<label class="btn btn-default">
+							<input type="checkbox" name="RoomPID[]" value="73882D17-529F-4974-823D-93A5AD15AD9B" />LCD
+						</label>
+					</div>
+				</div>
+				<div class="col-sm-6"></div>
+			</div>
+
+			<div class="form-group">
+				<label class="col-sm-4 control-label">Owned By:</label>
+				<div class="col-sm-6">
+					<div class="warehouse-checkboxes" data-toggle="buttons">
+						<?php foreach ( $lotWarehouses as $l ) : ?>
+							<label class="btn btn-default">
+								<input type="checkbox" name="OwnedBy[]" value="<?= $l->WarehouseID ?>" /><?= $l->Name ?>
+							</label>
+						<?php endforeach ?>
+					</div>
+					<input type="submit" style="margin: 2rem 0 0 4rem;"  class="btn btn-primary" value="Get Curing Report">
+				</div>
+				<div class="col-sm-6"></div>
+			</div>
+		</form>
+	</div>
+	<div class="col-md-6" style="margin-top: 3rem;">
+		<h5>Detailed Inventory Reports</h5>
+		<ul class="report-list">
+			<li><a target="_blank" href="/customer/inventorydetailreport/<?= $customer->CustomerID ?>" class="change-cursor-on-click">All Inventory</a></li>
+			<li><a target="_blank" href="/customer/inventorydetailreport/<?= $customer->CustomerID ?>?invType=AGING">Only AGING</a></li>
+			<li><a target="_blank" href="/customer/inventorydetailreport/<?= $customer->CustomerID ?>?invType=SET-ASIDE">Only SET-ASIDE</a></li>
+			<li><a target="_blank" href="/customer/inventorydetailreport/<?= $customer->CustomerID ?>?invType=COMMITTED">Only COMMITTED</a></li>
+		</ul>
+	</div>
+</div>
+
+<style>
+h5 {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: center;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: 1em;
+	margin-top: 0;
+	padding-top: 15px;
+}
+
+.warehouse-checkboxes .btn {
+	margin-bottom: 0.5em;
+}
+</style>
+
+<?php
+$this->partial("include/footer_start");
+?>
+
+<script type="text/javascript">
+	jQuery(document).ready(function($) {
+		$( ".datepicker" ).datepicker();
+	});
+</script>
+
+<?php
+$this->partial("include/footer_end");
+?>

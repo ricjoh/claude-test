@@ -1,0 +1,73 @@
+body {
+    background-color:white;
+}
+
+.navbar-inverse {
+    background-color:#9bb3bc;
+    color:#4d4d4d;
+}
+
+.navbar .navbar-text {
+    color:#4d4d4d;
+}
+
+.navbar .navbar-text a {
+    color:#4d4d4d;
+}
+
+.navbar-brand {
+    top: 0.6em;
+}
+
+.navbar-default {
+    background-color:#ddd;
+}
+
+.navbar {
+    border:none;
+}
+
+#clientNavbar h1 {
+    color:#4d4d4d;
+    margin-top:0.8em;
+}
+
+#adminNav {
+    padding-top: 1em;
+    min-height:143px;
+}
+
+.thick-rounded-border {
+    border: 10px solid #ddd;
+}
+
+thead, .fake-thead {
+    background-color: #347289 !important;
+    color: #ddd;
+}
+
+.tablesorter.thick-rounded-border th {
+    border-color: #ddd;
+}
+
+.btn-primary, .btn-default {
+    background-color:#347289;
+    border: #347289;
+    color:white;
+
+}
+.btn-primary:hover, .btn-default:hover {
+    background-color:#125973;
+    border: #134253;
+    color:#ddd;
+
+}
+
+.login {
+    background-color:#ddd;
+}
+
+.separator-bottom {
+    border-bottom:thin solid black;
+    padding-bottom:1em;
+}

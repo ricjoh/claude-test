@@ -1,0 +1,315 @@
+<style>
+#itemModal td {
+		background-color: #eeeeee; border-right: 1px solid #dddddd;
+}
+
+#itemModal td.edit {
+	background-color: white;
+}
+
+#oiHeader
+{
+	margin: 20px 10px 10px;
+}
+
+#itemModal .itemNoteLabel
+{
+	font-weight: bold;
+	margin: 0px 10px 4px;
+}
+
+#itemModal .itemNoteWrapper
+{
+	border: 1px solid #480303;
+	border-radius: 14px;
+	padding: 20px;
+}
+
+#itemModal .buttonWrapper
+{
+	margin-top: 20px;
+	margin-right: -20px;
+}
+
+#itemModal .table {
+	margin-bottom: 5px;
+}
+#itemModal .form-inline .form-control.mytextarea {
+  width: 700px;
+}
+
+#itemModal th, #itemModal td, #itemModal td a {
+	font-family: 'Open Sans Condensed', sans-serif;
+	font-weight: 700;
+}
+
+#itemModal .offerNum {
+	font-weight: normal;
+	float: left;
+	color: #ff0000;
+	font-style: italic;
+	cursor: help;
+}
+
+#itemModal .lp {
+	font-family: 'Open Sans Condensed', sans-serif;
+	font-size: 0.9em;
+	font-weight: normal;
+    margin-bottom: -.5em;
+}
+
+#lotTotals.offerItemTotals {
+	margin: 0  -5px 0 0;
+	width: auto;
+}
+
+#lotTotals.offerItemTotals .offerPieces {
+	margin-left: 181px;
+}
+
+#lotTotals.offerItemTotals .offerWeight {
+	margin-right: 10px;
+	float: right;
+}
+
+#lotTotals.offerItemTotals .offerCost {
+	float: right;
+}
+
+#lotTotals.offerItemTotals{
+	font-family: 'Open Sans Condensed', sans-serif;
+	font-weight: 700;
+}
+
+.ui-front {
+  z-index: 1200;
+}
+
+
+.editnum.editable-unsaved {
+	background-color: yellow;
+}
+</style>
+
+<script>
+function numberWithCommas(x) {
+	var parts = x.toString().split(".");
+	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	return parts.join(".");
+}
+</script>
+
+<div id="oiHeader">
+<form novalidate onsubmit="return false;">
+	<input type="hidden" name="currentUser" id="currentUser" value="<?= $currentUser ?>">
+	<input type="hidden" name="currentTime" id="currentTime" value="<?= $currentTime ?>">
+
+<? if ( $offerItemID == 'NEW' ) : ?>
+	<div style="float:left;"><strong>Find Lot: </strong>
+		<input class="form-control ui-autocomplete-input" name="lotSelection" style="display: inline-block; width: 75px;" type="text" id="lotSelection">
+		<p class="help-block text-danger"></p>
+	</div>
+<? else : ?>
+	<div style="float:left; margin-top: 10px;">
+		<strong>Lot Number: </strong><?= $lotNumber ?><br />
+		<?= $lotDescription ?></div>
+<? endif ?>
+	<div class="offerNum" style="margin-top: 10px; margin-left: 150px;">[System-wide Offer Levels are Indicated Like This]
+		<span id="soldMessage"><br>This offer has been sold.<br>Changes to this record should be made with caution.</span>
+	</div>
+	<div style="float:right;"><strong>Cost Out: </strong>
+		<!-- input class="form-control" -->
+		<a href="#"
+			   style="display: inline-block; width: 100px; text-align: center; border: 1px solid rgb(204, 204, 204); border-radius: 4px; padding: 4px;"
+			   type="number"
+			   name="Cost"
+			   id="CostOut"
+			   data-title="Enter Cost Out"
+			   required
+			   data-validation-required-message="Please enter a number for Cost Out">
+			   <?= $item->Cost ?: '0.0000' ?></a>
+		<p class="help-block text-danger"></p>
+		<p style="text-align: right; text-decoration: underline;"><a href="#" id="offerAll">Offer Entire Lot</a></p>
+	</div>
+	<div style="clear: both;"></div>
+</form>
+</div>
+
+<?php
+	if ( count($vats) ) // begin show vats
+	{
+		$firstVat = reset($vatStats);
+?>
+		  <table style="width: 960px;" id="vatTable" class="table tablesorter table-striped thick-rounded-border">
+			<thead>
+			<tr>
+				<th>Make Date</th>
+				<th><?= !empty( $firstVat->LicensePlate ) ? 'License Plate' : 'Vat No' ?></th>
+				<th>Cust Lot No</th>
+				<th>Pieces</th>
+				<th>Pieces Offered</th>
+				<th>Moist</th>
+				<th>PH</th>
+				<th>FDB</th>
+				<th>Salt</th>
+				<th>Weight</th>
+				<th style="width: 175px;">Weight Offered</th>
+				<!-- <th>Est Pallets</th> -->
+				<th style="width: 100px;">Price</th>
+			</tr>
+			</thead>
+			<tbody>
+		<?php foreach ( $vats as $v ) : ?>
+
+			<?php if ( ! isset( $vatStats->{ $v->VatID }->VatNumber) ) { continue; } ?>
+
+			<tr class="vatDetails"
+				data-vatid="<?= $v->VatID ?>"
+				data-offeritemid="<?= $v->OfferItemID ?>"
+				data-offeritemvatid="<?= $v->OfferItemVatID ?>"
+				data-vatnumber="<?= $vatStats->{ $v->VatID }->VatNumber ?>">
+				<td align="left"><?= $utils->slashDate( $vatStats->{ $v->VatID }->MakeDate ); ?></td>
+				<td align="right">
+				<?php if ( !empty( $vatStats->{ $v->VatID }->LicensePlate ) ) {
+					echo $vatStats->{ $v->VatID }->LicensePlate;
+				} else {
+					echo $vatStats->{ $v->VatID }->VatNumber;
+				}?>
+				</td>
+				<td align="right"><?= $vatStats->{ $v->VatID }->CustomerLotNumber ?></td>
+				<td align="right" class="InvPieces" data-entered="<?= $vatStats->{ $v->VatID }->Pieces ?>"><?= number_format( $vatStats->{ $v->VatID }->InvPieces ) ?></td>
+
+
+				<td align="right" class="edit"><div class="offerNum" title="Total Open Offers">
+					<? if ($vatStats->{ $v->VatID }->OffPieces) : ?>[<?= $vatStats->{ $v->VatID }->OffPieces ?>]<? endif ?>
+					</div><a href="#" class="editnum offerPieces"
+						style="display:block; float: right;"
+						data-type="number"
+						data-step="any"
+						DISABLED-data-pk="<?= $v->OfferItemID ?>"
+						data-name="Pieces"
+						data-max="<?= $vatStats->{ $v->VatID }->MaxPieces ?>"
+						data-min="-1"
+						DISABLED-data-url="/offer/updatevat/<?= $v->VatID ?>"
+						data-title="Enter Offer Pieces"><?= $v->Pieces ?></a></td>
+
+				<td align="right"><?= $vatStats->{ $v->VatID }->Moisture ?></td>
+
+				<td align="right"><?= $vatStats->{ $v->VatID }->PH ?></td>
+
+				<td align="right"><?= $vatStats->{ $v->VatID }->FDB ?></td>
+
+				<td align="right"><?= $vatStats->{ $v->VatID }->Salt ?></td>
+
+				<td align="right" class="InvWeight" data-entered="<?= $vatStats->{ $v->VatID }->Weight ?>"><?= number_format( $vatStats->{ $v->VatID }->InvWeight, 2 ) ?></td>
+
+				<td align="right" class="edit"><div class="offerNum" title="Total Open Offers">
+					<? if ($vatStats->{ $v->VatID }->OffWeight) : ?>[<?= $vatStats->{ $v->VatID }->OffWeight ?>]<? endif ?>
+					</div><a href="#" class="editnum offerWeight"
+						style="display:block; float: right;"
+						data-type="number"
+						data-step="any"
+						DISABLED-data-pk="<?= $v->OfferItemID ?>"
+						data-name="Weight"
+						data-min="-2"
+						data-max="<?= $vatStats->{ $v->VatID }->MaxWeight ?>"
+						DISABLED-data-url="/offer/updatevat/<?= $v->VatID ?>"
+						data-title="Enter Offer Weight"><?= number_format( $v->Weight, 2, '.', '' ) ?></a></td>
+
+				<!-- <td align="right" class="edit"><a href="#" class="editnum estPallets"
+							data-type="number"
+							data-step="any"
+							DISABLED-data-pk="<?= $v->OfferItemID ?>"
+							data-name="EstPallets"
+							DISABLED-data-url="/offer/updatevat/<?= $v->VatID ?>"
+							data-title="Enter Estimated Pallets"><?= $v->EstPallets ?></a></td> -->
+
+				<td align="right" class="edit priceField"><?= number_format( $v->Price, 2, '.', '' ) ?></td>
+			</tr>
+
+		<?php endforeach ?>
+			</tbody>
+		  </table>
+
+	<div id="lotTotals" class="offerItemTotals">
+		<div class="lotTotal roundedBorder offerPieces">
+			<div class="ltLabel">Tot Pieces</div>
+			<div class="ltValue" id="totPieces"><?= number_format($itemTotals->totPieces) ?></div>
+		</div>
+		<div class="lotTotal roundedBorder offerCost">
+			<div class="ltLabel">Tot Cost</div>
+			<div class="ltValue" id="totCost"><?= number_format( $itemTotals->totCostOut, 2, '.', ',' ) ?></div>
+		</div>
+		<div class="lotTotal roundedBorder offerWeight">
+			<div class="ltLabel">Tot Weight</div>
+			<div class="ltValue" id="totWeight"><?= number_format( $itemTotals->totWeight, 2, '.', ',' ) ?></div>
+		</div>
+		<div style="clear: both;"></div>
+    </div>
+
+    <?php if ($lotUsesPallets) { ?>
+        <div class="form-group control-group">
+        <label for="palletInput" class="control-label">Available Pallets:</label>
+            <input
+				disabled="disabled"
+                name="palletAvail"
+                id="palletAvail"
+                class="palletInput"
+				style="width: 4rem; padding-left: 0; padding-right: 0; margin-right: 1rem; border: 0px none transparent; font-weight: bold;"
+                value="<?= $availablePallets ?>"
+            >
+        <label for="palletInput" class="control-label">Pallets:</label>
+            <input
+                name="palletInput"
+                id="palletInput"
+                class="palletInput"
+                type="number"
+                min="0"
+                max="<?= $maxPallets ?>"
+                value="<?= $item->Pallets == 0 ? "" : $item->Pallets ?>"
+            >
+        </div>
+    <?php } ?>
+
+	<div class="itemNoteLabel">Notes:</div>
+
+	<div class="itemNoteWrapper"><a href="#"
+		 id="itemNotes"
+		 data-name="NoteText"
+		 data-type="textarea"
+		 data-title="Enter notes"
+		 data-pk="<?= $item->OfferItemID ?>"
+		 data-itemid="<?= $item->OfferItemID ?>"
+		 data-url="/offer/updateitem/<?= $item->OfferItemID ?>"><?= $item->NoteText ?></a></div>
+
+	<div class="buttonWrapper">
+		<button type="button"
+				class="btn btn-primary"
+				id="saveItemButton"
+				xx-data-dismiss="modal"
+				aria-label="Save and Close"
+				style="float: right; margin-right: 15px;">Save Changes & Close</button>
+
+		<button type="button"
+				class="btn btn-default"
+				aria-label="Apply"
+				style="float: right; margin-right: 15px;"
+				onclick="return recalcOfferItem();">Apply & Recalculate</button>
+
+		<button type="button"
+				class="btn btn-default"
+				data-dismiss="modal"
+				aria-label="Cancel"
+				style="float: right; margin-right: 15px;">Cancel</button>
+
+		<div style="clear:both"></div>
+	</div>
+	<? if ( $modifiedOn ) : ?>
+		<div id="itemLastModified"><em>Last modified by <?= $modifiedBy ?> on <?= $modifiedOn ?>.</em></div>
+	<? endif ?>
+<?php
+	} // end show vats
+	else {
+		echo 'Use Find Lot, above, to add items from a new lot';
+	}
+?>

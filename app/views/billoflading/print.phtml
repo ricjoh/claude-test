@@ -1,0 +1,260 @@
+<?php
+$this->partial("include/print_header", array('title' => 'Bill of Lading'));
+
+$nextPageItems = count($offerData) ? $offerData : TRUE;
+
+$maxPoints = 226; // 240; // 225 = 3.125 inches
+$lineHeightPoints = 13.5;
+$cellHeightPoints = 12;
+$tableExtraPoints = 3;
+
+$offerItemId = '';
+
+while ($nextPageItems) {
+	// if ($idx > 0) echo '<br>';
+	$pageItems = $nextPageItems;
+	$nextPageItems = NULL;
+	$approxPoints = 0.0;
+	?>
+	<div class="page shorten-for-print bill-of-lading">
+		<div class="page-inner">
+			<div class="absolute" style="left: 144px; top: 192px;"><?= $bolData['CarrierName'] ?></div>
+			<div class="absolute" style="left: 144px; top: 232px;"><?= $bolData['ConsignedTo'] ?></div>
+
+			<div class="absolute" style="left: 564px; top: 165px"><?= $bolData['CustomerPO'] ?></div>
+			<div class="absolute" style="left: 564px; top: 192px;"><?= $bolData['BOLDate'] ?></div>
+
+			<div class="absolute" style="left: 548px; top: 232px;">
+				<?= $bolData['ShippedToName'] ?><br>
+				<?= str_replace("\n", "<br>", $bolData['ShippedToAddress']) ?>
+			</div>
+
+			<div class="absolute" style="left: 72px; top: 320px">
+				<?php
+				$pageOfferItemId = '';
+				// $offerDate;
+				// $totNetWeight = 0.0;
+				$offerGroupNeedsClosed = FALSE;
+				// $offerManifestNeedsClosed = FALSE;
+
+				foreach ($pageItems as $idx => $offer) {
+					if ($offer['OfferItemID'] != $pageOfferItemId) {
+						$pageOfferItemId = $offer['OfferItemID'];
+
+						$before = '';
+
+						if ($offerGroupNeedsClosed) {
+							$before .= '</div>';
+						}
+
+						if ($pageOfferItemId != $offerItemId) {
+							$before .= '<div class="offer-group">';
+
+							$approxPoints += 10;
+						} else {
+							$approxPoints += $lineHeightPoints + 10;
+							$before .= '<div>(CONTINUED)</div><div class="offer-group">';
+						}
+
+						$offerGroupNeedsClosed = TRUE;
+
+						if ($bolData['CustomerItemNumber']) $approxPoints += 5;
+
+						if ($bolData['showLotDetails']) {
+							$approxPoints += $lineHeightPoints * 2 + $tableExtraPoints;
+
+							$laterPoints = $lineHeightPoints;
+
+							if ($bolData['showTestResults'] && $testData[$offer['LotNumber']]) {
+								$laterPoints += $lineHeightPoints * 2;
+							}
+
+							if ($approxPoints + $laterPoints > $maxPoints) { // insure that there's room for at least one row of data and tests if applicable
+								$nextPageItems = array_slice($pageItems, $idx);
+								break;
+							}
+						} else {
+							$approxPoints += $lineHeightPoints + $tableExtraPoints;
+
+							if ($approxPoints > $maxPoints) {
+								$nextPageItems = array_slice($pageItems, $idx);
+								break;
+							}
+						}
+
+						$offerItemId = $pageOfferItemId;
+						// $offerDate = $this->utils->slashDate($offer['OfferDate']);
+
+						// $totNetWeight += $offer['OfferItemWeight'];
+						echo $before;
+						?>
+						<table class="offer-heading">
+							<tr>
+								<td style="width: 96px;"><?= $offer['OfferItemPieces'] ?></td>
+								<td style="width: 288px; padding-left: 12px">
+									<?php
+									echo $offer['OfferItemDescription'];
+
+									if ($bolData['showProductCodes']) {
+										$shipToNumString = "";
+
+										if ($offer["ShipToPartNum"] != '') {
+											$shipToNumString = $offer["ShipToPartNum"] . " / ";
+										}
+
+										echo "<div class=\"item-number\">Product Code ". $shipToNumString . $offer['ProductCode'] . "</div>";
+									} else if ($bolData['CustomerItemNumber']) {
+										echo "<div class=\"item-number\">Prod / Item # " . $bolData['CustomerItemNumber'] . "</div>";
+									}
+									?>
+								</td>
+								<td style="width: 144px; text-align:center;">Lot # <?= $offer['LotNumber'] ?></td>
+								<td style="width: 155px; text-align:right;"><?= number_format($offer['OfferItemWeight'], 2) ?></td>
+							</tr>
+						</table>
+						<?php
+						if ($bolData['showLotDetails']) {
+							// $offerManifestNeedsClosed = TRUE;
+							?>
+							<table class="offer-manifest">
+								<thead>
+									<tr>
+										<th class="align-left">Date</th>
+										<th>Vat</th>
+										<th>Pieces</th>
+										<th>Moist</th>
+										<th>FDB</th>
+										<th>PH</th>
+										<th>Salt</th>
+										<th>Weight</th>
+									</tr>
+								</thead>
+								<tbody>
+							<?php
+						} else {
+							// $offerManifestNeedsClosed = FALSE;
+						}
+					}
+
+					if ($bolData['showLotDetails']) {
+						$after = '';
+
+						$approxPoints += $lineHeightPoints;
+
+						if ($pageItems[$idx + 1]['OfferItemID'] != $offerItemId) {
+							$after .= '</tbody></table>';
+
+							if ($bolData['showTestResults'] && $tests = $testData[$offer['LotNumber']]) {
+								$after .= getTestResultsTable($tests, $approxPoints);
+
+								$approxPoints += $lineHeightPoints * 2;
+							}
+						}
+
+						if ($approxPoints > $maxPoints) {
+							$nextPageItems = array_slice($pageItems, $idx);
+							echo '</tbody></table>';
+							break;
+						}
+						?>
+						<tr>
+							<td class="align-left"><?= $this->utils->slashDate($offer['MakeDate']) ?></td>
+							<td><?= $offer['VatNumber'] ?></td>
+							<td><?= $offer['PiecesfromVat'] ?></td>
+							<td><?= $offer['Moisture'] ?></td>
+							<td><?= $offer['FDB'] ?></td>
+							<td><?= $offer['PH'] ?></td>
+							<td><?= $offer['Salt'] ?></td>
+							<td><?= number_format($offer['WeightfromVat'], 2) ?></td>
+						</tr>
+						<?php
+
+						echo $after;
+					}
+				}
+				?>
+				</div>
+				<?php
+				if ($nextPageItems) {
+					echo '<div>(Continued on next page)</div>';
+				}
+				?>
+			</div>
+
+			<div class="absolute instructions" style="left: 72px; bottom: 355px;">
+				<p><?= $bolData['InstructionOne'] ?>&nbsp;</p>
+				<p><?= $bolData['InstructionTwo'] ?>&nbsp;</p>
+				<p><?= $bolData['InstructionThree'] ?>&nbsp;</p>
+				<p><?= $bolData['InstructionFour'] ?>&nbsp;</p>
+			</div>
+			<div class="absolute instructions" style="left: 72px; bottom: 355px; text-align: right;">
+				<?php
+				$instFive = explode("\n", $bolData['InstructionFive']);
+
+				foreach ($instFive as $inst) {
+					echo "<p>$inst</p>";
+				}
+
+				if (count($instFive) < 3) echo "<p>&nbsp;</p>";
+				if (count($instFive) < 2) echo "<p>&nbsp;</p>";
+				?>
+				<p style="font-size: 13.5px;"><?= $bolData['SealNumber'] ? "SEAL# " . $bolData['SealNumber'] : '' ?></p>
+			</div>
+
+			<div class="absolute" style="right: 96px; bottom: 299px;"><?= $nextPageItems ? "CONT'D" : number_format($totNetWeight, 2) ?></div>
+			<div class="absolute" style="right: 96px; bottom: 275px;"><?= number_format($bolData['TotalTareWeight'], 2) ?></div>
+			<div class="absolute" style="right: 96px; bottom: 250px;"><?= number_format($totNetWeight + $bolData['TotalTareWeight'], 2) ?></div>
+			<div class="absolute" style="left: 300px; bottom: 20px;"><?= $bolData['BOLDate'] ?></div>
+
+		</div>
+	</div>
+	<?php
+}
+?>
+<div class="left-fixed-container hide-on-print">
+	<div class="left-fixed-inner">
+		<a href="/billoflading/edit/<?= $bolData['OfferID'] ?>" class="btn btn-default">&lt; Back to Edit</a>
+	</div>
+</div>
+
+<div class="right-fixed-container hide-on-print">
+	<button class="btn btn-primary print-button">Print</button>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$('.print-button').click(function() {
+		window.print();
+	});
+});
+</script>
+
+<style>
+	.old {
+		opacity: 0.4;
+	}
+</style>
+
+<?php
+$this->partial("include/print_footer");
+
+function getTestResultsTable($tests, &$approxPoints = FALSE) {
+	$html = '';
+
+	// if ($approxPoints) $approxPoints += $cellHeightPoints * 2 + $tableExtraPoints;
+
+	$html .= '<table class="test-results-table"><tr>';
+
+	foreach ($tests as $testIdx => $test) {
+		if ($testIdx == 5) $html .= '</tr><tr>';
+
+		$testResults = $test['TestResults'] ? $test['TestResults'] : 'N/A';
+		$html .= '<td class="test-performed">' . $test['TestPerformed'] . '</td>';
+		$html .= '<td class="test-results">' . $testResults . '</td>';
+	}
+
+	$html .= '</tr></table>';
+
+	return $html;
+}
+?>

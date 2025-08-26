@@ -1,0 +1,240 @@
+<?php
+
+$rContent = '<a href="#" id="addVendor" class="btn btn-primary" data-toggle="modal" data-target="#vendorModal">Add New Vendor</a>';
+$this->partial(
+	"include/header",
+	array(
+		'title' => 'Vendors',
+		'header' => 'Vendors',
+		'headerIcon' => 'vendors',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+
+<div class="row">
+	<div class="col-md-12" id="vendorHtml">
+
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+<script>
+
+function getVendors(callback)
+{
+	$.ajax({
+		url: "/vendor/getvendors",
+		type: "GET",
+		dataType: "html",
+		success: function(vendorHtml) {
+			$('#vendorHtml').html(vendorHtml);
+			// $( "#editVendor84BDE7C7-9030-4F0C-821A-C3D155CACF0E" ).trigger( "click" );
+			if ( callback ) {
+				callback();
+
+			}
+		}
+	});
+}
+
+jQuery(document).ready(function($) {
+
+	$( "body" ).on( "click", ".editVendor", function() {
+
+		var vendorID = $(this).data('vendor-id');
+		$.ajax({
+			url: "/vendor/getvendor/" + vendorID,
+			type: "GET",
+			dataType: "json",
+			success: function(vendor) {
+				$('#VendorID').val(vendorID);
+
+				$('#deleteVendor').data('name', vendor.Name);
+				$('#deleteVendor').data('vendor-id', vendorID);
+
+				$('#vendorModalLabel').html('Edit Vendor');
+				$('#Name').val(vendor.Name);
+				var Active = parseInt(vendor.Active) == 1 ? true : false;
+				if ( Active ) {
+					$('#Active').prop('checked', true);
+				}
+				else {
+					$('#Active').prop('checked', false);
+				}
+				$('#vendorModal').modal('show');
+				$('#deleteVendor').show();
+			}
+		});
+
+
+		return false;
+	});
+
+	$( "body" ).on( "click", ".deleteVendor", function() {
+		var vendorId = $(this).data('vendor-id');
+		var name = $(this).data('name');
+		var deleteIt = confirm('Are you sure you want to delete vendor "' + name + '"?');
+		if ( !deleteIt ) {
+			return false;
+		}
+		$.ajax({
+			url: "/vendor/delete/" + vendorId,
+			type: "GET",
+			dataType: "json",
+			success: function(data) {
+				if ( data.success == 1 ) {
+					if ( $("#vendorModal").is(":visible") )
+					{
+						var mycallback = function() {
+							$('#vendorSavedFeedback .successFeedback').html('Vendor Deleted');
+							$( "#vendorSavedFeedback" ).fadeIn( 1000, function() {
+								$( "#vendorSavedFeedback" ).fadeOut( 1000, function() {
+									$('#vendorModal').modal('hide');
+								});
+							});
+
+						};
+
+						getVendors(mycallback);
+					}
+					else
+					{
+						getVendors();
+					}
+				}
+				else {
+					bootbox.alert('An error occurred while deleting the vendor.');
+				}
+			}
+		});
+		return false;
+	});
+
+	$('#addVendor').click(function() {
+		$('#vendorModalLabel').html('Add Vendor');
+		$('#deleteVendor').hide();
+		$('#vendorForm input[type="text"]').val('');
+		$('#VendorID').val('');
+		$('#Active').prop('checked', true);
+	});
+
+	var vendorCallback = null;
+	<?php if ( $vendorId ) : ?>
+	vendorCallback = function() {
+		$( "#editVendor<?= $vendorId ?>" ).trigger( "click" );
+	};
+	<?php endif ?>
+	getVendors(vendorCallback);
+
+});
+
+jQuery(function () {
+	jQuery("input,select,textarea").not("[type=submit]").jqBootstrapValidation({
+		preventSubmit: true,
+		submitError: function($form, event, errors) {
+			// Here I do nothing, but you could do something like display
+			// the error messages to the customer, log, etc.
+		},
+		submitSuccess: function($form, event) {
+			// form has been submitted
+
+			if ( $form[0].id == 'vendorForm' )
+			{
+				var mycallback = function() {
+					$('#vendorSavedFeedback .successFeedback').html('Vendor Saved');
+					$( "#vendorSavedFeedback" ).fadeIn( 1000, function() {
+						$( "#vendorSavedFeedback" ).fadeOut( 1000, function() {
+							$('#vendorModal').modal('hide');
+						});
+					});
+
+				};
+
+				$.ajax({
+					url: "/vendor/save",
+					type: "POST",
+					data: $('#vendorForm').serialize(),
+					dataType: "json",
+					success: function(data) {
+						if ( data.success == 1 ) {
+							getVendors(mycallback);
+						}
+						else {
+							bootbox.alert('An error occurred while adding the vendor.');
+						}
+					}
+				});
+
+			}
+
+		},
+		filter: function() {
+			return jQuery(this).is(":visible");
+		}
+	});
+});
+
+</script>
+
+<div class="modal fade" id="vendorModal" tabindex="-1" role="dialog" aria-labelledby="vendorModalLabel" aria-hidden="true"><!--begin vendor modal-->
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="vendorModalLabel">Add Vendor</h4>
+      </div>
+		<form class="form-horizontal" method="post" novalidate onsubmit="return false" id="vendorForm">
+			<input type="hidden" value="" name="VendorID" id="VendorID" />
+		  <div class="modal-body">
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Name">Name</label>
+				<div class="col-sm-9">
+				  <input type="text"
+					name="Name"
+					id="Name"
+					value=""
+					class="form-control"
+					required
+					data-validation-required-message="Please enter a Vendor Name" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Active">Active</label>
+				<div class="col-sm-9">
+				  <input type="checkbox"
+					name="Active"
+					id="Active"
+					value="1"
+					checked="checked"
+					class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+
+		  </div>
+
+		  <div class="modal-footer">
+			<div class="pull-left has-success" id="vendorSavedFeedback" style="display: none;"><div class="control-label successFeedback">Vendor Saved</div></div>
+			<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+			<input type="button" class="btn btn-default deleteVendor" style="display: none;" id="deleteVendor" value="Delete Vendor" />
+			<input type="submit" class="btn btn-primary" value="Save Vendor" />
+		  </div>
+		</form>
+
+    </div>
+  </div>
+</div><!--end vendor modal-->
+
+
+<?php
+$this->partial("include/footer_end");

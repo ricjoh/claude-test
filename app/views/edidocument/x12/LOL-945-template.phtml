@@ -1,0 +1,78 @@
+<?php ob_start(); ?>
+ISA*00*          *00*          *01*004798716      *08*<?= $data['ISAReceiverID'] ?>*<?= date('ymd') ?>*<?= date('Hi') ?>*U*00401*<?= $data['ISACtrlNo'] ?>*0*<?= $data['UsageIndicator'] ?>*>~
+GS*IB*004798716*<?= $data['GSID'] ?>*<?= date('Ymd') ?>*<?= date('Hi') ?>*<?= $data['GSCtrlNo'] ?>*X*004010~
+ST*945*<?= $data['STCtrlNo'] ?>~
+W06*F*<?= $data['VendorOrderNumber'] ?>*<?= $data['ShipDate'] ?>***<?= $data['CustPONumber'] ?>~
+N1*DE*LAND O LAKES INC 54423*9*<?= $data['ShipFromID'] ?>~
+N1*WH*Oshkosh Cold Storage*6*721~
+N1*CN*FORLOG*91*68777~
+N9*BM*<?= $data['MasterBOL'] ?>~
+N9*LO*<?= $data['CustOrderNumber'] ?>~
+N9*QN*<?= $data['StopSequenceNumber'] ?>~
+W27*<?= $data['transportMethodCode'] ?>*<?= $data['SCACCode'] ?>*<?= $data['routingDescription'] ?>~
+<? foreach ( $data['Lines'] as $line ) : ?>
+LX*<?= $line['line'] ?>~
+W12*<?= $line['shipstatus'] ?>*<?= $line['qtyordered'] ?>*<?= $line['qtyshipped'] ?>*<?= $line['qtydiff'] ?>*CA**LT*<?= $line['prodnum'] ?>**<?= $line['weight'] ?>*N*L*****SW*<?= $line['productID'] ?>***ZZ*<?= $line['subLotID'] ?>~
+N9*LI*<?= $line['poline'] ?>~
+<?php endforeach ?>
+W03*<?= $data['totcases'] ?>*<?= $data['totweight'] ?>*LB~
+SE*<?= $data['SECount'] ?>*<?= $data['STCtrlNo'] ?>~
+GE*1*<?= $data['GSCtrlNo'] ?>~
+IEA*1*<?= $data['ISACtrlNo'] ?>~
+<?php
+$filecontents = ob_get_contents();
+ob_end_clean();
+if (file_put_contents($filename, $filecontents))
+	echo json_encode(array('success' => 1));
+else
+	echo json_encode(array('success' => 0, 'msg' => "Failed to write file: $filename"));
+
+/*
+ISA*00*          *00*          *01*604016766      *08*006253835DFP   *220106*1410*U*00401*000000838*0*P*>~
+GS*IB*8157445551*006253835DFQ*20220106*1410*838*X*004010~
+ST*945*838~
+W06*F*17506570*20220106***51060549~
+N1*DE*LAND O LAKES INC 54423*9*PLYMOUTH~
+N1*WH* Oshkosh Cold Storage *6*144~
+N1*CN*FORLOG*91*68777~
+N9*BM*17506570~
+N9*LO*~
+N9*QN*~
+W27*M**~
+LX*1~
+W12*CC*300*300*0*CA**LT*48154000034500**9000.000*N*L*****SW*48154000034500***ZZ*~
+N9*LI*1000~
+W03*300*9000.000*LB~
+SE*15*838~
+GE*1*838~
+IEA*1*000000838~
+
+========================================================================================================================
+EXAMPLE
+========================================================================================================================
+ISA*01*0000000000*01*0000000000*ZZ*ABCDEFGHIJKLMNO*ZZ*123456789012345*101127*1719*U*00400*000003438*0*P*>
+GS*FA*999999999*4405197800*20111206*1100*1*X*004010VICS
+ST*945*0001
+W06*F*14415799*20130313***TEST2 030713
+N1*DE*LAND O LAKES INC 54423*9*0062358350000
+N1*WH* Oshkosh Cold Storage *6*999
+N1*CN*FORLOG*91*68777
+N9*BM*14415799
+N9*LO*3503888
+N9*QN*2
+W27*M*CPU*DANZ
+LX*1
+W12*CP*450*400*50*CA**LT*T2TPT2**6071.40*N*L*****SW*31010000034500***ZZ*0
+N9*LI*3000
+LX*2
+W12*CC*1000*500*500*CA**LT*T2TPT2**12750.00*N*L*****SW*31008000034500***ZZ*0
+N9*LI*1000
+LX*3
+W12*CC*1000*1000*0*CA**LT*T2TPT2**13492.00*N*L*****SW*31009000034500***ZZ*0
+N9*LI*2000
+SE*19*0001
+========================================================================================================================
+END EXAMPLE
+========================================================================================================================
+*/
+?>

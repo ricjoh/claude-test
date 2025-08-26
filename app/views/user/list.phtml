@@ -1,0 +1,76 @@
+<?php
+
+$widths = array('25%', '25%', '20%', '20%', '10%');
+
+$rContent = '<a type="button" class="btn btn-primary" href="/user/new">Add New User</a>';
+$this->partial(
+	"include/header", 
+	array(
+		'title' => 'Users', 
+		'header' => 'Users',
+    'headerIcon' => 'users',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+
+<div id="userList">
+  <div class="row button-row">
+    <div class="col-md-12 align-right">
+        <button type="button" class="btn btn-primary" id="btnShowInactive">Show Inactive Users</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <table class="table table-striped thick-rounded-border">
+        <thead>
+          <tr>
+            <th width="<?php echo $widths[0] ?>">Last Name</th>
+            <th width="<?php echo $widths[1] ?>">First Name</th>
+            <th width="<?php echo $widths[2] ?>">Email</th>
+            <th width="<?php echo $widths[3] ?>">Phone</th>
+            <th width="<?php echo $widths[4] ?>">&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ( $users as $u ): ?>
+            <tr class="row-user-status-<?= $u->StatusPID == User::ACTIVE_PID ? 'active' : 'inactive' ?>" style="display:none">
+              <td width="<?php echo $widths[0] ?>"><?php echo $u->LastName ?></td>
+              <td width="<?php echo $widths[1] ?>"><?php echo $u->FirstName ?></td>
+              <td width="<?php echo $widths[2] ?>"><?php echo $u->Email ?></td>
+              <td width="<?php echo $widths[3] ?>"><?php echo $u->Phone ?></td>
+              <td width="<?php echo $widths[4] ?>"><a href="/user/edit/<?php echo $u->UserID ?>">Edit</a></td>
+            </tr>
+          <?php endforeach ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<script>
+$(document).ready(function($) {
+  $('.row-user-status-active').show();
+});
+
+let showInactive = false;
+$('#btnShowInactive').click(function() {
+  if (showInactive) {
+    showInactive = false;
+    $('.row-user-status-inactive').hide();
+    $('#btnShowInactive').text('Show Inactive Users');
+  } else {
+    showInactive = true;
+    $('.row-user-status-inactive').show();
+    $('#btnShowInactive').text('Hide Inactive Users');
+  }
+});
+
+</script>
+<?php
+$this->partial("include/footer_end");

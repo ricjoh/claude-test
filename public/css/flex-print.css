@@ -1,0 +1,166 @@
+@page {
+  size: letter portrait;
+  page-orientation: upright;
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-size: 16px;
+  font-family: "Open Sans", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  padding: 0 24px 0 0;
+  margin: 0;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+header {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+header .logo {
+  width: 77px;
+  height: 60px;
+  margin-right: 20px;
+}
+header .element {
+  font-size: 1.75rem;
+  font-weight: 700;
+  width: fit-content;
+  white-space: nowrap;
+}
+header .element.small {
+  font-size: 1rem;
+  padding-top: 14px;
+}
+header .element.medium {
+  font-size: 1.5rem;
+  padding-top: 12px;
+}
+header .element.type {
+  color: #800 !important;
+  border: 6px double #800;
+  padding: 0 1rem;
+  font-size: 2rem;
+}
+header .element.lot {
+  padding: 8px 1rem 6px 0;
+  font-weight: 500;
+  font-variant: small-caps;
+}
+
+.subpagehdr {
+  padding: 0 14px 12px;
+  color: #888;
+}
+
+.flex-page {
+  height: 1023px;
+  margin: 0;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.flex-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.flex-item {
+  flex: 1 1 31%;
+  background-color: #f8f8f8;
+  margin: 4px 1%;
+}
+.flex-item.data-group {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.flex-item.data-group .data-title {
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+  color: #666;
+  margin-bottom: 3px;
+  margin-top: -0.5rem;
+}
+.flex-item.data-group dt {
+  font-weight: 700;
+  display: inline-block;
+  width: 5rem;
+  text-align: right;
+  font-family: "Open Sans Condensed";
+}
+.flex-item.data-group dd {
+  font-weight: 400;
+  margin-inline-start: 0.5rem;
+  display: inline-block;
+}
+.flex-item.data-group .write-in {
+  line-height: 2.25;
+  white-space: nowrap;
+}
+.flex-item.data-group .write-in dt {
+  width: 4.5rem;
+}
+.flex-item.data-group .write-in dd {
+  min-width: 30px;
+  width: 64%;
+  border-bottom: 1px solid #666;
+}
+.flex-item.data-group .write-in.notes dd {
+  width: 100%;
+  margin-inline-start: 0;
+}
+
+#pull-grp {
+  padding: 2px 0 0 13px;
+  font-size: 1.15em;
+  margin-top: -2.75rem;
+  margin-bottom: 0.75rem;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.cb {
+  font-size: 1.25em;
+  padding-left: 1rem;
+  display: inline-block;
+}
+
+.mockup {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.flex-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid black;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+input.flex-input {
+  background-color: #ffffcc;
+  border: 1px solid #dddddd;
+  border-bottom: 1px solid black;
+}
+
+@media print {
+  input.flex-input {
+    background: none;
+    border: 1px solid #ffffff !important;
+    border-bottom: 1px solid black !important;
+  }
+
+  .element.type {
+    color: #800 !important;
+  }
+}

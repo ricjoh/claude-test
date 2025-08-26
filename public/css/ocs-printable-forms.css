@@ -1,0 +1,728 @@
+body {
+	box-sizing: border-box;
+	font-size: 10pt;
+	font-family: 'Open Sans', sans-serif;
+	line-height: 13.5pt;
+	overflow: visible;
+	color: black !important;
+}
+
+/*
+o    o   o   o 8  o   o
+8    8   8     8      8
+8    8  o8P o8 8 o8  o8P o    o
+8    8   8   8 8  8   8  8    8
+8    8   8   8 8  8   8  8    8
+`YooP'   8   8 8  8   8  `YooP8
+:.....:::..::....:..::..::....8
+:::::::::::::::::::::::::::ooP'.
+:::::::::::::::::::::::::::...:: */
+
+.hide {
+	display: none;
+}
+
+.hide {
+	display: table-cell;
+}
+
+.center {
+	text-align: center;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.condensed {
+	font-family: 'Open Sans Condensed', sans-serif;
+}
+
+.pull-left {
+	float: left !important;
+}
+
+.pull-right {
+	float: right !important;
+}
+
+.page.padding-half-inch,
+.page-inner.padding-half-inch {
+	padding: 48px;
+}
+
+.padding-quarter-inch {
+	padding: 24px !important;
+}
+
+.padding-10pt {
+	padding: 10pt !important;
+}
+
+.manifest-padding-10pt {
+	padding: 0 10pt 10pt 10pt !important;
+}
+
+.border {
+	border: 1px solid black !important;
+}
+
+.absolute {
+	box-sizing: border-box;
+	position: absolute !important;
+	width: auto;
+}
+
+.full-width {
+	width: 100% !important;
+	max-width: none !important;
+}
+
+.align-left {
+	text-align: left !important;
+}
+.align-center {
+	text-align: center !important;
+}
+.align-right {
+	text-align: right !important;
+}
+
+.align-descendents-left * {
+	text-align: left;
+}
+.align-descendents-center * {
+	text-align: center;
+}
+.align-descendents-right * {
+	text-align: right;
+}
+
+.width-95 input {
+	width: 95%;
+}
+
+
+
+/*
+ o    o                    8
+ 8    8                    8
+o8oooo8 .oPYo. .oPYo. .oPYo8 .oPYo. oPYo.
+ 8    8 8oooo8 .oooo8 8    8 8oooo8 8  `'
+ 8    8 8.     8    8 8    8 8.     8
+ 8    8 `Yooo' `YooP8 `YooP' `Yooo' 8
+:..:::..:.....::.....::.....::.....:..::::
+::::::::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::::::::::: */
+
+header p {
+	margin: 10pt 0;
+}
+
+h1 {
+	font-size: 16pt;
+}
+
+header.masthead {
+	margin: -10pt 0 20pt;
+}
+
+header.masthead img {
+	display: inline-block;
+	vertical-align: middle;
+	width: 110px;
+}
+
+header.masthead > div {
+	display: inline-block;
+	vertical-align: middle;
+	margin-left: 5pt;
+	margin-top: -20pt;
+}
+
+header.masthead h1 {
+	margin-bottom: 0;
+	font-size: 16pt;
+	font-weight: normal;
+}
+
+header.masthead p {
+	margin: 0 2pt;
+	font-size: 10.5pt;
+	line-height: 14pt;
+}
+
+/* Search */
+.header-info {
+	position: absolute;
+	right: 48px;
+	top: 67px;
+}
+
+.print-instructions {
+	text-align: center;
+	color: #a94442;
+	font-weight: bold;
+	font-size: 14pt;
+	margin-top: 14pt;
+}
+
+/*
+.oPYo.              .oPYo.                        .oPYo.   o         8
+8    8              8    8                        8        8         8
+8    8 odYo.       o8YooP' .oPYo. .oPYo. .oPYo.   `Yooo.  o8P o    o 8 .oPYo. .oPYo.
+8    8 8' `8 ooooo  8      .oooo8 8    8 8oooo8       `8   8  8    8 8 8oooo8 Yb..
+8    8 8   8        8      8    8 8    8 8.            8   8  8    8 8 8.       'Yb.
+`YooP' 8   8        8      `YooP8 `YooP8 `Yooo'   `YooP'   8  `YooP8 8 `Yooo' `YooP'
+:.....:..::..:::::::..::::::.....::....8 :.....::::.....:::..::....8 ..:.....::.....:
+::::::::::::::::::::::::::::::::::::ooP'.:::::::::::::::::::::::ooP'.::::::::::::::::
+::::::::::::::::::::::::::::::::::::...:::::::::::::::::::::::::...:::::::::::::::::: */
+
+div.signature-underline-box {
+	background-color: #7b7b7b;
+	height: 8px;
+	box-shadow: 0 0 2px 0px #828282;
+}
+
+.type-notes {
+	margin-top: 3em;
+	font-size: 16px;
+}
+
+.type-notes p {
+	margin-top: 5px;
+}
+
+.manifest-type-header {
+	color: #a00;
+	border: 6px double #a00;
+	padding: .5em;
+	font-weight: bold !important;
+	margin-top: 0;
+	text-align: center;
+}
+
+.move-header {
+	font-size: 46px !important;
+}
+
+.pick-header {
+    text-transform: uppercase;
+}
+
+
+/* Return To Dropdown */
+.bottom-left {
+	position: absolute;
+	bottom: 1.5em;
+	font-size: 16px;
+	padding: 7px;
+	background-color: #ffffff;
+	border: 1px solid #000000;
+}
+
+.bottom-left select {
+	width: 9em;
+}
+
+.temp-select select {
+	font-size: 25pt;
+	position: relative;
+}
+
+.show-spacing {
+	white-space: pre;
+}
+
+.hand-writing-spacing input {
+	margin-bottom: 1px;
+}
+
+.manifest-type-header-div {
+	margin-top: 0em !important;
+	margin-right: 1em !important;
+}
+
+.order-pick-width h1 {
+	width: 8em !important;
+}
+
+
+.instructions {
+	font-size: 8pt;
+	font-weight: bold;
+	width: 528px;
+	white-space: nowrap;
+}
+
+.instructions > div {
+	width: 50%;
+	float: left;
+}
+
+.instructions p {
+	margin: 0;
+	line-height: 10pt;
+}
+
+.info-list {
+	font-size: 8pt;
+	clear: both;
+	overflow: hidden;
+}
+
+.info-list label {
+	width: 32%;
+	float: left;
+	text-align: right;
+	font-weight: bold;
+	display: block;
+	white-space: nowrap;
+}
+
+.info-list .info-list-value {
+	width: 64%;
+	float: right;
+	text-align: left;
+	display: block;
+	white-space: nowrap;
+}
+
+
+/*
+.oPYo.                                    .oPYo.  o      8
+8                                         8              8
+`Yooo. .oPYo. oPYo. .oPYo. .oPYo. odYo.   `Yooo. o8 .oPYo8 .oPYo. .oPYo.
+    `8 8    ' 8  `' 8oooo8 8oooo8 8' `8       `8  8 8    8 8oooo8 Yb..
+     8 8    . 8     8.     8.     8   8        8  8 8    8 8.       'Yb.
+`YooP' `YooP' 8     `Yooo' `Yooo' 8   8   `YooP'  8 `YooP' `Yooo' `YooP'
+:.....::.....:..:::::.....::.....:..::..:::.....::..:.....::.....::.....:
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: */
+
+.right-fixed-container,
+.left-fixed-container  {
+	position: fixed;
+	top: 0;
+	height: fit-content;
+	z-index: 1;
+	display: flex;
+	align-items: end;
+	padding: 24px;
+	flex-wrap: wrap;
+}
+
+.left-fixed-container {
+	left: 0;
+	flex-direction: row-reverse;
+	right: calc(50vw + 424px);
+}
+
+.right-fixed-container {
+	right: 0;
+	flex-direction: row;
+	left: calc(50vw + 424px);
+}
+
+.left-fixed-inner {
+	position: relative;
+	text-align: right;
+	flex: auto;
+	flex-basis: 100%;
+	margin-bottom: 1rem;
+}
+
+.right-fixed-inner {
+	position: relative;
+	text-align: left;
+	flex: auto;
+	flex-basis: 100%;
+	margin-bottom: 1rem;
+}
+
+.right-fixed-inner-landscape {
+	text-align: left;
+	flex: auto;
+}
+
+
+/*
+ .oPYo.          o    o
+ 8   `8          8    8
+o8YooP' o    o  o8P  o8P .oPYo. odYo. .oPYo.
+ 8   `b 8    8   8    8  8    8 8' `8 Yb..
+ 8    8 8    8   8    8  8    8 8   8   'Yb.
+ 8oooP' `YooP'   8    8  `YooP' 8   8 `YooP'
+:......::.....:::..:::..::.....:..::..:.....:
+:::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::: */
+
+.btn {
+	display: inline-block;
+	margin-bottom: 0px;
+	font-weight: normal;
+	text-align: center;
+	vertical-align: middle;
+	cursor: pointer;
+	background-image: none;
+	border: 1px solid transparent;
+	white-space: nowrap;
+	padding: 6px 12px;
+	font-size: 14px;
+	line-height: 1.42857;
+	border-radius: 14px;
+	-moz-user-select: none;
+	text-decoration: none;
+}
+
+.btn:hover {
+	color: #333;
+	text-decoration: none;
+}
+
+.btn-primary {
+	color: #ffffff;
+	background-color: #680000;
+	border-color: #4F0000;
+}
+
+.btn-primary:hover {
+	color: #FBA344;
+	background-color: #350000;
+	border-color: #100;
+}
+
+.btn-default, .btn-default:hover {
+	border-radius: 14px;
+	border-color: #4E0101;
+	color: #9C1111;
+	background-color: #FFF;
+}
+
+.btn-default:hover {
+	background-color: #FFF5E4;
+}
+
+.print-button {
+	flex: 0 1;
+ }
+
+
+/*
+ .oPYo.                        o                                   o
+ 8    8                        8                                   8
+o8YooP' .oPYo. .oPYo. .oPYo.   8     .oPYo. o    o .oPYo. o    o  o8P
+ 8      .oooo8 8    8 8oooo8   8     .oooo8 8    8 8    8 8    8   8
+ 8      8    8 8    8 8.       8     8    8 8    8 8    8 8    8   8
+ 8      `YooP8 `YooP8 `Yooo'   8oooo `YooP8 `YooP8 `YooP' `YooP'   8
+:..::::::.....::....8 :.....:::......:.....::....8 :.....::.....:::..:
+:::::::::::::::::ooP'.::::::::::::::::::::::::ooP'.:::::::::::::::::::
+:::::::::::::::::...::::::::::::::::::::::::::...::::::::::::::::::::: */
+
+.page, .page-inner {
+	width: 848px;
+	height: 1056px;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	z-index: 2;
+	position: relative;
+}
+
+.page-inner {
+	overflow: visible;
+}
+
+.page.landscape, .landscape {
+	width: 1056px;
+	height: 848px;
+}
+
+.page-fluid {
+	height: auto;
+	min-height: 1048px;
+	position: static;
+}
+
+.page-fluid.landscape {
+	min-height: 768px;
+}
+
+.page:not(:first-child) {
+	/* page-break-before: always; */
+}
+
+
+/*
+ooooo        8      8
+  8          8      8
+  8   .oPYo. 8oPYo. 8 .oPYo. .oPYo.
+  8   .oooo8 8    8 8 8oooo8 Yb..
+  8   8    8 8    8 8 8.       'Yb.
+  8   `YooP8 `YooP' 8 `Yooo' `YooP'
+::..:::.....::.....:..:.....::.....:
+::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::::: */
+
+td, th {
+	padding: 0;
+	margin: 0;
+	height: 12pt;
+	line-height: 12pt;
+	font-size: 8pt;
+}
+
+/* TABLE: fix bootstrap on print stuff */
+table {
+	border-spacing: 2px !important;
+	border-collapse: initial !important;
+}
+
+table.table {
+	border: 1px solid #777777;
+	border-collapse: collapse;
+}
+
+.table td, .table th {
+	border: 1px solid #777777;
+	padding: 4pt;
+}
+
+.bill-of-lading .offer-manifest {
+	width: 528px;
+	max-width: 528px;
+}
+
+.test-results-table {
+	width:100%;
+	margin: 1rem 0;
+}
+
+.offer-manifest th {
+	text-decoration: underline;
+}
+
+.bill-of-lading .offer-manifest th {
+	font-weight: normal;
+	text-align: right;
+}
+
+.bill-of-lading .offer-manifest td {
+	text-align: right;
+}
+
+
+
+/*
+ooooo                 o     .oPYo.                      8   o
+  8                   8     8   `8                      8   8
+  8   .oPYo. .oPYo.  o8P   o8YooP' .oPYo. .oPYo. o    o 8  o8P .oPYo.
+  8   8oooo8 Yb..     8     8   `b 8oooo8 Yb..   8    8 8   8  Yb..
+  8   8.       'Yb.   8     8    8 8.       'Yb. 8    8 8   8    'Yb.
+  8   `Yooo' `YooP'   8     8    8 `Yooo' `YooP' `YooP' 8   8  `YooP'
+::..:::.....::.....:::..::::..:::..:.....::.....::.....:..::..::.....:
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: */
+
+
+
+.test-results-table {
+	font-family: 'Open Sans Condensed', sans-serif;
+	border: 1px solid #777777;
+	border-collapse: collapse;
+	-webkit-print-color-adjust: exact;
+}
+
+.lot-manifest.test-results-table {
+	font-family: 'Open Sans', sans-serif;
+	max-width: none;
+	width: 100%;
+	margin-top: 20pt;
+}
+
+
+.test-results-table td {
+	font-size: 8pt;
+	text-align: center;
+	border: 1px solid #777777;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.test-results-table .test-performed {
+	text-align: right;
+	padding: 0 4pt;
+}
+
+.test-results-table .test-results {
+	background-color: #eeeeee; /* don't forget to change the actual print style at the bottom too! */
+	text-align: left;
+	padding: 0 4pt;
+}
+
+
+/*
+.oPYo.  d'b  d'b                .oPYo.   o          d'b  d'b
+8    8  8    8                  8        8          8    8
+8    8 o8P  o8P  .oPYo. oPYo.   `Yooo.  o8P o    o o8P  o8P
+8    8  8    8   8oooo8 8  `'       `8   8  8    8  8    8
+8    8  8    8   8.     8            8   8  8    8  8    8
+`YooP'  8    8   `Yooo' 8       `YooP'   8  `YooP'  8    8
+:.....::..:::..:::.....:..:::::::.....:::..::.....::..:::..::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: */
+
+.offer-group {
+	margin-top: 10pt;
+}
+
+.offer-heading-edi td,
+.offer-heading td {
+	vertical-align: top;
+	font-size: 10pt;
+}
+
+.offer-heading .item-number {
+	font-size: 7pt;
+	line-height: 1;
+	margin-left: 14pt;
+	margin-top: -2pt;
+}
+
+.offer-heading-edi .offer-item-description {
+	width: 288px;
+    padding-left: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 288px;
+}
+
+.offer-heading-edi .lot-number {
+	vertical-align: top;
+	font-size: 8pt;
+	line-height: 1;
+	margin-left: 14pt;
+	margin-top: -2pt;
+}
+
+.offer-heading-edi .item-number-edi {
+	font-size: 9pt;
+	line-height: 1;
+	font-family: 'Open Sans Condensed';
+	margin-left: 14pt;
+	margin-top: -2pt;
+}
+
+
+.border-box-title {
+	font-size: 10pt;
+	background-color: white;
+	margin: -18pt 12pt 0;
+	padding: 0 8pt;
+	width: auto;
+	display: block;
+	float: left;
+}
+
+.ruler {
+	position: absolute;
+	top: 48px;
+	left: 48px;
+	width: 748px;
+	z-index: 1;
+	background-color: green;
+	opacity: 0.25;
+}
+
+/*
+ .oPYo.                o          .oPYo.        o      8
+ 8   `8                           8    8               8
+o8YooP' .oPYo. .oPYo. o8 .oPYo.   8      oPYo. o8 .oPYo8
+ 8   `b .oooo8 Yb..    8 8    '   8   oo 8  `'  8 8    8
+ 8    8 8    8   'Yb.  8 8    .   8    8 8      8 8    8
+ 8oooP' `YooP8 `YooP'  8 `YooP'   `YooP8 8      8 `YooP'
+:......::.....::.....::..:.....::::....8 ..:::::..:.....:
+:::::::::::::::::::::::::::::::::::::::8 ::::::::::::::::
+:::::::::::::::::::::::::::::::::::::::..:::::::::::::::: */
+
+.row {
+	clear: both;
+}
+
+.col-1, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-10, .col-11, .col-12 {
+	float: left;
+	box-sizing: border-box;
+}
+.col-12 {
+	width: 100%;
+}
+.col-11 {
+	width: 91.66666667%;
+}
+.col-10 {
+	width: 83.33333333%;
+}
+.col-9 {
+	width: 75%;
+}
+.col-8 {
+	width: 66.66666667%;
+}
+.col-7 {
+	width: 58.33333333%;
+}
+.col-6 {
+	width: 50%;
+}
+.col-5 {
+	width: 41.66666667%;
+}
+.col-4 {
+	width: 33.33333333%;
+}
+.col-3 {
+	width: 25%;
+}
+.col-2 {
+	width: 16.66666667%;
+}
+.col-1 {
+	width: 8.33333333%;
+}
+
+.col-2-plus {
+	width: 17% !important;
+	margin-right: 5px;
+}
+
+/*
+o     o             8  o          .oPYo.                       o
+8b   d8             8             8    8
+8`b d'8 .oPYo. .oPYo8 o8 .oPYo.   8    8  o    o .oPYo. oPYo. o8 .oPYo. .oPYo.
+8 `o' 8 8oooo8 8    8  8 .oooo8   8  d.8  8    8 8oooo8 8  `'  8 8oooo8 Yb..
+8     8 8.     8    8  8 8    8   8  `b8. 8    8 8.     8      8 8.       'Yb.
+8     8 `Yooo' `YooP'  8 `YooP8   `YooP'P `YooP' `Yooo' 8      8 `Yooo' `YooP'
+..::::..:.....::.....::..:.....::::....:.::.....::.....:..:::::..:.....::.....:
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: */
+
+@media screen {
+	body {
+		background-color: #FBEFDE;
+	}
+
+	.page, .page-inner {
+		position: relative;
+		left: 0;
+		top: 0;
+	}
+	.page {
+		background-color: #ffffff;
+		box-shadow: 0 0 20px 0 #B2AA9E;
+		margin: 24px auto;
+		clear: both;
+	}
+
+}
+

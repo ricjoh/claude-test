@@ -1,0 +1,400 @@
+<?php
+$this->partial("include/header", array(
+	'title' => ($BOLID ? '' : 'New ') . 'Bill of Lading',
+	'header' => ($BOLID ? '' : 'New ') . 'Bill of Lading'
+));
+?>
+
+<div class="row">
+	<div class="col-md-12">
+	<form id="bolForm" class="form-horizontal form-track-change" style="display: block;" method="post"
+		  onsubmit="return false;" action="/billoflading/save/" novalidate>
+		<input type="hidden" name="BOLID" id="BOLID" value="<?= $BOLID ?>">
+
+		<div class="field-group rightBorder">
+			<h5><?= $EDIKey ?> Bill of Lading Details</h5>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">BOL Date</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control datepicker"
+						   id="BOLDate"
+						   name="BOLDate"
+						   required
+						   data-validation-required-message="BOL Date is required"
+						   value="<?= $this->utils->slashDate($bolData['BOLDate']) ?>">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">BOL Number</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control" id="ShipperNumber" name="ShipperNumber" value="<?= $bolData['ShipperNumber'] ?>"
+						required data-validation-required-message="Shipper's Number is required">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">PO Number</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control" id="CustomerPO" name="CustomerPO" value="<?= $bolData['CustomerPO'] ?>">
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Carrier Name</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control" id="CarrierName" name="CarrierName" value="<?= $bolData['CarrierName'] ?>">
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding mb-0">
+					Select Ship To
+				</label>
+
+				<div class="col-sm-3 nopadding">
+					<select
+						id="shipToSelect"
+						name="shipToSelect"
+						class="form-control"
+						<?= count($shipToAddresses) > 0 ? '' : 'disabled' ?>
+					>
+						<option value="">-- Select --</option>
+
+						<?php foreach ( $shipToAddresses as $shipToAddress ) { ?>
+							<option value="<?= $shipToAddress['ID'] ?>">
+								<?= strtoupper($shipToAddress['Nickname'] ?: $shipToAddress['Name']) ?>
+							</option>
+						<?php } ?>
+					</select>
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Consigned To</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control" id="ConsignedTo" name="ConsignedTo" value="<?= $bolData['ConsignedTo'] ?>"
+						required data-validation-required-message="Consigned To is required">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<!-- <div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Pickup Date</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control datepicker"
+						   id="PickupDate"
+						   name="PickupDate"
+						   value="<?php // echo $bolData['PickupDate'] ? $this->utils->slashDate($bolData['PickupDate']) : ''; ?>">
+				</div>
+			</div> -->
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Shipped To</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control" id="ShippedToName" name="ShippedToName" value="<?= $bolData['ShippedToName'] ?>"
+						required data-validation-required-message="Shipped To is required">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Ship To Address</label>
+				<div class="col-sm-3 nopadding">
+					<!-- <input type="text" class="form-control" id="ShippedToAddress" name="ShippedToAddress" value="<?= $bolData['ShippedToAddress'] ?>"
+						required data-validation-required-message="Ship To Address is required"> -->
+					<textarea name="ShippedToAddress" id="ShippedToAddress" class="form-control"
+						required data-validation-required-message="Ship To Address is required"><?= $bolData['ShippedToAddress'] ?></textarea>
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Item Number</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control" id="CustomerItemNumber" name="CustomerItemNumber" value="<?= $bolData['CustomerItemNumber'] ?>">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Seal Number</label>
+				<div class="col-sm-3 nopadding">
+					<input type="text" class="form-control" id="SealNumber" name="SealNumber" value="<?= $bolData['SealNumber'] ?>">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Total Tare Weight</label>
+				<div class="col-sm-3 nopadding">
+					<input type="number" class="form-control" id="TotalTareWeight" name="TotalTareWeight" value="<?= $bolData['TotalTareWeight'] ?>">
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+		</div>
+
+		<div class="field-group">
+			<h5>Special Instructions</h5>
+
+			<?php
+			$textNumbers = array('One', 'Two', 'Three', 'Four');
+
+			foreach ($instructions as $idx => $group) {
+				$num = $textNumbers[$idx];
+				?>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Instruction <?= $num ?></label>
+					<div class="col-sm-3 nopadding">
+						<select
+							id="Instruction<?= $num ?>PID"
+							name="Instruction<?= $num ?>PID"
+							class="form-control">
+							<?php
+								foreach ( $group as $instruction ) {
+									$sel = '';
+									if ( ! empty( $bolData["Instruction{$num}PID"] ) ) {
+										$sel = $instruction['ParameterID'] == $bolData["Instruction{$num}PID"] ? ' selected="selected" ' : '';
+									}
+									echo '<option value="' . $instruction['ParameterID'] . '"' . $sel . '>' . $instruction['Value1'] . '</option>';
+								}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<?php
+			}
+			?>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label nopadding">Instruction Five</label>
+				<div class="col-sm-3 nopadding">
+					<textarea name="InstructionFive" id="InstructionFive" class="form-control"><?= $bolData['InstructionFive'] ?></textarea>
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<h5 style="margin-top: 2em">Formatting Options</h5>
+
+			<div class="bol-formattingOptions">
+				<div class="form-group control-group">
+					<label class="control-label nopadding" for="showLotDetails">
+						Show Lot Details
+					</label>
+					<input type="checkbox" id="showLotDetails" name="showLotDetails" value="1" <?= $bolData['showLotDetails'] ? 'checked' : '' ?>>
+					<p class="help-block text-danger"></p>
+				</div>
+
+				<div class="form-group control-group">
+					<label id="showTestResultsLabel" for="showTestResults" class="control-label nopadding">
+						Show Test Results
+					</label>
+					<input type="checkbox" id="showTestResults" name="showTestResults" value="1" <?= $bolData['showTestResults'] ? 'checked' : '' ?>>
+					<p class="help-block text-danger"></p>
+				</div>
+
+				<div class="form-group control-group">
+					<label id="showProductCodesLabel" for="showProductCodes" class="control-label nopadding">
+						Use Product Code from Offer
+					</label>
+					<input type="checkbox" id="showProductCodes" name="showProductCodes" value="1" <?= $bolData['showProductCodes'] ? 'checked' : '' ?>>
+					<p class="help-block text-danger"></p>
+				</div>
+				</div>
+
+				<div class="has-success">
+					<div id="bolSavedFeedback" class="control-label successFeedback" style="float: left; display: none; padding-left: 50px;">Bill of Lading Saved</div>
+					<button id="SaveAndPrintButton" class="save-btn btn btn-primary" style="float: right; margin-right: 15px;" data-do-print="1">Save and Print</button>
+					<button id="SaveButton" class="save-btn btn btn-default" style="float: right; margin-right: 15px;" data-do-print="0">Save</button>
+				</div>
+			</div>
+
+		<div style="clear:both"></div>
+
+	</form>
+</div>
+
+<?php
+$this->partial("include/footer_start");
+?>
+<style>
+#bolForm .help-block ul {
+	list-style-type: none;
+	margin-left: -10em; /* must match label width */
+	padding-left: 0;
+	text-align: right;
+	padding-right: 14px;
+}
+
+#bolForm h5 {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: center;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: 1em;
+	margin-top: -30px;
+	padding-top: 15px;
+}
+
+#bolForm .nopadding {
+	padding-left: 0;
+	padding-right: 0;
+	width: auto;
+}
+
+
+#bolForm label.nopadding {
+	width: 11em;
+	text-align: right;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+#bolForm input,
+#bolForm select,
+#bolForm textarea {
+	width: 20em;
+	margin-bottom: 10px;
+	margin-right: 10px;
+}
+
+#bolForm input[type=checkbox] {
+	width: auto;
+}
+
+#bolForm .field-group {
+	width: 50%;
+	float: left;
+	margin: 10px 0 0 0;
+}
+
+#bolForm .field-group .form-group {
+	margin: 0;
+	padding: 0;
+}
+
+#bolForm .field-group.rightBorder {
+	border-right: 1px solid #d6bd99;
+}
+
+#bolForm input:disabled {
+	opacity: 0.7;
+}
+
+#bolForm label.disabled {
+	color: #555555;
+	opacity: 0.7;
+}
+
+#bolForm input.plain-disabled[type="text"]:disabled {
+	border-color: transparent;
+	background-color: transparent;
+	cursor: text;
+	box-shadow: none;
+	opacity: 1;
+}
+</style>
+
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	var doPrint = 0;
+
+	var shipToAddresses = <?= json_encode($shipToAddresses) ?>;
+
+	$('#shipToSelect').change(function() {
+		var shipToAddress = shipToAddresses.filter(function(address) {
+			return address.ID == $('#shipToSelect').val();
+		})[0];
+
+		if (!shipToAddress) {
+			return;
+		}
+
+		var { Name, Address, Address2, City, State, Zip, ConsignedName } = shipToAddress;
+
+		$('#ConsignedTo').val(ConsignedName.toUpperCase());
+		$('#ShippedToAddress').val((Address + '\n' + (Address2 ? Address2 + '\n' : '') + City + ' ' + State + ' ' + Zip).toUpperCase());
+		$('#ShippedToName').val(Name.toUpperCase());
+	});
+
+	$( ".datepicker" ).datepicker({
+		dateFormat: "mm/dd/y"
+	});
+
+	function showLotDetails()
+	{
+		if ($('#showLotDetails').prop('checked')) {
+			$('#showTestResultsLabel').removeClass('disabled');
+			$('#showTestResults').prop('disabled', false);
+		} else {
+			$('#showTestResultsLabel').addClass('disabled');
+			$('#showTestResults').prop('disabled', true);
+		}
+	}
+
+	$("#showLotDetails").on('change', showLotDetails);
+	showLotDetails();
+
+	$('.save-btn').click(function() {
+		doPrint = $(this).data('do-print');
+
+		$('#bolForm').submit();
+	});
+
+	$("#bolForm input, #bolForm select, #bolForm textarea").not("[type=submit]").jqBootstrapValidation({
+		sniffHtml: false,
+		preventSubmit: true,
+		submitError: function($form, event, errors) {
+			// Here I do nothing, but you could do something like display
+			// the error messages to the customer, log, etc.
+			console.log( 'There was an error in the form' + JSON.stringify(errors));
+		},
+		submitSuccess: function($form, event) {
+			// var submitButtonValue = $(event.originalEvent.explicitOriginalTarget).val();
+
+			// form has been submitted
+			if ( $form[0].id == 'bolForm' )
+			{
+				$.ajax({
+					url: "/billoflading/save/<?= $offerID ?>",
+					type: "POST",
+					data: $('#bolForm').serialize(),
+					dataType: "json",
+					success: function(data) {
+						if ( data.success == 1 ) {
+							console.log( 'saved' );
+
+							if (doPrint) {
+								window.location.href = '/billoflading/print/'+data.BOLID+'/'+data.showProductCodes;
+							} else {
+								$( "#bolSavedFeedback" ).fadeIn( 1000, function() {
+									setTimeout( function() {
+										$( "#bolSavedFeedback" ).fadeOut( 1000 );
+									}, 1000);
+								});
+							}
+						}
+						else {
+							bootbox.alert( data.msg );
+						}
+					}
+				});
+			}
+		},
+		filter: function() {
+			return $(this).is(":visible");
+		}
+	});
+});
+</script>
+<?php
+$this->partial("include/footer_end");
+?>

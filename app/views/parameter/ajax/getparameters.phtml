@@ -1,0 +1,110 @@
+<?php
+$security = $this->getDI()['securityPlugin'];
+$su = $security->hasRole(User::SU_ROLE_PID);
+
+if (count($parameters)) {
+	$widths = array('20%', '20%', '20%', '20%', '30%', '20%', '10%');
+?>
+	<?php if ($ParameterGroupID == "40E74C81-EF36-4700-A38C-F39B64F7E7D1") { ?>
+
+		<button id="temp-clear-edi-filter-button" class="btn btn-default" style="margin-bottom: 1em;">Clear EDI Filter</button>
+
+		<?php foreach (array_keys(Customer::getEDIKeys()) as $EDIKey) { ?>
+
+			<button id="temp-<?php echo strtolower($EDIKey); ?>-only-button" class="btn btn-default" style="margin-bottom: 1em;">Toggle <?php echo $EDIKey; ?> Only</button>
+
+		<?php } ?>
+
+		<?php if ( $su && $archiveFlag !== 'A' ): ?>
+			<button id="archived" class="btn btn-default" style="margin-bottom: 1em;">Show Archived</button>
+		<?php endif; ?>
+		<?php if ( $su && $archiveFlag === 'A' ): ?>
+			<em style="display: inline-block;vertical-align: super;padding-left: 2rem;">Showing Archived</em>
+		<?php endif; ?>
+
+	<?php } ?>
+
+	<script>
+		jQuery(document).ready(function($) {
+
+			$('#archived').click(function() {
+				document.location.href = '/parameter/edit/<?= $ParameterGroupID ?>/A';
+			});
+
+			$('#temp-clear-edi-filter-button').click(function() {
+				$('.param-table-body > tr').each(function() {
+					$(this).show();
+				});
+
+			});
+
+			$(`[id*="temp-"][id*="-only-button"]`).click(function() {
+
+				const EdiKeyRowClassName = `edi-${$(this).attr("id").match(/temp-(.*?)-only-button/)[1].toUpperCase()}`;
+
+				$('.param-table-body > tr').each(function() {
+
+					$(this).toggle($(this).hasClass(EdiKeyRowClassName));
+
+				});
+
+			});
+		});
+	</script>
+
+	<table class="table table-striped thick-rounded-border">
+		<thead>
+			<tr>
+				<th width="<?= $widths[0] ?>">
+					<?= $parameterGroup["Heading1"] ?? Parameter::getLabel($ParameterGroupID, 'Value1') ?> <? /* Value 1 */ ?>
+				</th>
+				<th width="<?= $widths[1] ?>">
+					<?= $parameterGroup["Heading2"] ??  Parameter::getLabel($ParameterGroupID, 'Value2') ?> <? /* Value 2 */ ?>
+				</th>
+				<th width="<?= $widths[2] ?>">
+					<?= $parameterGroup["Heading3"] ??  Parameter::getLabel($ParameterGroupID, 'Value3') ?> <? /* Value 3 */ ?>
+				</th>
+
+				<th width="<?= $widths[3] ?>">
+					<?= $parameterGroup["Heading4"] ??  Parameter::getLabel($ParameterGroupID, 'Value4') ?> <? /* Value 4 */ ?>
+				</th>
+
+				<th width="<?= $widths[4] ?>">
+					Description
+				</th>
+				<th width="<?= $widths[5] ?>">
+					Deactivate Date
+				</th>
+				<th width="<?= $widths[6] ?>">
+					&nbsp;
+				</th>
+			</tr>
+		</thead>
+
+		<tbody class="param-table-body">
+
+			<?php
+
+			$EDIKeys = array_keys(Customer::getEDIKeys());
+
+			foreach ($parameters as $p) { ?>
+
+				<tr class="<?php echo in_array($p->Value4, $EDIKeys) ? "edi-" . $p->Value4 : "no-EDI" ?>">
+
+					<td width="<?php echo $widths[0] ?>"><?php echo $p->Value1 ?></td>
+					<td width="<?php echo $widths[1] ?>"><?php echo $p->Value2 ?></td>
+					<td width="<?php echo $widths[2] ?>"><?php echo $p->Value3 ?></td>
+					<td width="<?php echo $widths[3] ?>"><?php echo $p->Value4 ?></td>
+					<td width="<?php echo $widths[4] ?>"><?php echo $p->Description ?></td>
+					<td width="<?php echo $widths[5] ?>"><?= $utils->slashDate($p->DeactivateDate) ?></td>
+					<td width="<?php echo $widths[6] ?>"><a href="#" class="editParameter" data-parameter-id="<?php echo $p->ParameterID ?>">Edit</a></td>
+				</tr>
+
+			<?php } ?>
+
+		</tbody>
+
+	</table>
+<?php } else {
+	echo 'There are no parameters for this group at this time.';
+} ?>

@@ -1,0 +1,63 @@
+<?php
+if ( count($factories) )
+{
+	$activeSeen = 0;
+	$inactiveSeen = 0;
+	$widths = array('44%', '15%', '25%', '8%', '8%');
+?>
+	<table class="table table-striped thick-rounded-border">
+<?php
+		   $headerColumns = <<<HTML
+			<tr>
+				<th width="{$widths[0]}">
+					Name
+				</th>
+				<th width="{$widths[1]}">
+					Number
+				</th>
+				<th width="{$widths[2]}">
+					Facility Location
+				</th>
+				<th width="{$widths[3]}">
+					&nbsp;
+				</th>
+				<th width="{$widths[4]}">
+					&nbsp;
+				</th>
+			</tr>
+HTML;
+		
+		foreach ( $factories as $f )
+		{
+			if ( $f->Active && !$activeSeen ) {
+				$activeSeen = 1;
+				echo '<thead><tr><th colspan="5">Active</th></tr></thead><tbody>';
+				echo $headerColumns;
+			}
+			if ( !$f->Active && !$inactiveSeen ) {
+				$inactiveSeen = 1;
+				echo '<tr class="fake-thead"><th colspan="5">Inactive</th></tr>';
+				echo $headerColumns;
+			}
+?>
+        <tr>
+          <td width="<?php echo $widths[0] ?>"><?php echo $f->Name ?></td>
+          <td width="<?php echo $widths[1] ?>"><?php echo $f->Number ?></td>
+          <td width="<?php echo $widths[2] ?>"><?php echo $f->FacilityLocation ?></td>
+          <td width="<?php echo $widths[3] ?>"><a href="#" class="editFactory" id="editFactory<?php echo $f->FactoryID ?>" data-factory-id="<?php echo $f->FactoryID ?>">Edit</a></td>
+          <td width="<?php echo $widths[4] ?>"><a href="#" class="deleteFactory" data-name="<?php echo htmlentities($f->Name, ENT_QUOTES); ?>" data-factory-id="<?php echo $f->FactoryID ?>">Delete</a></td>
+        </tr>
+
+<?php
+		}
+?>
+      </tbody>
+    </table>
+<?php
+}
+else
+{
+	echo 'There are no factories at this time.';
+}
+?>
+

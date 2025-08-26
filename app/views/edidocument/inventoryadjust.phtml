@@ -1,0 +1,273 @@
+<?php
+
+$this->partial(
+	"include/header",
+	array(
+		'title' => 'Inventory Management',
+		'header' => "Inventory Management",
+		'headerIcon' => 'edi',
+	)
+);
+
+?>
+<div class="col-md-12">
+	<form class="form-horizontal formSection" method="post" nonvalidate id="inventoryListForm" name="inventoryListForm">
+		<div class="" style="display:grid; gap:2rem;">
+			<div class="">
+				<h5 style="margin-bottom: unset;margin-top: unset;padding-top: unset;">Search</h5>
+			</div>
+
+			<div class="" style="display:grid; gap:2rem; grid-template-columns: repeat(4,minmax(0,1fr)); align-items:center;">
+
+				<div class="" style="display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); align-items: center; ">
+					<input type="text" name="productCode" placeholder="Product Code" id="productCodeInput" class="form-control ui-autocomplete-input productCodeInput" style="grid-column: span 3 / span 3;" disabled />
+
+					<svg data-loading-icon="productCodeInput" width="25" height="25" viewBox="0 0 50 50" style="grid-column: span 1 / span 1; display:none;">
+						<circle cx="25" cy="25" r="20" stroke="black" stroke-width="5" fill="none" opacity="0.2"></circle>
+						<circle cx="25" cy="25" r="20" stroke="black" stroke-width="5" fill="none" stroke-dasharray="31.4" stroke-dashoffset="31.4" transform="rotate(-90 25 25)">
+							<animateTransform attributeName="transform" type="rotate" values="0 25 25;360 25 25" keyTimes="0;1" dur="1s" repeatCount="indefinite"></animateTransform>
+						</circle>
+					</svg>
+				</div>
+
+				<div class="" style="display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); align-items: center;">
+
+					<input type="text" name="custLotNumber" placeholder="Cust Lot #" id="custLotNumberInput" class="form-control ui-autocomplete-input" style="grid-column: span 3 / span 3;" disabled />
+
+					<svg data-loading-icon="custLotNumberInput" width="25" height="25" viewBox="0 0 50 50" style="grid-column: span 1 / span 1; display:none;">
+						<circle cx="25" cy="25" r="20" stroke="black" stroke-width="5" fill="none" opacity="0.2"></circle>
+						<circle cx="25" cy="25" r="20" stroke="black" stroke-width="5" fill="none" stroke-dasharray="31.4" stroke-dashoffset="31.4" transform="rotate(-90 25 25)">
+							<animateTransform attributeName="transform" type="rotate" values="0 25 25;360 25 25" keyTimes="0;1" dur="1s" repeatCount="indefinite"></animateTransform>
+						</circle>
+					</svg>
+
+				</div>
+
+				<div class="" style="display: flex;justify-content: center;gap: 2rem;">
+
+					<label class="">Include empty lots:</label>
+					<input type="checkbox" id="showEmptyLots" name="showEmptyLots" value="1" style="margin: 0;" disabled />
+
+				</div>
+
+				<div id="edi-key-selection" class="warehouse-checkboxes" data-toggle="buttons">
+
+					<?php
+					$shouldAutoCheck = count($allEDIKeys) < 2;
+					$activeClass = $shouldAutoCheck ? "active" : "";
+					?>
+
+					<?php foreach ($allEDIKeys as $ediKey) { ?>
+
+						<label class="btn btn-default short-margin-bottom <?php echo $activeClass; ?>">
+							<input type="radio" name="EDIKeyOption" value="<?php echo $ediKey; ?>" aria-invalid="false" <?php echo $shouldAutoCheck ? 'checked' : ''; ?>><?php echo $ediKey; ?>
+						</label>
+
+					<?php } ?>
+
+				</div>
+
+			</div>
+
+			<div class="" style="display:grid; gap:1rem; grid-template-columns: repeat(2,minmax(0,1fr)); width: fit-content;">
+
+				<div class="">
+					<input class="btn btn-default" type="submit" name="resetFilters" id="resetFilters" value="Reset Filters" disabled />
+				</div>
+
+				<div class="">
+					<input class="btn btn-primary" type="submit" name="searchInventory" id="searchInventory" value="Search" disabled />
+				</div>
+
+			</div>
+
+			<div data-loading-icon="docHtml" style="text-align: center;justify-content: center;display:none;">
+				<svg width="25" height="25" viewBox="0 0 50 50" style="grid-column: span 1 / span 1;">
+					<circle cx="25" cy="25" r="20" stroke="black" stroke-width="5" fill="none" opacity="0.2"></circle>
+					<circle cx="25" cy="25" r="20" stroke="black" stroke-width="5" fill="none" stroke-dasharray="31.4" stroke-dashoffset="31.4" transform="rotate(-90 25 25)">
+						<animateTransform attributeName="transform" type="rotate" values="0 25 25;360 25 25" keyTimes="0;1" dur="1s" repeatCount="indefinite"></animateTransform>
+					</circle>
+				</svg>
+			</div>
+
+		</div>
+	</form>
+</div>
+
+<div class="row">
+	<div class="col-md-12" id="docHtml"></div>
+</div>
+
+<div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-labelledby="vatModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" style="width: 1000px;">
+		<div class="modal-content" style="padding: 20px;">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="vatModalLabel">Inventory Management</h4>
+			</div>
+
+			<div id="lotInventoryDetailContent"></div>
+		</div>
+	</div>
+</div>
+
+<?php $this->partial("include/footer_start"); ?>
+
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+
+<script>
+	jQuery(document).ready(function($) {
+
+		function getActiveEDIRadioValue() {
+			return $(document).find("#edi-key-selection .active").find(`input[name="EDIKeyOption"]`).val();
+		}
+
+		function toggleLoadingScreen(dataID, action) {
+			return $(`[data-loading-icon="${dataID}"]`)[action].call($(`[data-loading-icon="${dataID}"]`));
+		}
+
+		function getDocuments() {
+
+			$.ajax({
+				url: "/edidocument/getinventory/" + getActiveEDIRadioValue(),
+				data: $('#inventoryListForm').serialize(),
+				type: "POST",
+				dataType: "html",
+				beforeSend: function() {
+					toggleLoadingScreen("docHtml", "show");
+				},
+				success: function(data) {
+					$('#docHtml').html(data);
+				},
+				error: function() {
+					bootbox.alert('Failed to get inventory.');
+				},
+				complete: function() {
+					toggleLoadingScreen("docHtml", "hide");
+				}
+			});
+		}
+
+		$("#searchInventory").click(function(event) {
+			event.preventDefault();
+			$('#docHtml').html('');
+			getDocuments();
+		});
+
+		$("#resetFilters").click(function(event) {
+			event.preventDefault();
+
+			$(':input', '#inventoryListForm')
+				.not(':button, :submit, :reset, :hidden, input[name="EDIKeyOption"]')
+				.val('')
+				.removeAttr('checked')
+				.removeAttr('selected');
+
+			$("#docHtml").html('');
+		});
+
+		$("#inventoryListForm").find("input").each(function() {
+
+			if ($(`input[name="EDIKeyOption"]`).length < 2) {
+
+				$(this).removeAttr("disabled");
+
+			}
+		});
+
+		$(`input[name="EDIKeyOption"]`).on('change', function() {
+
+			$("#inventoryListForm").find("input").each(function() {
+
+				$(this).removeAttr("disabled");
+
+			});
+
+		});
+
+		var debounceTimer;
+
+		$("#custLotNumberInput").autocomplete({
+			source: function(request, response) {
+
+				clearTimeout(debounceTimer);
+
+				debounceTimer = setTimeout(function() {
+					$.ajax({
+						url: "/search/edicustlotnumber/" + getActiveEDIRadioValue(),
+						type: "POST",
+						dataType: "json",
+						data: {
+							searchVal: request.term
+						},
+						beforeSend: function() {
+							toggleLoadingScreen("custLotNumberInput", "show");
+						},
+						success: function(data) {
+							response($.map(data, function(item) {
+								return {
+									label: item.name,
+									abbrev: item.name
+								};
+							}));
+						},
+						complete: function() {
+							toggleLoadingScreen("custLotNumberInput", "hide");
+						}
+					});
+				}, 250);
+			},
+			minLength: 2,
+			autoFocus: true,
+			select: function(event, ui) {
+				$(this).val(ui.item.value);
+				$("#searchInventory").click();
+			}
+		});
+
+		// TODO: the SAP string needs to change and needs to come from the radio button selection.
+
+		$("#productCodeInput").autocomplete({
+
+			source: function(request, response) {
+
+				clearTimeout(debounceTimer);
+
+				debounceTimer = setTimeout(function() {
+					$.ajax({
+						url: "/search/ediproductcode/" + getActiveEDIRadioValue(),
+						type: "POST",
+						dataType: "json",
+						data: {
+							searchVal: request.term
+						},
+						beforeSend: function() {
+							toggleLoadingScreen("productCodeInput", "show");
+						},
+						success: function(data) {
+							response($.map(data, function(item) {
+								return {
+									label: item.name,
+									abbrev: item.name
+								};
+							}));
+						},
+						complete: function() {
+							toggleLoadingScreen("productCodeInput", "hide");
+						}
+					});
+
+				}, 250);
+			},
+			minLength: 2,
+			autoFocus: true,
+			select: function(event, ui) {
+				$(this).val(ui.item.value);
+				$("#searchInventory").click();
+			}
+		});
+	});
+</script>
+
+<?php
+$this->partial("include/footer_end");

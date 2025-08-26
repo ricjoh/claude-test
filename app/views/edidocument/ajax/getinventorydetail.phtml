@@ -1,0 +1,246 @@
+<div id="oiHeader">
+    <form novalidate class="form-horizontal inventoryAdjustmentForm" id="inventoryAdjustmentForm" onsubmit="return false;">
+        <input type="hidden" name="currentUser" id="currentUser" value="<?= $currentUser ?>">
+        <input type="hidden" name="lotID" id="lotID" value="<?= $lot->LotID ?>">
+        <input type="hidden" name="vatID" id="vatID" value="<?= $vat->VatID ?>">
+        <input type="hidden" name="customerID" id="customerID" value=<?= $customer->CustomerID ?>>
+
+        <div class="field-group rightBorder">
+            <div class="form-group control-group noBottomMargin">
+                <strong class="col-sm-3 control-label noTopPadding">Customer:</strong>
+                <div class="col-sm-3 nopadding">
+                    <?= $customer->Name ?>
+                </div>
+
+                <strong class="col-sm-3 control-label noTopPadding">Date In:</strong>
+                <div class="col-sm-3 nopadding">
+                    <?= $lot->DateIn ? $utils->slashDate($lot->DateIn ) : '-' ?>
+                </div>
+            </div>
+
+            <div class="form-group control-group noBottomMargin">
+                <strong class="col-sm-3 control-label noTopPadding">Customer Lot Number:</strong>
+                <div class="col-sm-3 nopadding">
+                    <?= $vat->CustomerLotNumber ?>
+                </div>
+
+                <strong class="col-sm-3 control-label noTopPadding">Storage Unit:</strong>
+                <div class="col-sm-3 nopadding">
+                    <?= $lot->StorageUnit ?>
+                </div>
+            </div>
+
+            <div class="form-group control-group noBottomMargin">
+                <strong class="col-sm-3 control-label noTopPadding">Description: </strong>
+                <div class="col-sm-4 nopadding">
+                    <?= $lotDescription ?>
+                </div>
+            </div>
+
+            <div class="form-group control-group" style="margin-top: 1rem;">
+                <div class="col-sm-4"><h4>Adjustment Details</h4></div>
+            </div>
+
+            <div class="form-group control-group">
+                <label class="control-label col-sm-3" for="adjustmentReasonSelect">Adjustment Reason:</label>
+                <div class="col-sm-3 nopadding">
+                <select name="adjustmentReasonSelect" id="adjustmentReasonSelect" class="form-control inventoryManagementSelect" required>
+                    <option value="" selected>- Select a Reason -</option>
+
+                    <?php foreach ($ediInventoryAdjustmentReasonArray as $code => $adjustmentReason) { ?>
+                        <option value="<?= $code ?>" data-prod-read-only="<?= $adjustmentReason['prodReadOnly'] ?>">
+                            <?= "$code - " . $adjustmentReason['name'] ?>
+                        </option>
+                    <?php } ?>
+                </select>
+                </div>
+            </div>
+
+            <div class="form-group control-group">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"><h4>Current Value</h4></div>
+                <div class="col-sm-3"><h4>New Value</h4></div>
+            </div>
+
+            <div class="form-group control-group">
+                <label class="col-sm-3 control-label nopadding">Product Code</label>
+                <div class="col-sm-3 nopadding smallPaddingTop">
+                    <?= $lot->ProductCode ?>
+                </div>
+                <div class="col-sm-3 nopadding">
+                    <input readonly type="text" class="form-control" id="productCode" data-original-value="<?= $lot->ProductCode ?>" name="productCode" value="<?= $lot->ProductCode ?>">
+                    <p class="help-block text-danger"></p>
+                </div>
+            </div>
+            <div class="form-group control-group">
+                <label class="col-sm-3 control-label nopadding" for="storageAmount">Weight</label>
+                <div class="col-sm-3 nopadding smallPaddingTop">
+                    <?= $vat->Weight ?>
+                </div>
+                <div class="col-sm-3 nopadding">
+                    <input type="number" class="form-control" id="storageAmount" name="storageAmount" value="<?= $vat->Weight ?>">
+                    <p class="help-block text-danger"></p>
+                </div>
+            </div>
+            <div class="form-group control-group">
+                <label class="col-sm-3 control-label nopadding" for="inventoryPieces">Pieces</label>
+                <div class="col-sm-3 nopadding smallPaddingTop">
+                    <?= $vat->Pieces ?>
+                </div>
+                <div class="col-sm-3 nopadding">
+                    <input type="number" class="form-control" id="inventoryPieces" name="inventoryPieces" value="<?= $vat->Pieces ?>">
+                    <p class="help-block text-danger"></p>
+                </div>
+            </div>
+        </div>
+
+        <div style="clear: both;"></div>
+
+        <div class="buttonWrapper">
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="sendEDIButton"
+                xx-data-dismiss="modal"
+                aria-label="Save and Close"
+                data-action="SendEDI"
+                data-confirm-msg="Save adjustments and send EDI for Lot: <?= $lot->LotNumber ?>?"
+                style="float: right; margin-right: 15px;"
+                onclick="return adjustLotInventory(true);">
+                    Save and Send EDI
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="saveButton"
+                xx-data-dismiss="modal"
+                aria-label="Save and Close"
+                data-action="Save"
+                data-confirm-msg="Save adjustments for Lot: <?= $vat->CustomerLotNumber ?>?"
+                style="float: right; margin-right: 15px;"
+                onclick="return adjustLotInventory(false);">
+                    Save
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-default"
+                data-dismiss="modal"
+                aria-label="Cancel"
+                style="float: right; margin-right: 15px;">
+                    Close
+            </button>
+
+            <div style="clear:both"></div>
+        </div>
+
+        <div id="past-adjustments-section"></div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#adjustmentReasonSelect").change(function() {
+            var isReadOnlyOption = $("#adjustmentReasonSelect").find(':selected').data('prodReadOnly') == 1;
+            $("#productCode").prop("readOnly", isReadOnlyOption);
+        });
+	});
+</script>
+
+<style>
+#itemModal td {
+	background-color: #eeeeee;
+    border-right: 1px solid #dddddd;
+}
+
+#itemModal td.edit {
+	background-color: white;
+}
+
+#oiHeader {
+	margin: 20px 10px 10px;
+}
+
+#itemModal .itemNoteLabel {
+	font-weight: bold;
+	margin: 0px 10px 4px;
+}
+
+#itemModal .itemNoteWrapper {
+	border: 1px solid #480303;
+	border-radius: 14px;
+	padding: 20px;
+}
+
+#itemModal .buttonWrapper {
+	margin-top: 20px;
+	margin-right: -20px;
+}
+
+#itemModal .table {
+	margin-bottom: 5px;
+}
+
+#itemModal .form-inline .form-control.mytextarea {
+  width: 700px;
+}
+
+#itemModal th,
+#itemModal td,
+#itemModal td a {
+	font-family: 'Open Sans Condensed', sans-serif;
+	font-weight: 700;
+}
+
+#itemModal .offerNum {
+	font-weight: normal;
+	float: left;
+	color: #ff0000;
+	font-style: italic;
+	cursor: help;
+}
+
+.ui-front {
+  z-index: 1200;
+}
+
+.editnum.editable-unsaved {
+	background-color: yellow;
+}
+
+.inventoryManagementSelect {
+    width: max-content;
+    display: inline;
+}
+
+.modal-subheader-info {
+    float:left;
+    margin-top: 10px;
+}
+
+.ediAdjustmentInput {
+    margin: 1rem 0;
+}
+
+.ediAdjustmentInput .form-group {
+    margin-bottom: 1rem;
+}
+
+.noTopPadding {
+    padding-top: 0 !important;
+}
+
+.smallPaddingTop {
+    padding-top: 7px;
+}
+
+.noBottomMargin {
+    margin-bottom: 0;
+}
+
+.inventoryAdjustmentForm input:read-only {
+    opacity: .5 !important;
+    cursor: not-allowed !important;
+}
+</style>

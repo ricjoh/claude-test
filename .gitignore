@@ -1,0 +1,10 @@
+.DS_Store
+public/.DS_Store
+.vscode
+app/config/
+config.ini
+newrelic_agent.log
+inv-report-cache.json
+inventory-report-ric.php
+report.log
+

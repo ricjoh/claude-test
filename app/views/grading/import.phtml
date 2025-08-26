@@ -1,0 +1,142 @@
+<?php
+$this->partial(
+	"include/client_header", 
+	array(
+		'title' => 'Grading Import', 
+		'header' => 'Grading Import',
+	)
+);
+
+?>
+
+<style>
+	.form-horizontal {
+		margin: 2em 0;
+	}
+	
+	.lead {
+		margin: 2em 0;
+	}
+	
+	.table thead {
+		font-size: 1em;
+	}
+</style>
+
+<a href="/clients/" class="back-link">&laquo; Back to Client Access Home</a>
+
+<div class="row">
+
+	<div class="col-md-12">
+		<? if (!$isImporting || $rowsFailed): ?>
+			<form class="form-horizontal" method="post" enctype="multipart/form-data">
+				
+				<div>
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label">Select File to Import</label>
+						<div class="col-sm-9">
+						  <input type="file" name="gradingImport" />
+						</div>
+					</div>
+					
+					<div class="form-group">
+						<div class="col-sm-offset-3 col-sm-9">
+							<input type="submit" class="btn btn-primary" value="Import Grading XLS" />
+						</div>
+					</div>
+				</div>
+			  
+			</form>
+		<? endif; ?>
+		
+		<? if ($isImporting): ?>
+			<? if ($rowsFailed && $lotsImported > 0): ?>
+				<div class="bg-warning alert">Warning: Grading XLS Only Partially Imported</div>
+			<? elseif ($rowsFailed || $lotsImported == 0): ?>
+				<div class="bg-danger alert">Grading XLS Failed to Import</div>
+			<? else: ?>
+				<div class="bg-success alert">Grading XLS Imported Successfully</div>
+			<? endif; ?>
+			
+			<p class="lead">
+				Imported information for <?= $lotsImported ?> batches.
+				
+				<? if ($rowsInserted > 0 && $rowsUpdated > 0): ?>
+					<?= $rowsInserted ?> new records were created, and <?= $rowsUpdated ?> existing records were updated, for a total of <?= $rowsInserted + $rowsUpdated ?>.
+				<? elseif ($rowsInserted > 0): ?>
+					<?= $rowsInserted ?> new records were created.
+				<? else: ?>
+					<?= $rowsUpdated ?> existing records were updated.
+				<? endif; ?>
+			</p>
+			
+			
+			<? if ($rowsFailed): ?>
+				<h3>Failed Rows</h3>
+				
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Row</th>
+							<th>LCD Item Number</th>
+							<th>LCD Batch</th>
+							<th>OCS Batch</th>
+							<!-- <th>LCD Lot Number</th> -->
+							<th>LCD Tank Number</th>
+							<th>Ext. Color</th>
+							<th>Int. Color</th>
+							<th>Knit</th>
+							<th>Application</th>
+							<th>Flavor</th>
+							<th>Net # Graded</th>
+							<th>Wheel Dest</th>
+							<th>Comments</th>
+							<th>Grading Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						<? foreach ($rowsFailed as $row): ?>
+							<tr>
+								<td><?= $row['rowNum'] ?></td>
+								<td><?= $row['LCD Item Number'] ?></td>
+								<td><?= $row['LCD Batch'] ?></td>
+								<td><?= $row['OCS Batch'] ?></td>
+								<td><?= $row['LCD Tank Number'] ?></td>
+								<td><?= $row['Exterior Color'] ?></td>
+								<td><?= $row['Interior Color'] ?></td>
+								<td><?= $row['Knit'] ?></td>
+								<td><?= $row['Application'] ?></td>
+								<td><?= $row['Flavor'] ?></td>
+								<td><?= $row['Net # Graded'] ?></td>
+								<td><?= $row['Wheel Destination'] ?></td>
+								<td><?= $row['Comments'] ?></td>
+								<td><?= $row['Grading Date'] ?></td>
+							</tr>
+							<tr class="text-danger">
+								<td>Error:</td>
+								<td colspan="7"><strong><?= $row['errorMessage'] ?></strong></td>
+							</tr>
+						<? endforeach; ?>
+					</tbody>
+				</table>
+				
+				<!-- <pre><? print_r($rowsFailed) ?></pre> -->
+			<? endif; ?>
+		<? endif; ?>
+	</div>
+	
+</div>
+
+<?php
+
+$this->partial("include/client_footer_start");
+?>
+
+<script>
+jQuery(document).ready(function($) {
+	
+});
+</script>
+
+<?php
+$this->partial("include/client_footer_end");

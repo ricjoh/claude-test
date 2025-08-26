@@ -1,0 +1,57 @@
+<?php ?>
+<style>
+	#autotable .lefts th {
+		text-align: left;
+		padding-left: 8px;
+	}
+
+	#autotable>tbody>tr:hover {
+		background-color: #FCEFDF;
+		cursor: pointer;
+	}
+
+	.autocol-0 {
+		display: flex !important;
+	}
+</style>
+
+<div class="row">
+	<div class="col-md-12">
+		<?php if (isset($specialMessage) && $specialMessage != '') : ?>
+			<div class="table-alert">
+				<?= $specialMessage ?>
+			</div>
+		<?php endif; ?>
+
+		<table class="table table-striped thick-rounded-border" id="autotable">
+			<thead class="lefts">
+				<?php foreach ($headers as $header) { ?>
+					<th><?= $header ?></th>
+				<?php } ?>
+			</thead>
+
+			<tbody>
+				<?php
+				$r = 0;
+				foreach ($data as $row) :
+					$style = "";
+
+					if ($hasHighlights && array_key_exists($row[$highlightIndex], $highlightArray)) {
+						$style = "style=\"background-color:{$highlightArray[$row[$highlightIndex]]}\"";
+					}
+
+					$c = 0; ?>
+					<tr <?= ($c === 0 ? 'id="row-' . $ids[$r++]  . '"' : '') . $style ?>>
+						<?php
+						foreach ($row as $col) : ?>
+							<td class="autocol-<?= $c ?>"><?= $col ?></td>
+						<?php
+							$c++;
+						endforeach;
+						?>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+</div>

@@ -1,0 +1,402 @@
+<?php
+//  o        o   o
+//               8
+// o8 odYo. o8  o8P
+//  8 8' `8  8   8
+//  8 8   8  8   8
+//  8 8   8  8   8
+// :....::..:..::..:
+// :::::::::::::::::
+// :::::::::::::::::
+
+// Point value to help mark the end of a page. If the point below add up to this, then a new page will be made.
+$maxPixels = 1000;
+
+// Pixels for different elements on the manifest. Each one is representational of of how much space something takes up.
+// If in the WHILE loop, the Pixels reach the maxPixels mark, then a new page is created.
+$cellHeightPixels = 20;
+
+$title = 'Order Pick';
+$pickhide = 'hide';
+$movehide = '';
+$approxPixels = 456;
+$lotstyle = 'style="width: 100%;text-align: right;"';
+
+if ( $manifestType == 'move' ) {
+	$title = 'Order Move';
+	$pickhide = '';
+	$movehide = 'hide';
+	$approxPixels = 362;
+	$lotstyle = '';
+}
+
+$this->partial("include/flex_print_header", array('title' => $title));
+
+?>
+<link href="/public/css/lot-manifest.css" rel="stylesheet">
+<style>
+table {
+	border-spacing: 0 !important;
+}
+table.vatTable td,
+table.vatTable th {
+	line-height: 1;
+	height: 20px;
+	font-size: 14px;
+}
+
+table.vatTable tr:nth-child(even) {
+	background-color: #f0f0f0;
+}
+</style>
+	<div class="page" id="lot-manifest">
+		<!-- div class="page-inner padding-half-inch" -->
+
+	<div class="flex-page" id="first-page">
+		<header id="flex-header">
+			<div class="element type <?= $movehide ?>">ORDER PICK</div>
+			<div class="element type <?= $pickhide ?>">MOVE</div>
+			<div class="element lot" <?= $lotstyle ?>>LOT <?= $lotData->LotNumber ?></div>
+			<div class="element medium <?= $pickhide ?>">
+				<label for="tempSelect" style="position: relative;">To: </label>
+				<select name="tempSelect">
+					<option class="default-temp" selected="selected"></option>
+					<option>34&#176;</option>
+					<option>38&#176;</option>
+					<option>45&#176;</option>
+					<option>50&#176;</option>
+				</select>
+			</div>
+			<div class="element small <?= $pickhide ?>" style="margin-left: 1rem;">
+				<select name="daySelect">
+					<option class="default-day" selected="selected">Week</option>
+					<option>Day</option>
+				</select> of <input type="text" class="flex-input" style="width: 50%"></div>
+		</header>
+		<main>
+			<section class="flex-container" id="lot-hdr">
+				<div class="flex-item data-group" style="flex-basis: 60%">
+					<div>
+						<dt>Lot #:</dt>
+						<dd><?= $lotData->LotNumber ?></dd>
+					</div>
+					<div>
+						<dt>Description:</dt>
+						<dd><?= $lotDescription ?></dd>
+					</div>
+					<div>
+						<dt>Factory:</dt>
+						<dd><?= $lotFactory ?></dd>
+					</div>
+				</div>
+				<div class="flex-item data-group" style="flex-basis: 40%" id="prod-hdr">
+					<div>
+						<dt>Rooms/Sites:</dt>
+						<dd><?php
+							$roomStrings = array();
+							foreach ($lotRooms as $roomSite) {
+								$roomStrings[] = "$roomSite[Room]/$roomSite[Site]";
+							}
+							echo implode(', ', $roomStrings);
+						?></dd>
+					</div>
+					<div>
+						<dt>Product Code:</dt>
+						<dd><?= $lotData->ProductCode ?></dd>
+					</div>
+					<div>
+						<dt>In Cust PO#:</dt>
+						<dd><?= $lotData->CustomerPONumber ?></dd>
+					</div>
+				</div>
+			</section>
+			<section class="flex-container" style="align-items: flex-start;">
+				<div class="flex-item data-group <?= $movehide ?>" id="ship-grp">
+					<div class="data-title">SHIPPING</div>
+					<div class="write-in">
+						<dt>Pick-up Date:</dt>
+						<input type="text" class="flex-input" style="width: 60%">
+					</div>
+					<div class="write-in">
+						<dt>Pick-up Time:</dt>
+						<input type="text" class="flex-input" style="width: 60%">
+					</div>
+					<div class="write-in">
+						<dt>Carrier:</dt>
+						<input type="text" class="flex-input" style="width: 60%">
+					</div>
+					<div class="write-in <?= $movehide ?>">
+						<dt>Cust PO#:</dt>
+						<input type="text" class="flex-input" style="width: 60%">
+					</div>
+				</div>
+				<div class="flex-item data-group" id="csr-grp">
+					<div class="data-title">CSR</div>
+					<div class="write-in">
+						<dt>In-bin Date:</dt>
+						<input type="text" class="flex-input" style="width: 60%">
+					</div>
+					<div class="write-in">
+						<dt>In-bin Time:</dt>
+						<input type="text" class="flex-input" style="width: 60%">
+					</div>
+					<div class="write-in">
+						<dt>Return To:</dt>
+						<select class="return-to-select">
+							<option> </option>
+							<?php foreach ($userList as $user) : ?>
+								<option><?php echo ucwords(strtolower($user['FirstName'])); ?></option>
+							<?php endforeach ?>
+						</select>
+
+					</div>
+				</div>
+				<div class="flex-item data-group <?= $movehide ?>"  id="wh-grp">
+					<div class="data-title">WAREHOUSE</div>
+					<div class="write-in">
+						<dt>Date Taken:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Time Taken:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Time Back:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Picked By:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt style="width: 25%; margin-left: -24px;">Dock:</dt>
+						<dd style="width: 25%"></dd>
+						<dt style="width: 25%">Room#:</dt>
+						<dd style="width: 24%"></dd>
+					</div>
+					<div class="write-in">
+						<dt style="width: fit-content;">Wood | Plastic | Pallets:</dt>
+						<dd style="width:38%"></dd>
+					</div>
+				</div>
+				<div class="flex-item data-group <?= $pickhide ?>"  id="wh-grp">
+					<div class="data-title">WAREHOUSE</div>
+					<div class="write-in">
+						<dt>Time Taken:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Time Returned:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Moved By:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Date Moved:</dt>
+						<dd></dd>
+					</div>
+				</div>
+				<div class="flex-item data-group <?= $pickhide ?>"  id="wh-grp">
+					<div class="data-title">WAREHOUSE</div>
+					<div class="write-in">
+						<dt>New Location:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Pieces Moved:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Pallets Moved:</dt>
+						<dd></dd>
+					</div>
+					<div class="write-in">
+						<dt>Damage?:</dt>
+						<dd style="border-style: none;"><span class="cb">&#9634;</span> Yes	<span class="cb">&#9634;</span> No</dd>
+					</div>
+				</div>
+			</section>
+			<div id="pull-grp" class="<?= $movehide ?>">
+				<label for="tempSelect" style="position: relative;">PULL </label>
+				<select name="tempSelect">
+					<option selected="selected"></option>
+					<option>ALL VATS/PCS</option>
+					<option>HIGHLIGHTED VATS/PCS</option>
+				</select>
+			</div>
+			<section class="flex-container">
+				<div class="flex-item data-group" id="notes-grp">
+					<div class="write-in notes">
+						<div class="data-title" style="display: inline-block; line-height:1;">NOTES</div>
+						<input type="text" class="flex-input" id="notes1" style="width: 93.25%">
+					</div>
+					<div class="write-in notes <?= $movehide ?>">
+						<input type="text" class="flex-input" id="notes2" style="width: 100%">
+					</div>
+					<div class="write-in notes <?= $movehide ?>">
+						<input type="text" class="flex-input" id="notes3" style="width: 100%">
+					</div>
+				</div>
+			</section>
+
+<?php
+// nextPageItems is all vats. "True" is hack to get it to print at least one page.
+$nextPageItems = count($vats) ? $vats : true;
+// $nextPageItems = count($vats) ? array_merge($vats,$vats) : true; // NOTE: for testing long forms
+$pageNumber = 0;
+
+while ($nextPageItems):
+	$pageItems = $nextPageItems; // put them all in there for now.
+	$nextPageItems = false; // negates the "true" condition.
+	$pageNumber++;
+
+?>
+<?php if ( $pageNumber > 1 ) : ?>
+	<div class="page" id="lot-manifest">
+		<div class="flex-page">
+		<div class="subpagehdr"><?= $title ?> LOT <?= $lotData->LotNumber ?> &bull; Page <?= $pageNumber ?></div>
+<?php endif; ?>
+			<?php if ($pageItems !== true && count($pageItems) > 0) :
+				$isEdiLot = substr($pageItems[0]['VatNumber'], 0, 3) === 'EDI';
+				$approxPixels += $cellHeightPixels;
+			?>
+				<div class="manifest-padding-10pt">
+					<table class="vatTable full-width">
+						<thead>
+							<tr>
+								<th class="align-left" class="w80">Make Date</th>
+								<th class="align-center">Cust Lot No</th>
+								<th class="align-right"><?= $isEdiLot ? 'LP' : 'Vat' ?></th>
+								<th class="align-right">Pieces</th>
+								<th class="align-right">Moist</th>
+								<th class="align-right">FDB</th>
+								<th class="align-right">PH</th>
+								<th class="align-right">Salt</th>
+								<th class="align-right">Weight</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+							foreach ($pageItems as $idx => $v) {
+								$vatNumber = $v['VatNumber'];
+								$vatLp = $vatLps[$v['VatID']] ?: '';
+								if ($isEdiLot) {
+									$vatNumber = substr($vatLp, -8);
+								}
+
+								$approxPixels += $cellHeightPixels;
+								if ($idx == count($pageItems) - 1) $approxPixels += $cellHeightPixels; // if it's the very last row, take totals into account
+								if ($approxPixels > $maxPixels) { // take totals rows and padding into account
+									$nextPageItems = array_slice($pageItems, $idx);
+									// $this->logger->log( $nextPageItems );
+									$approxPixels = 32; // for subpagehdr
+									echo '</tbody></table></div>';
+									break;
+								}
+							?>
+								<tr class="vatDetails" rel="<?= $v['VatID'] ?>">
+									<td class="w80"><?= $utils->slashDate($v['MakeDate']); ?></td>
+									<td class="align-center"><?= $v['CustomerLotNumber'] ?></td>
+									<td class="align-right"><?= $vatNumber ?></td>
+									<td class="align-right"><?= number_format($v['Pieces']) ?></td>
+									<td class="align-right"><?= $v['Moisture'] ?></td>
+									<td class="align-right"><?= $v['FDB'] ?></td>
+									<td class="align-right"><?= $v['PH'] ?></td>
+									<td class="align-right"><?= $v['Salt'] ?></td>
+									<td class="align-right"><?= number_format($v['Weight'], 2) ?></td>
+								</tr>
+							<?php
+							}
+
+							if (!$nextPageItems) { // do totals
+							?>
+								<tr>
+									<td></td>
+									<td class="bold align-right">Total:</td>
+									<td></td>
+									<td class="totals-overline"><?= number_format($lotTotals->totPieces) ?></td>
+									<td colspan="4"></td>
+									<td class="totals-overline"><?= number_format($lotTotals->totWeight, 2) ?></td>
+								</tr>
+							<?php
+							}
+							?>
+						</tbody>
+					</table>
+				</div>
+			<?php endif; ?>
+		</div>
+	</div>
+<?php
+endwhile;
+?>
+
+			</section>
+		</main>
+	</div>
+
+
+<div class="left-fixed-container hide-on-print">
+	<?php
+
+	if ($lotData->NoteText) {
+	?>
+		<!-- div class="left-fixed-inner">
+			<button id="hideNotes" class="btn btn-default">Hide Notes</button>
+			<button id="showNotes" class="btn btn-default" style="display: none">Show Notes</button>
+		</div -->
+	<?php
+	}
+	?>
+</div>
+
+<div class="right-fixed-container hide-on-print">
+	<button class="btn btn-primary print-button">Print</button>
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		<?php
+//			$the_notes = preg_replace("(\r|\t)", '', $lotData->NoteText);
+//			$the_notes = preg_replace("(\n)", ' • ', $the_notes)
+		?>
+/***
+		let thenotes = '<?= $the_notes ?>';
+		$("#notes1").val(thenotes);
+
+		$('#hideNotes').click(function() {
+			let v = $("#notes1");
+			v = v.val().replace(thenotes, '');
+
+			$("#notes1").val(v);
+
+			$(this).hide();
+			$('#showNotes').show();
+		});
+
+		$('#showNotes').click(function() {
+			let v = $("#notes1");
+			v = thenotes + ' ' + v.val();
+
+			$("#notes1").val(v);
+
+
+			$(this).hide();
+			$('#hideNotes').show();
+		});
+
+***/
+
+		$('.print-button').click(function() {
+			window.print();
+		});;
+	});
+
+</script>
+
+<?php
+$this->partial("include/print_footer");
+?>

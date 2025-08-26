@@ -1,0 +1,145 @@
+<?php ob_start(); ?>
+ISA*00*          *00*          *01*004798716      *08*<?= $data['ISAReceiverID'] ?>*<?= date('ymd') ?>*<?= date('Hi') ?>*U*00401*<?= $data['ISACtrlNo'] ?>*0*P*>~
+GS*IB*004798716*<?= $data['GSID'] ?>*<?= date('Ymd') ?>*<?= date('Hi') ?>*<?= $data['GSCtrlNo'] ?>*X*004010~
+ST*846*<?= $data['STCtrlNo'] ?>~
+BIA*08*AA*132056*<?= date('Ymd') ?>*<?= date('Hi') ?>~
+N1*WH*OSHKOSH COLD STORAGE-PLYMOUTH WI*6*721~
+<?php foreach ($data['lines'] as $line) : ?>
+LIN*00*SW*<?= $line['productID'] ?>*LT*<?= $line['lotNumber'] ?>~
+PID*F**<?= $line['agencyQualifierCode'] ?>*<?= $line['productDescriptionCode'] ?>*<?= $line['productDescription'] ?>***<?= $line['responseCode'] ?>~
+DTM*036*<?= $line['expirationDate'] ?>~
+QTY*17*<?= $line['quantityOfProduct'] ?>*<?= $line['unitOfMeasure'] ?>~
+MEA**N*<?= $line['netWeight'] ?>~
+<?php endforeach ?>
+CTT*<?= count($lines) ?>~
+SE*<?= $data['SECount'] ?>*<?= $data['STCtrlNo'] ?>~
+GE*1*<?= $data['GSCtrlNo'] ?>~
+IEA*1*<?= $data['ISACtrlNo'] ?>~
+<?php
+$filecontents = ob_get_contents();
+ob_end_clean();
+if (file_put_contents($filename, $filecontents))
+	echo json_encode(array('success' => 1));
+else
+	echo json_encode(array('success' => 0, 'msg' => "Failed to write file: $filename"));
+
+
+
+/*======================================================================================================================
+EXAMPLE
+========================================================================================================================
+
+ISA*00*          *00*          *01*604016766      *08*006253835DFP   *191017*0148*U*00401*000126526*0*P*>
+GS*IB*8157445551*006253835DFP*20191017*0148*126526*T*004010
+ST*846*0001
+BIA*08*AA*132056*20191016*000000
+N1*WH*OSHKOSH COLD STORAGE-PLYMOUTH WI*6*721
+LIN*00*SW*00006000034500*LT*1781924900
+PID*F**SW*SW*8/12OZ SOFT SQZ SPREAD***N
+DTM*036*20200304
+QTY*17*29*CA
+MEA**N*174.00
+LIN*00*SW*00006000034500*LT*1781926100
+PID*F**SW*SW*8/12OZ SOFT SQZ SPREAD***N
+DTM*036*20200316
+QTY*17*1697*CA
+MEA**N*10182.00
+LIN*00*SW*00006000034500*LT*1781926200
+PID*F**SW*SW*8/12OZ SOFT SQZ SPREAD***N
+DTM*036*20200317
+QTY*17*4283*CA
+MEA**N*25698.00
+LIN*00*SW*00006000034500*LT*1781926300
+PID*F**SW*SW*8/12OZ SOFT SQZ SPREAD***N
+DTM*036*20200318
+QTY*17*3428*CA
+MEA**N*20568.00
+LIN*00*SW*00049000073491*LT*33080726
+PID*F**SW*SW*48/4OZ KS SW NSA VANILLA PUDDING***N
+DTM*036*20191204
+QTY*17*652*CA
+MEA**N*7824.00
+LIN*00*SW*00050000073491*LT*33080730
+PID*F**SW*SW*48/4OZ SW NSA CHOCOLATE PUDDING***N
+DTM*036*20191205
+QTY*17*594*CA
+MEA**N*7128.00
+LIN*00*SW*00051000073491*LT*33072597
+PID*F**SW*SW*48/4OZ KS SW NSA TAPIOCA PUDDING***N
+DTM*036*20191127
+QTY*17*111*CA
+MEA**N*1332.00
+LIN*00*SW*00051000073491*LT*33085965
+PID*F**SW*SW*48/4OZ KS SW NSA TAPIOCA PUDDING***N
+DTM*036*20191211
+QTY*17*3*CA
+MEA**N*36.00
+LIN*00*SW*00051660073491*LT*32965846
+PID*F**SW*SW*AGED 48/4OZ KS SW NSA TAPIOCA PUDDING***N
+DTM*036*20190731
+QTY*17*33*CA
+MEA**N*396.00
+LIN*00*SW*00051660073491*LT*32987856
+PID*F**SW*SW*AGED 48/4OZ KS SW NSA TAPIOCA PUDDING***N
+DTM*036*20190828
+QTY*17*47*CA
+MEA**N*564.00
+LIN*00*SW*00051660073491*LT*33036322
+PID*F**SW*SW*AGED 48/4OZ KS SW NSA TAPIOCA PUDDING***N
+DTM*036*20191014
+QTY*17*103*CA
+MEA**N*1236.00
+LIN*00*SW*00052660073491*LT*32965851
+PID*F**SW*SW*AGED 48/4OZ KS SW NSA RICE PUDDING***N
+DTM*036*20190801
+QTY*17*35*CA
+MEA**N*420.00
+LIN*00*SW*00052660073491*LT*33063470
+PID*F**SW*SW*AGED 48/4OZ KS SW NSA RICE PUDDING***N
+DTM*036*20191114
+QTY*17*30*CA
+MEA**N*360.00
+LIN*00*SW*00056660073491*LT*33063470
+PID*F**SW*SW*AGED 48/4OZ KS SW NSA RICE PUDD F/E***N
+DTM*036*20191114
+QTY*17*19*CA
+MEA**N*228.00
+LIN*00*SW*00101000042634*LT*1261926101
+PID*F**SW*SW*1/14 #V AL RF SWISS CUTS***N
+DTM*036*20200316
+QTY*17*69*CA
+MEA**N*939.28
+LIN*00*SW*00104000042634*LT*1531926902
+PID*F**SW*SW*2/6#V AL RS MUENSTER***N
+DTM*036*20200124
+QTY*17*102*CA
+MEA**N*1268.98
+LIN*00*SW*00104660042634*LT*1531922004
+PID*F**SW*SW*(AGED)2/6#V AL RS MUENSTER***N
+DTM*036*20191206
+QTY*17*40*CA
+MEA**N*480.08
+LIN*00*SW*00106000042634*LT*32977421
+PID*F**SW*SW*2/5# AL RF Y AMERICAN LOAF***N
+DTM*036*20200218
+QTY*17*150*CA
+MEA**N*1500.00
+LIN*00*SW*00106660042634*LT*32850191
+PID*F**SW*SW*(AGED)2/5# AL RF Y AMERICAN***N
+DTM*036*20190917
+QTY*17*79*CA
+MEA**N*790.00
+LIN*00*SW*00113000042634*LT*1261915001
+PID*F**SW*SW*2/7#V AL RF SW CUT-SPLIT***N
+DTM*036*20191126
+QTY*17*1*CA
+MEA**N*13.25
+CTT*20
+SE*6550*0001
+GE*1*126526
+IEA*1*000126526
+
+========================================================================================================================
+END EXAMPLE
+======================================================================================================================*/
+?>

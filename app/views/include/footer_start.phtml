@@ -1,0 +1,104 @@
+	</div> <!-- end container -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+	<script>
+	jQuery.fn.extend({
+		trackChanges: function() {
+			var namesToIgnore = ['fakeusernameremembered', 'fakepasswordremembered', 'RoomTemp', 'RoomPID'];
+
+			$(":input",this).change(function() {
+			  var inputName = $(this).prop('name');
+			  if( jQuery.inArray(inputName, namesToIgnore) == -1 ) {
+				$(this.form).data("changed", true);
+			  }
+			});
+
+			$(this).parent().on('submit', 'form', function(e) { // doing this instead of binding straight to the form defers it enough that any validation or AJAXy stuff should happen first
+				$(e.target).data("changed", false);
+			});
+		}
+		,
+		isChanged: function() {
+			return this.data("changed");
+		}
+	});
+
+	jQuery(document).ready(function($) {
+
+		$(".form-track-change").trackChanges();
+
+		window.onbeforeunload = function() {
+			var $changed = $( ".form-track-change" ).filter(function() {
+				return $(this).isChanged() == true;
+			});
+
+			if ($changed.length > 0) {
+				return 'There is unsaved data on this page.\nPlease save your data before leaving the page.';
+			}
+		};
+
+		if ($("#quickSearch")) {
+			$("#quickSearch").focus();
+		}
+
+		$("#quickSearch").click(function() {
+			$( ".form-track-change" ).each(function( index ) {
+				if ( $(this).isChanged() ) {
+					bootbox.alert('There is unsaved data on this page.\nPlease save your data before searching.');
+					return false; // break out of loop
+				}
+			});
+		});
+
+		$("#quickSearch").autocomplete({
+			source: function( request, response ) {
+				$.ajax({
+					url: "/search/quicksearch",
+					type: "POST",
+					dataType: "json",
+					data: {searchVal: request.term},
+					success: function(data) {
+						response($.map(data, function(item) {
+							return {
+								label: item.name,
+								id: item.id,
+								abbrev: item.name,
+								type: item.type
+							};
+						}));
+					}
+				});
+			},
+			minLength: 2,
+			autoFocus: true,
+			select: function(event, ui) {
+
+				var stopNavigation = false;
+				$( ".form-track-change" ).each(function( index ) {
+					if ( $(this).isChanged() ) {
+						bootbox.alert('There is unsaved data on this page.\nPlease save your data before continuing.');
+						stopNavigation = true;
+						return false; // break out of loop
+					}
+				});
+
+				if ( stopNavigation ) {
+					return false;
+				}
+
+				var url;
+				if ( ui.item.type == 'lot' ) {
+					url = '/lot/edit/' + ui.item.id;
+				}
+				else if ( ui.item.type == 'customer' ) {
+					url = '/customer/overview/' + ui.item.id;
+				}
+				document.location = url;
+			}
+
+		});
+	});
+	</script>

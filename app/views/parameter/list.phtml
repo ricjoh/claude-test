@@ -1,0 +1,55 @@
+<?php
+
+$widths = array('45%', '45%', '10%');
+
+$this->partial(
+	"include/header", 
+	array(
+		'title' => 'Parameter Groups', 
+		'header' => 'Parameter Groups'
+	)
+);
+
+?>
+
+<div class="row">
+	<div class="col-md-12">
+	<table class="table table-striped thick-rounded-border">
+		<thead>
+		<tr>
+			<th width="<?= $widths[0] ?>">
+				Name
+			</th>
+			<th width="<?= $widths[1] ?>">
+				Create Date
+			</th>
+			<th width="<?= $widths[2] ?>">
+				&nbsp;
+			</th>
+		</tr>
+		</thead>
+<?php
+		foreach ( $groups as $g )
+		{
+?>
+        <tr>
+          <td width="<?php echo $widths[0] ?>"><?php echo $g['Name'] ?></td>
+          <td width="<?php echo $widths[1] ?>"><?= $this->utils->slashDate($g['CreateDate']) ?></td>
+          <td width="<?php echo $widths[2] ?>"><a href="/parameter/edit/<?php echo $g['ParameterGroupID'] ?>">Edit</a></td>
+        </tr>
+
+<?php
+		}
+?>
+      </tbody>
+    </table>
+
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<?php
+$this->partial("include/footer_end");

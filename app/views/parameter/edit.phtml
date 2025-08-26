@@ -1,0 +1,249 @@
+<?php
+$arc = $archiveFlag == 'A' ? '/A' : '';
+$rContent = '<a href="#" id="addParameter" class="btn btn-primary" data-toggle="modal" data-target="#parameterModal">Add New Parameter</a>';
+$header = $groupName;
+$this->partial(
+	"include/header",
+	array(
+		'title' => 'Parameter Group Edit',
+		'header' => $header,
+		'rightContent' => $rContent
+	)
+);
+?>
+
+<div class="row">
+	<div class="col-md-12" id="parameterHtml"></div>
+</div>
+
+
+<?php $this->partial("include/footer_start"); ?>
+
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+<script>
+
+
+function getParameters(callback)
+{
+	$.ajax({ // TODO: Send Archived / Allow Admin to send flag
+		url: "/parameter/getparameters/<?= $ParameterGroupID ?><?= $arc ?>",
+		type: "GET",
+		dataType: "html",
+		success: function(parameterHtml) {
+			$('#parameterHtml').html(parameterHtml);
+			if ( callback ) {
+				callback();
+			}
+		}
+	});
+}
+
+jQuery(document).ready(function($) {
+
+	$( ".datepicker" ).datepicker({
+		dateFormat: "mm/dd/y"
+	});
+
+	$( "body" ).on( "click", ".editParameter", function() {
+
+		var ParameterID = $(this).data('parameter-id');
+		$.ajax({
+			url: "/parameter/getsingleparameter/" + ParameterID,
+			type: "GET",
+			dataType: "json",
+			success: function(parameter) {
+				console.log(parameter);
+
+				$('#ParameterID').val(ParameterID);
+				$('#DisplayParameterID').text(ParameterID);
+				$('#Value1').val(parameter.Value1);
+				$('#Value2').val(parameter.Value2);
+				$('#Value3').val(parameter.Value3);
+				$('#Value4').val(parameter.Value4);
+				$('#Description').val(parameter.Description);
+				$('#parameterModalLabel').html('Edit Parameter');
+				if ( parameter.DeactivateDate ) {
+					$('#DeactivateDate').val(parameter.DeactivateDate);
+				}
+				$('#parameterModal').modal('show');
+			}
+		});
+
+
+		return false;
+	});
+
+	$('#addParameter').click(function() {
+		$('#parameterModalLabel').html('Add Parameter');
+		$('#parameterForm input[type="text"]').val('');
+		$('#ParameterID').val('');
+		$('#DisplayParameterID').text('');
+	});
+
+	getParameters();
+
+});
+
+jQuery(function () {
+	jQuery("input,select,textarea").not("[type=submit]").jqBootstrapValidation({
+		preventSubmit: true,
+		submitError: function($form, event, errors) {
+			// Here I do nothing, but you could do something like display
+			// the error messages to the customer, log, etc.
+		},
+		submitSuccess: function($form, event) {
+			// form has been submitted
+
+			if ( $form[0].id == 'parameterForm' )
+			{
+				var mycallback = function() {
+					$('#parameterSavedFeedback .successFeedback').html('Parameter Saved');
+					$( "#parameterSavedFeedback" ).fadeIn( 1000, function() {
+						$( "#parameterSavedFeedback" ).fadeOut( 1000, function() {
+							$('#parameterModal').modal('hide');
+							$('#Description').val('');
+						});
+					});
+
+				};
+
+				$.ajax({
+					url: "/parameter/save",
+					type: "POST",
+					data: $('#parameterForm').serialize(),
+					dataType: "json",
+					success: function(data) {
+						if ( data.success == 1 ) {
+							getParameters(mycallback);
+						}
+						else {
+							bootbox.alert('An error occurred while adding the parameter.');
+						}
+					}
+				});
+
+			}
+
+		},
+		filter: function() {
+			return jQuery(this).is(":visible");
+		}
+	});
+});
+</script>
+
+
+<div class="modal fade" id="parameterModal" tabindex="-1" role="dialog" aria-labelledby="parameterModalLabel" aria-hidden="true"><!--begin Parameter modal-->
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="parameterModalLabel">Add Parameter</h4>
+		<div style="font-size: .75em; color: #aaa" id="DisplayParameterID"></div>
+      </div>
+		<form class="form-horizontal" method="post" novalidate onsubmit="return false" id="parameterForm">
+			<input type="hidden" value="" name="ParameterID" id="ParameterID" />
+			<input type="hidden" value="<?= $ParameterGroupID ?>" name="ParameterGroupID" id="ParameterGroupID" />
+		  <div class="modal-body">
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Value1">
+					<?= $parameterGroup["Heading1"] ?? Parameter::getLabel($ParameterGroupID, 'Value1') ?> <? /* Value 1 */ ?>
+				</label>
+				<div class="col-sm-9">
+				  <input type="text"
+					name="Value1"
+					id="Value1"
+					value=""
+					class="form-control"
+					required
+					data-validation-required-message='Please Enter A Value In The "Value 1" Field' />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<?php if ($parameterGroup["Heading2"] != NULL) { ?>
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Value2">
+						<?= $parameterGroup["Heading2"] ?? Parameter::getLabel($ParameterGroupID, 'Value2') ?> <? /* Value 2 */ ?>
+				</label>
+				<div class="col-sm-9">
+				  <input type="text"
+					name="Value2"
+					id="Value2"
+					value=""
+					class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+			<?php } ?>
+
+			<?php if ($parameterGroup["Heading3"] != NULL) { ?>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label" for="Value3">
+						<?= $parameterGroup["Heading3"] ?? Parameter::getLabel($ParameterGroupID, 'Value3') ?> <? /* Value 3 */ ?>
+					</label>
+					<div class="col-sm-9">
+					<input type="text"
+						name="Value3"
+						id="Value3"
+						value=""
+						class="form-control" />
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+			<?php } ?>
+
+			<?php if ($parameterGroup["Heading4"] != NULL) { ?>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label" for="Value4">
+						<?= $parameterGroup["Heading4"] ?? Parameter::getLabel($ParameterGroupID, 'Value4') ?> <? /* Value 4 */ ?>
+					</label>
+					<div class="col-sm-9">
+					<input type="text"
+						name="Value4"
+						id="Value4"
+						value=""
+						class="form-control" />
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+			<?php } ?>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Description">Description</label>
+				<div class="col-sm-9">
+				  <textarea	name="Description" id="Description" class="form-control" style="height: 8em;"></textarea>
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="DeactivateDate">Deactivate Date</label>
+				<div class="col-sm-9">
+				  <input type="text"
+					name="DeactivateDate"
+					id="DeactivateDate"
+					value=""
+					class="form-control datepicker" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+
+		  </div>
+
+		  <div class="modal-footer">
+			<div class="pull-left has-success" id="parameterSavedFeedback" style="display: none;"><div class="control-label successFeedback">Parameter Saved</div></div>
+			<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+			<input type="submit" class="btn btn-primary" value="Save Parameter" />
+		  </div>
+		</form>
+
+    </div>
+  </div>
+</div><!--end Parameter modal-->
+
+
+<?php
+$this->partial("include/footer_end");

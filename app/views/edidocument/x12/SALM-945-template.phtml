@@ -1,0 +1,34 @@
+<?php ob_start(); ?>
+ISA*00*          *00*          *01*004798716      *12*<?= $data['ISAReceiverID'] ?>*200521*0603*U*00401*<?= $data[ 'ISACtrlNo' ] ?>*0*P*>~
+GS*SW*004798716*<?= $data['GSRecCode'] ?>*<?= $data[ 'ShipDate' ] ?>*0603*<?= $data[ 'GSCtrlNo' ] ?>*X*004010~
+ST*945*<?= $data['STCtrlNo'] ?>~
+W06*F*<?= $data[ 'VendorOrderNumber' ] ?>*<?= $data[ 'ShipDate' ] ?>*<?= $data[ 'ShipmentID' ] ?>**<?= $data[ 'CustPONumber' ] ?>*****<?= $data['TransactionType'] ?>~
+N1*BT*<?= $data[ 'BillToName' ] ?>~
+N1*ST*<?= $data[ 'ShipToName' ] ?>~
+N3*<?= $data[ 'ShipToAddress1' ] ?>~
+N4*<?= $data[ 'ShipToCity' ] ?>*<?= $data[ 'ShipToState' ] ?>*<?= $data[ 'ShipToZip' ] ?>*<?= $data[ 'ShipToCountry' ] ?>~
+N1*WH*<?= $data[ 'WarehouseName' ] ?>~
+N9*TH*<?= $data[ 'TransportAccountCode' ] ?>~
+G62*11*<?= $data[ 'ShipDate' ] ?>~
+NTE*ZZZ*~
+W27*M*<?= $data[ 'SCACCode' ] ?>*<?= $data[ 'Routing' ] ?>*<?= $data[ 'PaymentMethod' ] ?>~
+<?php foreach ( $lines as $line ) : ?>
+LX*<?= $line[ 'line' ] ?>~
+MAN*GM*<?= $line[ 'licenseplate' ] ?>~
+W12*<?= $line[ 'shipstatus' ] ?>*<?= $line[ 'qtyordered' ] ?>*<?= $line[ 'qtyshipped' ] ?>*<?= $line[ 'qtydiff' ] ?>*CA*<?= $line[ 'upc' ] ?>*VN*<?= $line[ 'prodnum' ] ?>*LT*<?= $line[ 'custlotno' ] ?>~
+N9*LI*<?= $line[ 'poline' ] ?>~
+<?php endforeach ?>
+W03*<?= $data[ 'totcases' ] ?>~
+CTT*<?= count( $lines ) ?>~
+SE*<?= $data[ 'SECount' ] ?>*<?= $data[ 'STCtrlNo' ] ?>~
+GE*1*<?= $data[ 'GSCtrlNo' ] ?>~
+IEA*1*<?= $data[ 'ISACtrlNo' ] ?>~
+<?php
+$filecontents = ob_get_contents();
+ob_end_clean();
+
+if ( file_put_contents( $filename, $filecontents ) )
+	echo json_encode( array( 'success' => 1 ) );
+else
+	echo json_encode( array( 'success' => 0, 'msg' => "Failed to write file: $filename" ) );
+?>

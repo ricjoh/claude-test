@@ -1,0 +1,387 @@
+<?php
+$this->partial("include/print_header", array('title' => 'Manifest'));
+?>
+<link href="/public/css/lot-manifest.css" rel="stylesheet">
+<style>.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+</style>
+
+<?php
+// nextPageItems is all vats. "True" is hack to get it to print at least one page.
+$nextPageItems = count($vats) ? $vats : true;
+$pageNumber = 0;
+
+while ($nextPageItems):
+	$pageItems = $nextPageItems; // put them all in there for now.
+	$nextPageItems = false; // negates the "true" condition.
+	$pageNumber++;
+?>
+	<div class="page shorten-for-print" id="lot-manifest">
+		<div class="page-inner padding-half-inch">
+
+			<?php
+			if ($pageNumber === 1) : ?>
+				<div class="minihead"><img src="/public/images/OCS_color_logo_110x86.png" style="width: 55px">Lot <?= "{$lotData->LotNumber} : {$manifestType}" ?></div>
+				<?php if ( $manifestType == 'move' || $manifestType == 'pick') : ?>
+					<label>Return to:</label>
+					<select class="return-to-select">
+						<option> </option>
+						<?php foreach ($userList as $user) : ?>
+							<option><?php echo ucwords(strtolower($user['FirstName'])); ?></option>
+						<?php endforeach ?>
+					</select>
+				<?php endif ?>
+
+
+				<div class="info-list">
+					<div class="row">
+						<div class="col-5">
+							<label>Lot #:</label>
+							<div class="info-list-value"><?= $lotData->LotNumber ?></div>
+						</div>
+						<div class="col-6 pull-right">
+							<label>Rooms/Sites:</label>
+							<div class="info-list-value">
+								<?php
+								$roomStrings = array();
+								foreach ($lotRooms as $roomSite) {
+									$roomStrings[] = "$roomSite[Room]/$roomSite[Site]";
+								}
+								echo implode(', ', $roomStrings);
+								?>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-5">
+							<label>Description:</label>
+							<div class="info-list-value"><?= $lotDescription ?></div>
+						</div>
+						<div class="col-6 pull-right">
+							<label>Product Code:</label>
+							<div class="info-list-value"><?= $lotData->ProductCode ?></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-5">
+							<label>Factory:</label>
+							<div class="info-list-value"><?= $lotFactory ?></div>
+						</div>
+						<div class="col-6 pull-right">
+							<label>Customer PO #:</label>
+							<div class="info-list-value"><?= $lotData->CustomerPONumber ?></div>
+						</div>
+					</div>
+				</div>
+			<?php endif;
+
+			if ($pageItems !== true && count($pageItems) > 0) :
+				$isEdiLot = substr($pageItems[0]['VatNumber'], 0, 3) === 'EDI';
+				$approxPoints += $cellHeightPoints + $tableExtraPoints;
+			?>
+				<div class="manifest-padding-10pt"> <!-- Used to have class border -->
+					<table class="vatTable full-width">
+						<thead>
+							<tr>
+								<th class="align-left" class="w80">Make Date</th>
+								<th class="align-center">Cust Lot No</th>
+								<th class="align-right"><?= $isEdiLot ? 'LP' : 'Vat' ?></th>
+								<th class="align-right">Pieces</th>
+								<th class="align-right">Moist</th>
+								<th class="align-right">FDB</th>
+								<th class="align-right">PH</th>
+								<th class="align-right">Salt</th>
+								<th class="align-right">Weight</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+							foreach ($pageItems as $idx => $v) {
+								$vatNumber = $v['VatNumber'];
+								$vatLp = $vatLps[$v['VatID']] ?: '';
+								if ($isEdiLot) {
+									$vatNumber = substr($vatLp, -8);
+								}
+
+								$approxPoints += $cellHeightPoints;
+								if ($idx == count($pageItems) - 1) $approxPoints += $cellHeightPoints; // if it's the very last row, take totals into account
+								if ($approxPoints > $maxPoints) { // take totals rows and padding into account
+									$nextPageItems = array_slice($pageItems, $idx);
+									echo '</tbody></table></div>';
+									break;
+								}
+							?>
+								<tr class="vatDetails" rel="<?= $v['VatID'] ?>">
+									<td class="w80"><?= $utils->slashDate($v['MakeDate']); ?></td>
+									<td class="align-center"><?= $v['CustomerLotNumber'] ?></td>
+									<td class="align-right"><?= $vatNumber ?></td>
+									<td class="align-right"><?= number_format($v['Pieces']) ?></td>
+									<td class="align-right"><?= $v['Moisture'] ?></td>
+									<td class="align-right"><?= $v['FDB'] ?></td>
+									<td class="align-right"><?= $v['PH'] ?></td>
+									<td class="align-right"><?= $v['Salt'] ?></td>
+									<td class="align-right"><?= number_format($v['Weight'], 2) ?></td>
+								</tr>
+							<?php
+							}
+
+							if (!$nextPageItems) { // do totals
+							?>
+								<tr>
+									<td></td>
+									<td class="bold align-right">Total:</td>
+									<td></td>
+									<td class="totals-overline"><?= number_format($lotTotals->totPieces) ?></td>
+									<td colspan="4"></td>
+									<td class="totals-overline"><?= number_format($lotTotals->totWeight, 2) ?></td>
+								</tr>
+							<?php
+							}
+							?>
+						</tbody>
+					</table>
+				</div>
+			<?php endif;
+
+			if (!$nextPageItems) {
+				$approxPoints += $lineHeightPoints * 2 + 20;
+				$approxPoints += $extraNotesPoints;
+
+				if ($approxPoints <= $maxPoints) { ?>
+
+					<?php if ($manifestType == 'move') { ?>
+						<div class="type-notes">
+							<div class="row">
+								<div class="col-4 temp-select">
+									<label for="tempSelect" style="position: relative; bottom: 5px;">Move To: </label>
+									<select name="tempSelect">
+										<option class="default-temp" selected="selected">____</option>
+										<option>34&#176;</option>
+										<option>38&#176;</option>
+										<option>45&#176;</option>
+										<option>50&#176;</option>
+									</select>
+								</div>
+
+								<div class="col-3 align-right">
+									<p>New Location:&nbsp;</p>
+								</div>
+
+								<div class="col-4">
+									<p class="my-input" class="moved-margin"></p>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-2">
+									<p>Pallets Moved:</p>
+								</div>
+								<div class="col-2 align-left">
+									<p class="my-input" class="moved-margin"></p>
+								</div>
+								<div class="col-3 align-right">
+									<p>Date:&nbsp;</p>
+								</div>
+								<div class="col-4 align-left">
+									<p class="my-input" class="moved-margin"></p>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-2">
+									<p>Pieces Moved:</p>
+								</div>
+								<div class="col-2 align-left">
+									<p class="my-input" class="moved-margin"></p>
+								</div>
+								<div class="col-3 align-right">
+									<p>Sign:&nbsp;</p>
+								</div>
+								<div class="col-4 align-left">
+									<p class="my-input" class="moved-margin"></p>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-12">
+									<p>Damaged Noted: Y &#9634; N &#9634;</p>
+								</div>
+
+							</div>
+
+							<div class="row">
+								<div class="col-1 align-right" class="pr1">
+									<p>Notes: </p>
+								</div>
+								<div class="col-4 hand-writing-spacing">
+									<p class="my-input"></p>
+									<p class="my-input"></p>
+									<p class="my-input"></p>
+								</div>
+								<div class="col-7"></div>
+							</div>
+						</div><!-- type-notes-end-1 -->
+					<?php } ?>
+
+					<?php if ($manifestType == 'pick') { ?>
+						<div class="type-notes">
+							<div class="row">
+								<div class="col-2 col-2-plus">
+									<p class="notes-margin">Customer PO # </p>
+								</div>
+								<div class="col-4 align-left">
+									<input class="my-input"></input>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-2 col-2-plus">
+									<p class="notes-margin">Customer S/O # </p>
+								</div>
+								<div class="col-4 align-left">
+									<input class="my-input"></input>
+								</div>
+							</div>
+
+							<div class="row">
+								<div id="pulling-section" class="hand-writing-spacing">
+									<p>PULL ALL OR PULL HIGHLIGHTED VATS/PCS</p>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-12 hand-writing-spacing width-95">
+									<input class="my-input"></input>
+									<input class="my-input"></input>
+									<input class="my-input"></input>
+								</div>
+							</div>
+
+							<div class="row" class="pt1">
+								<p>Pallets __________</p>
+							</div>
+
+							<div class="row">
+								<p class="show-spacing">Wood or Plastic</p>
+
+							</div>
+						</div><!-- type-notes-end-2 -->
+					<?php } ?>
+
+					<?php if ($lotData->NoteText) {
+					?>
+						<div class="notes row">
+							<p>
+								<span class="bold">Notes:</span><br>
+								<?= str_replace("\n", "<br>", $lotData->NoteText) ?>
+							</p>
+						</div>
+				<?php
+					}
+				} else {
+					$nextPageItems = true;
+				}
+			}
+			?>
+		</div>
+	</div>
+<?php
+// endwhile;
+?>
+
+<div class="left-fixed-container hide-on-print">
+	<?php
+
+	if ($lotData->NoteText) {
+	?>
+		<div class="left-fixed-inner">
+			<button id="hideNotes" class="btn btn-default">Hide Notes</button>
+			<button id="showNotes" class="btn btn-default" style="display: none">Show Notes</button>
+		</div>
+	<?php
+	}
+	?>
+</div>
+
+<div class="right-fixed-container hide-on-print">
+	<button class="btn btn-primary print-button">Print</button>
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('.print-button').click(function() {
+			window.print();
+		});;
+
+		$('#hideNotes').click(function() {
+			$('.notes').hide();
+
+			$(this).hide();
+			$('#showNotes').show();
+		});
+
+		$('#showNotes').click(function() {
+			$('.notes').show();
+
+			$(this).hide();
+			$('#hideNotes').show();
+		});
+
+		<?php if (isset($manifestType)) : ?>
+			if ($('.addressDiv')) {
+				var manifestType = '<?= $manifestType ?>';
+
+				$('.addressDiv').after(makeHeaderNotes(manifestType));
+			}
+		<?php endif ?>
+	});
+
+	function makeHeaderNotes(manifestType) {
+		var header = '';
+		var fillText = '';
+		var elementClass = '';
+
+		if (manifestType == 'pick') {
+			header = 'ORDER PICK';
+			elementClass = ' order-pick-width';
+
+			fillText = `
+			<div class="header-input">
+				<div>
+					<label> Pick up date: </label>
+					<input class="my-input"></input>
+				</div>
+				<div>
+					<label> Pick up time: </label>
+					<input class="my-input"></input>
+				</div>
+				<div>
+					<label> Carrier: </label>
+					<input class="my-input"></input>
+				</div>
+			</div>
+		`;
+		} else if (manifestType == 'move') {
+			header = 'MOVE';
+			fillText = `
+			<div class="header-input">
+				<label> WEEK OF / DAY: </label>
+				<input class="my-input" class="move-date"></input>
+			</div>
+		`;
+		}
+
+		return $(
+			'<div class="pull-right align-right hand-writing-spacing manifest-type-header-div' + elementClass + '">' +
+			'<h1 class="manifest-type-header ' + header.toLowerCase() + '-header">' + header + '</h1>' +
+			fillText +
+			'</div>'
+		);
+	}
+</script>
+
+<?php
+$this->partial("include/print_footer");
+?>

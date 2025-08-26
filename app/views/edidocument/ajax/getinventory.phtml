@@ -1,0 +1,217 @@
+<?php if (count($inventory)) { ?>
+    <div id="mainActionMenu" class="table-menu-margin">        
+        <?php if ($limited) { ?>
+            <div class="text-center">
+                Showing first <?= count($inventory) ?>
+            </div>
+        <?php } ?>
+    </div>
+
+    <table class="table table-striped thick-rounded-border .tablesorter" id="inventoryListTable">
+        <thead class="lefts">
+            <th width="auto">Product Code</th>
+            <th width="auto">Cust Lot #</th>
+            <th width="auto">Vat #</th>
+            <th width="auto">Pieces</th>
+            <th width="auto">Weight</th>
+            <th width="auto">Storage Unit</th>
+            <th width="auto" style="text-align: center;">Action</th>
+        </thead>
+
+        <tbody id="ediInventoryTableBody">
+            <?php foreach ($inventory as $inventoryItem) { ?>
+                <tr data-lot-id="<?= $inventoryItem["LotID"] ?>">
+                    <td width="auto"><?= $inventoryItem['ProductCode'] ?></td>
+                    <td width="auto"><?= $inventoryItem['CustomerLotNumber'] ?></td>
+                    <td width="auto"><?= $inventoryItem['VatNumber'] ?></td>
+                    <td width="auto"><?= $inventoryItem['Pieces'] ?></td>
+                    <td width="auto"><?= $inventoryItem['Weight'] ?? '' ?></td>
+                    <td width="auto"><?= $inventoryItem['StorageUnit'] ?? '' ?></td>
+                    <td width="auto" style="text-decoration: underline; text-align: center;" class="ediModal edi_action" data-lotid="<?= $inventoryItem['LotID'] ?>" data-vatid="<?= $inventoryItem['VatID'] ?>">
+                        <a href="#">Edit</a>
+                    </td>
+                </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+<?php } ?>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $.fn.editable.defaults.mode = 'popup';
+    $.fn.popover.Constructor.DEFAULTS.placement = 'left';
+
+    $('.ediModal').click(function() {
+        var vatID = $(this).data('vatid');
+
+        inventoryManagementAjax(vatID);
+    });
+});
+
+function inventoryManagementAjax(vatID) {
+    $.ajax({
+        url: '/warehouseadjustment/edit/' + vatID,
+        type: "GET",
+        dataType: "html",
+        success: function (data) { 
+            fillInventoryModal(data, vatID);
+        },
+        error: function (error) { 
+            console.log(`AJAX ERROR: ${error}`); 
+        }
+    });
+}
+
+function adjustLotInventory(sendEDI = false) {
+    var form = $("#inventoryAdjustmentForm");
+    var formData = getFormData(form, sendEDI);
+    var bootboxConfirm = '';
+
+    if (sendEDI) {
+        bootboxConfirm = $("#sendEDIButton").data('confirm-msg');
+    } else {
+        bootboxConfirm = $("#saveButton").data('confirm-msg');
+    }
+    
+    if (formData.adjustmentReasonSelect == "") {
+        bootbox.alert(getCustomBBObject('Please select an adjustments reason.'));
+
+        return;
+    }
+
+    bootbox.confirm(
+        '<h5>Inventory Adjustment</h5>' + bootboxConfirm,
+        function(result) {
+            if (result) {
+                warehouseAddAjax(formData);
+            }
+        }
+    );
+}
+
+function getCustomBBObject(message) {
+    return {
+        message: message,
+        callback: function() {
+            setTimeout(() => {
+                if ($('#itemModal').is(":visible") && $('body').hasClass('modal-open') == false) {
+                    $('body').addClass('modal-open');
+                }
+            }, 1000);
+        }
+    };
+}
+
+function warehouseAddAjax(formData) {
+    $.ajax({
+        url: '/warehouseadjustment/add/',
+        type: "POST",
+        data: formData,
+        dataType: "json",
+        success: function (data) {
+            if (data.success) {
+                bootbox.alert(getCustomBBObject('Inventory adjustment successful'));
+            } else {
+                if (data.message) {
+                    bootbox.alert(getCustomBBObject(data.message));
+                } else {
+                    bootbox.alert(getCustomBBObject('Inventory adjustment unsuccessful'));
+                }
+            }
+
+            inventoryManagementAjax(formData.vatID);
+
+            refreshAdjustments(formData.vatID);
+        },
+        error: function (error) {
+            bootbox.alert(getCustomBBObject('Something went wrong with trying to save. Please try again.'));
+        }
+    });
+}
+
+function sendPastAdjustment(edikey, warehouseAdjustmentGroup, vatID) {
+    var postData = {
+        edikey: edikey,
+        warehouseAdjustmentGroup: warehouseAdjustmentGroup,
+        vatID: vatID
+    };
+
+    bootbox.confirm(
+        '<h5>Send Past Adjustment EDI</h5>Send EDI for this adjustment?',
+        function(result) {
+            if (result) {
+                pastEDISendAjax(postData);
+            }
+        }
+    );
+}
+
+function pastEDISendAjax(postData) {
+    console.log(postData);
+
+    $.ajax({
+        url: '/warehouseadjustment/sendedi/',
+        type: "POST",
+        data: postData,
+        dataType: "json",
+        success: function (data) {
+            console.log(data);
+            
+            if (data.success === 0) {
+                bootbox.alert(getCustomBBObject("Failed to send EDI document.\n" + data.message));
+            } else {
+                $("#tr-"+postData.warehouseAdjustmentGroup).find('.is-sent').text("YES");
+                $("#tr-"+postData.warehouseAdjustmentGroup).find('.send-adjustment-edi').text('EDI Sent');
+
+                inventoryManagementAjax(postData.vatID);
+                refreshAdjustments(postData.vatID);                  
+            }
+        },
+        error: function (error) {
+            console.log('ajax error');
+        }
+    });
+}
+
+function refreshAdjustments(vatID) {
+    setTimeout(() => {
+        if ($('#itemModal').is(":visible") && $('body').hasClass('modal-open') == false) {
+            $('body').addClass('modal-open');
+        }
+    }, 1000);
+
+    $.ajax({
+        url: '/warehouseadjustment/list/' + vatID,
+        type: "GET",
+        dataType: "html",
+        success: function (data) {
+            $("#past-adjustments-section").empty();
+            $("#past-adjustments-section").html(data);
+        },
+        error: function (error) {
+            console.log(`AJAX ERROR: ${error}`);
+        }
+    });
+}
+
+function getFormData($form, sendEDI) {
+    var unindexed_array = $form.serializeArray();
+    var indexed_array = {};
+
+    $.map(unindexed_array, function(n, i) {
+        indexed_array[n['name']] = n['value'];
+    });
+
+    indexed_array['sendEDI'] = sendEDI;
+
+    return indexed_array;
+}
+
+function fillInventoryModal(ediLotInventoryHTML, vatID) {
+    $("#lotInventoryDetailContent").html(ediLotInventoryHTML);
+
+    refreshAdjustments(vatID);
+    
+    $('#itemModal').modal('show');
+}
+</script>

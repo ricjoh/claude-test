@@ -1,0 +1,192 @@
+<?php
+
+$header = ucwords(strtolower($customer->Name));
+$rightContent = <<<HTML
+	<div class="btn-group" role="group" aria-label="...">
+		<a href="/customer/edit/{$customer->CustomerID}" class="btn btn-primary">Edit Customer</a>
+		<a href="/customer/billingreports/{$customer->CustomerID}" class="btn btn-default">Reports</a>
+	</div>
+HTML;
+
+$this->partial("include/header", array('title' => 'Customer Overview', 'header' => $header, 'rightContent' => $rightContent));
+?>
+
+<div class="row">
+	<div class="col-md-12">
+
+<?php
+		if ( $customer->Phone ) {
+		echo '<div><p>Phone: ' . $customer->Phone . '</p></div>';
+		}
+		if ( $customer->Email ) {
+		echo '<div><p>Email: <a class="ul" href="mailto:' . $customer->Email . '">' . $customer->Email . '</a></p></div>';
+		}
+?>
+
+	<?php if ( count($contacts) ) : // begin has contacts ?>
+		<div class="panel panel-default"><!--begin panel-default-->
+
+		  <div class="panel-heading">
+			<h3>Contacts</h3>
+		  </div>
+
+		  <div class="panel-body"><!--begin panel-body-->
+
+			<div class="col-md-12" id="contactHtml">
+				<table width="100%" class="table table-striped">
+				<?php foreach ( $contacts as $c ) : ?>
+					<tr>
+						<td width="40%">
+							<?= $c->LastName ?>, <?= $c->FirstName ?>
+						</td>
+						<td width="30%">
+							<?= $c->BusPhone ?>
+						</td>
+						<td width="30%">
+							<a class="ul" href="mailto:<?= $c->BusEmail ?>"><?= $c->BusEmail ?></a>
+						</td>
+					</tr>
+				<?php endforeach ?>
+				</table>
+			</div>
+
+		  </div><!--end panel-body-->
+		</div><!--end panel-default-->
+
+
+	<?php endif // end has contacts ?>
+
+	<?php if ( count($lots) ) : // begin has lots ?>
+		<div class="section">
+		<div class="pull-left"><h2 style="margin-top: 0;">Recent Lots</h2></div>
+		<div class="pull-right"><a href="/?tab=inventory" class="btn btn-default">Looking For a Different Lot?</a></div>
+		<table width="100%" class="table table-striped table-hover thick-rounded-border">
+			<thead>
+				<tr>
+					<th>
+						Lot #
+					</th>
+					<th>
+						Description
+					</th>
+					<th>
+						Date In
+					</th>
+					<th>
+						Vendor
+					</th>
+					<th>
+						Factory
+					</th>
+					<th>
+						Cost
+					</th>
+				</tr>
+			</thead>
+		<tbody>
+		<?php foreach ( $lots as $l ) : ?>
+		<?php
+
+			$vendor = $l->getVendor();
+			$factory = $l->getFactory();
+		?>
+			<tr class="editLot trEditRow" data-lot-id="<?= $l->LotID ?>">
+				<td>
+					<?= $l->StatusPID === Lot::STATUS_DRAFT ? 'DRAFT' : $l->LotNumber ?>
+				</td>
+				<td>
+					<?= $descriptions[$l->DescriptionPID] ?>
+				</td>
+				<td>
+					<?= $this->utils->slashDate($l->DateIn) ?>
+				</td>
+				<td>
+					<?= $vendor->Name ?>
+				</td>
+				<td>
+					<?= $factory->Name ?>
+				</td>
+				<td>
+					<?= $l->Cost ?>
+				</td>
+			</tr>
+
+		<?php endforeach ?>
+		</tbody>
+		</table>
+		</div>
+	<?php endif // end has lots ?>
+
+	<?php if ( count($offers) ) : // begin has offers ?>
+		<div class="section">
+		<div class="pull-left"><h2 style="margin-top: 0;">Recent Offers</h2></div>
+		<div class="pull-right"><a href="/?tab=offers" class="btn btn-default">Looking For a Different Offer?</a></div>
+		<table width="100%" class="table table-striped table-hover thick-rounded-border">
+			<thead>
+				<tr>
+					<th>
+						Status
+					</th>
+					<th>
+						Type
+					</th>
+					<th>
+						Offer Date
+					</th>
+					<th>
+						Expiration Date
+					</th>
+					<th>
+						Sale Date
+					</th>
+				</tr>
+			</thead>
+		<tbody>
+		<?php foreach ( $offers as $o ) : ?>
+			<tr class="editOffer trEditRow"  data-offer-id="<?= $o->OfferID ?>">
+				<td>
+					<?= $offerStatuses[$o->OfferStatusPID] ?>
+				</td>
+				<td>
+
+				</td>
+				<td>
+					<?= $this->utils->slashDate($o->OfferDate) ?>
+				</td>
+				<td>
+					<?= $this->utils->slashDate($o->OfferExpiration) ?>
+				</td>
+				<td>
+					<?= $this->utils->slashDate($o->SaleDate) ?>
+				</td>
+			</tr>
+
+		<?php endforeach ?>
+		</tbody>
+		</table>
+		</div>
+	<?php endif // end has offers ?>
+
+	</div>
+</div>
+<?php
+$this->partial("include/footer_start");
+?>
+
+<script>
+jQuery(document).ready(function($) {
+
+	$('.editLot').click(function() {
+		var lotId = $(this).data('lot-id');
+		document.location = '/lot/edit/' + lotId;
+	});
+
+	$('.editOffer').click(function() {
+		var offerId = $(this).data('offer-id');
+		document.location = '/offer/edit/' + offerId;
+	});
+});
+</script>
+
+<?php
+$this->partial("include/footer_end");

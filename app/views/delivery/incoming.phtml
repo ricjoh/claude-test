@@ -1,0 +1,73 @@
+<?php
+
+$rContent = '';
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title,
+		'headerIcon' => 'edi',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+<style>
+.bootbox-body h5 {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: left;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: .5rem;
+}
+
+</style>
+
+<div id="subtitlelinks">
+	<a href="/lot/list/<?= Lot::STATUS_DRAFT ?>">See Draft Lots</a> 
+	|
+	<?php if ($title == 'Incoming Deliveries') { ?>
+		<a href="/delivery/incoming/<?= Delivery::STATUS_CONVERTED ?>">See Converted Deliveries</a>
+	<?php } else { ?>
+		<a href="/delivery/incoming/">See Incoming Deliveries</a>
+	<?php } ?>
+</div>
+
+<?php
+if ( isset( $details ) ) {
+	$this->partial(
+		"table/details",
+		array(
+			'details' => $details
+		)
+	);
+}
+
+$this->partial(
+	"table/builder",
+	array(
+		'headers' => $headers,
+		'data' => $data,
+		'cols' => $cols
+	)
+);
+?>
+
+<?php
+$this->partial("include/footer_start");
+?>
+
+<script>
+jQuery(document).ready(function($) {
+	$( '#autotable tr' ).click( function(){
+		rowid = $( this ).attr( 'id' );
+		parts = rowid.split( '-' );
+		location.href="/delivery/incomingdetail/" + parts[1];
+	});
+});
+</script>
+
+<?php
+$this->partial("include/footer_end");

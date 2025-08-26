@@ -1,0 +1,704 @@
+<?php
+
+$title = !$customerId ? 'Add New Customer' : 'Edit Customer';
+$rightContent = '';
+if ($customerId && count($customerData->contact)) {
+	$rightContent = '<a href="#contacts" class="btn btn-primary">View Contacts</a>';
+}
+$this->partial("include/header", array('title' => $title, 'header' => $title, 'rightContent' => $rightContent));
+?>
+
+<div class="row">
+	<div class="col-md-12">
+
+		<form class="form-horizontal form-track-change" method="post" novalidate id="customerForm">
+
+			<!-- fake fields are a workaround for chrome autofill getting the wrong fields
+			chrome(and maybe other browsers) just blindy fill in the first type="password" fields
+			that it sees on a page
+			-->
+			<input style="display:none" type="text" name="fakeusernameremembered" />
+			<input style="display:none" type="password" name="fakepasswordremembered" />
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Name">Name</label>
+				<div class="col-sm-9">
+					<input type="text" name="Name" id="Name" value="<?php echo isset($customerData->Name) ? $customerData->Name : '' ?>" class="form-control" required data-validation-required-message="Please enter a Customer Name" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Phone">Phone</label>
+				<div class="col-sm-9">
+					<input type="text" name="Phone" id="Phone" value="<?php echo isset($customerData->Phone) ? $customerData->Phone : '' ?>" class="form-control" required data-validation-required-message="Please enter a Phone Number" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Email">Email</label>
+				<div class="col-sm-9">
+					<input type="email" name="Email" id="Email" value="<?php echo isset($customerData->Email) ? $customerData->Email : '' ?>" class="form-control" data-validation-email-message="Please enter a valid Email" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Fax">Fax</label>
+				<div class="col-sm-9">
+					<input type="text" name="Fax" id="CustomerFax" value="<?php echo isset($customerData->Fax) ? $customerData->Fax : '' ?>" class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="HandlingCharge">Handling Charge</label>
+				<div class="col-sm-9">
+					<input type="text" name="HandlingCharge" id="HandlingCharge" value="<?php echo isset($customerData->HandlingCharge) ? $customerData->HandlingCharge : '' ?>" class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="StorageCharge">Storage Charge</label>
+				<div class="col-sm-9">
+					<input type="text" name="StorageCharge" id="StorageCharge" value="<?php echo isset($customerData->StorageCharge) ? $customerData->StorageCharge : '' ?>" class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="TermsPID">Payment Term</label>
+				<div class="col-sm-9">
+					<select id="TermsPID" name="TermsPID" class="form-control" required data-validation-required-message="Please select a Payment Term">
+						<option value="">--Select One--</option>
+						<?php
+						foreach ($paymentTerms as $pt) {
+							$sel = '';
+							if (!empty($customerData->TermsPID)) {
+								$sel = $pt['ParameterID'] == $customerData->TermsPID ? ' selected="selected" ' : '';
+							}
+							echo '<option value="' . $pt['ParameterID'] . '"' . $sel . '>' . $pt['Value1'] . '</option>';
+						}
+						?>
+					</select>
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="LastName">Web Access Username</label>
+				<div class="col-sm-9">
+					<input type="text" name="LoginID" id="LoginID" value="<?php echo isset($customerData->LoginID) ? $customerData->LoginID : '' ?>" class="form-control" required data-validation-required-message="Please enter a Web Access Username" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Password">Web Access Password</label>
+				<div class="col-sm-9">
+					<input type="password" id="Password" name="Password" class="form-control" <?php
+																								if (!$customerId) {
+																									echo ' required data-validation-required-message="Please enter a Web Access Password" ';
+																								}
+																								?> />
+					<?php
+					if (!$customerId) {
+						echo '<p class="help-block text-danger"></p>';
+					} elseif ($customerId && $customerData->Password) {
+						echo '<span id="helpBlock" class="help-block helpBlockStandout">Leave blank to retain password, enter new password to update.</span>';
+					}
+					?>
+
+				</div>
+			</div>
+
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Active">Customer is Active</label>
+				<?php
+				$checked = '';
+				if (!$customerId || !empty($customerData->Active)) {
+					$checked = ' checked="checked" ';
+				}
+				?>
+				<div class="col-sm-9">
+					<input type="checkbox" name="Active" id="Active" value="1" <?php echo $checked ?> class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="EDIFlag">Using EDI</label>
+				<?php
+				$checked = '';
+				if (!$customerId || !empty($customerData->EDIFlag)) {
+					$checked = ' checked="checked" ';
+				}
+				?>
+				<div class="col-sm-9">
+					<input type="checkbox" name="EDIFlag" id="EDIFlag" value="1" <?php echo $checked ?> class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<fieldset id="customerEDIFieldset">
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label" for="EDIISAID">EDI ISA ID</label>
+					<div class="col-sm-9">
+						<input type="text" id="EDIISAID" name="EDIISAID" value="<?php echo isset($customerData->EDIISAID) ? $customerData->EDIISAID : '' ?>" class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label" for="EDIGSID">EDI GS ID</label>
+					<div class="col-sm-9">
+						<input type="text" id="EDIGSID" name="EDIGSID" value="<?php echo isset($customerData->EDIGSID) ? $customerData->EDIGSID : '' ?>" class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label" for="EDIKey">EDI Key</label>
+					<div class="col-sm-9">
+						<input type="text" id="EDIKey" name="EDIKey" value="<?php echo isset($customerData->EDIKey) ? $customerData->EDIKey : '' ?>" class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label" for="EDIDocumentCodes">EDI DOC Codes</label>
+					<div class="col-sm-9">
+						<input type="text" id="EDIDocCodes" name="EDIDocCodes" placeholder="Comma Separated List of Required EDI Doc Codes" value="<?php echo isset($customerData->EDIDocCodes) ? $customerData->EDIDocCodes : '' ?>" class="form-control" />
+					</div>
+				</div>
+
+			</fieldset>
+
+			<div class="form-group">
+				<div class="col-sm-offset-3 col-sm-9">
+					<?php
+					if ($customerId) {
+					?>
+						<input class="btn btn-default deleteCustomer" data-name="<?php echo $customerData->Name ?>" name="deleteCustomer" type="submit" value="Delete Customer" />
+					<?php
+					}
+					?>
+					<input class="btn btn-primary" type="submit" name="saveCustomer" id="saveCustomer" value="Save Customer" />
+				</div>
+			</div>
+		</form>
+
+	</div>
+
+	<?php if ($customerId) { ?>
+		<div class="col-md-12" id="contacts">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<div class="pull-left">
+						<h3>Contacts</h3>
+					</div>
+					<div class="pull-right">
+						<a href="#" id="addContact" class="btn btn-primary" data-toggle="modal" data-target="#contactModal">Add Contact</a>
+					</div>
+					<div style="clear:both;"></div>
+				</div>
+
+				<div class="panel-body">
+					<div class="col-md-12" id="contactHtml">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-12" id="shipToAddresses">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<div class="pull-left">
+						<h3>Ship To Addresses</h3>
+					</div>
+					<div class="pull-right">
+						<a href="#" id="addShipToAddress" class="btn btn-primary" data-toggle="modal" data-target="#shipToAddressModal">
+							Add Address
+						</a>
+					</div>
+					<div style="clear:both;"></div>
+				</div>
+
+				<div class="panel-body">
+					<div class="col-md-12" id="shipToAddressHtml">
+					</div>
+				</div>
+			</div>
+		</div>
+	<?php } ?>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+<script>
+	function getContacts(callback) {
+		$.ajax({
+			url: "/customer/getcontacts/<?php echo $customerId ?>",
+			type: "GET",
+			dataType: "html",
+			success: function(contactHtml) {
+				$('#contactHtml').html(contactHtml);
+				if (callback) {
+					callback();
+				}
+			}
+		});
+	}
+
+	function getShipToAddresses(callback) {
+		$.ajax({
+			url: "/customer/getshiptoaddresses/<?php echo $customerId ?>",
+			type: "GET",
+			dataType: "html",
+			success: function(shipToHtml) {
+				$('#shipToAddressHtml').html(shipToHtml);
+
+				if (callback) {
+					callback();
+				}
+			}
+		});
+	}
+
+	var loginIds = <?php echo json_encode($loginIds); ?>;
+	jQuery(document).ready(function($) {
+		$('.deleteCustomer').click(function() {
+			var deleteIt = confirm('Are you sure you want to delete "' + $(this).data('name') + '"?');
+			return deleteIt;
+		});
+
+		$('#saveCustomer').click(function() {
+			var loginId = $('#LoginID').val();
+			loginId = loginId.toLowerCase();
+
+			var loginIdOnPageLoad = <?php echo json_encode(strtolower($customerData->LoginID)) ?>;
+			if (loginIdOnPageLoad != loginId && loginIds['loginId']) {
+				bootbox.alert('That Web Access Username already exists. Please pick another one.');
+				$('#LoginID').focus();
+				return false;
+			}
+
+		});
+
+		getContacts();
+		getShipToAddresses();
+
+		$("body").on("click", ".editContact", function() {
+
+			var contactId = $(this).data('contact-id');
+
+			$.ajax({
+				url: "/customer/getsinglecontact/" + contactId,
+				type: "GET",
+				dataType: "json",
+				success: function(contact) {
+					$('#deleteContact').show();
+					$('#contactModalLabel').html('Edit Contact');
+					$('#ContactID').val(contactId);
+
+					$('#deleteContact').data('name', contact.FirstName + ' ' + contact.LastName);
+					$('#deleteContact').data('contact-id', contactId);
+
+					var fields = ['FirstName', 'LastName', 'BusPhone', 'BusEmail', 'MobilePhone', 'HomePhone', 'OtherPhone', 'Fax'];
+
+					var arrayLength = fields.length;
+					for (var i = 0; i < arrayLength; i++) {
+						var fieldName = fields[i];
+						var value = contact[fieldName] ? contact[fieldName] : '';
+						var formField = $('#' + fieldName);
+						formField.val(value);
+					}
+
+					var Active = parseInt(contact['Active']) == 1 ? true : false;
+					if (Active) {
+						$('#ContactActive').prop('checked', true);
+					} else {
+						$('#ContactActive').prop('checked', false);
+					}
+
+					$('#contactModal').modal('show');
+
+				}
+			});
+
+
+			return false;
+		});
+
+		$("body").on("click", ".editShipToAddress", function() {
+			var addressID = $(this).data('ship-to-address-id');
+
+			$.ajax({
+				url: "/customer/getsingleshiptoaddress/" + addressID,
+				type: "GET",
+				dataType: "json",
+				success: function(shipToAddress) {
+					$('#shipToAddressModalLabel').html('Edit Ship To Address');
+					$('#shipToAddressID').val(addressID);
+
+					var fields = ['Name', 'Address', 'Address2', 'City', 'State', 'Zip', 'ConsignedName', 'Nickname'];
+
+					var arrayLength = fields.length;
+
+					for (var i = 0; i < arrayLength; i++) {
+						var fieldName = fields[i];
+						var value = shipToAddress[fieldName] ? shipToAddress[fieldName] : '';
+						var formField = $('#shipToAddress' + fieldName);
+
+						formField.val(value);
+					}
+
+					$('#shipToAddressActive').prop('checked', parseInt(shipToAddress['Active']) == 1);
+
+					console.log('trying to show modal');
+					$('#shipToAddressModal').modal('show');
+				}
+			});
+
+			return false;
+		});
+
+		$("body").on("click", ".deleteContact", function() {
+			var contactId = $(this).data('contact-id');
+			var name = $(this).data('name');
+			bootbox.confirm('Are you sure you want to delete contact "' + name + '"?', function(result) {
+				if (result) {
+					$.ajax({
+						url: "/customer/deletecontact/" + contactId,
+						type: "GET",
+						dataType: "json",
+						success: function(data) {
+							if (data.success == 1) {
+								if ($("#contactModal").is(":visible")) {
+									var mycallback = function() {
+										$('#contactSavedFeedback .successFeedback').html('Contact Deleted');
+										$("#contactSavedFeedback").fadeIn(1000, function() {
+											$("#contactSavedFeedback").fadeOut(1000, function() {
+												$('#contactModal').modal('hide');
+											});
+										});
+
+									};
+
+									getContacts(mycallback);
+								} else {
+									getContacts();
+								}
+							} else {
+								bootbox.alert('An error occurred while deleting the contact.');
+							}
+						}
+					});
+				}
+			});
+			return false;
+		});
+
+		$('#addContact').click(function() {
+			$('#deleteContact').hide();
+			$('#contactModalLabel').html('Add Contact');
+			$('#contactForm input[type="text"]').val('');
+			$('#ContactID').val('');
+			$('#ContactActive').prop('checked', true);
+		});
+
+		$('#addShipToAddress').click(function() {
+			$('#shipToAddressModalLabel').html('Add Ship To Address');
+			$('#shipToAddressForm input[type="text"]').val('');
+			$('#shipToAddressID').val('');
+			$('#shipToAddressActive').prop('checked', true);
+			$('#shipToAddressConsignedName').val('<?= isset($customerData->Name) ? addslashes($customerData->Name) : '' ?>');
+		});
+
+		// Enable or disable EDI fields on load based on EDI checkbox
+		$('#customerEDIFieldset').prop('disabled', !$('#EDIFlag').is(':checked'));
+
+		// When the EDI checkbox is toggled.
+		$('#EDIFlag').change(function() {
+			// Enables or disables the fields based on the checkbox.
+			$('#customerEDIFieldset').prop('disabled', !$('#EDIFlag').is(':checked'));
+		});
+	});
+
+	jQuery(function() {
+		jQuery("input,select,textarea").not("[type=submit]").jqBootstrapValidation({
+			preventSubmit: true,
+			submitError: function($form, event, errors) {
+				// Here I do nothing, but you could do something like display
+				// the error messages to the customer, log, etc.
+			},
+			submitSuccess: function($form, event) {
+				// form has been submitted
+
+				if ($form[0].id == 'contactForm') {
+					var mycallback = function() {
+						$('#contactSavedFeedback .successFeedback').html('Contact Saved');
+						$("#contactSavedFeedback").fadeIn(1000, function() {
+							$("#contactSavedFeedback").fadeOut(1000, function() {
+								$('#contactModal').modal('hide');
+							});
+						});
+					};
+
+					$.ajax({
+						url: "/customer/savecontact",
+						type: "POST",
+						data: $('#contactForm').serialize(),
+						dataType: "json",
+						success: function(data) {
+							if (data.success == 1) {
+								getContacts(mycallback);
+							} else {
+								bootbox.alert('An error occurred while adding the contact.');
+							}
+						}
+					});
+				}
+
+				if ($form[0].id == 'shipToAddressForm') {
+					var mycallback = function() {
+						$('#shipToAddressSavedFeedback .successFeedback').html('Ship To Address Saved');
+
+						$("#shipToAddressSavedFeedback").fadeIn(1000, function() {
+							$("#shipToAddressSavedFeedback").fadeOut(1000, function() {
+								$('#shipToAddressModal').modal('hide');
+							});
+						});
+					};
+
+					$.ajax({
+						url: "/customer/saveshiptoaddress",
+						type: "POST",
+						data: $('#shipToAddressForm').serialize(),
+						dataType: "json",
+						success: function(data) {
+							if (data.success == 1) {
+								getShipToAddresses(mycallback);
+							} else {
+								bootbox.alert('An error occurred while adding the ship to address.');
+							}
+						}
+					});
+				}
+			},
+			filter: function() {
+				return jQuery(this).is(":visible");
+			}
+		});
+	});
+</script>
+
+<!-- Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" role="dialog" aria-labelledby="contactModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="contactModalLabel">Add Contact</h4>
+			</div>
+			<form class="form-horizontal" method="post" novalidate onsubmit="return false" id="contactForm">
+				<input type="hidden" value="" name="ContactID" id="ContactID" />
+				<input type="hidden" value="<?php echo $customerId ?>" name="CustomerID" id="CustomerID" />
+				<div class="modal-body">
+
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="FirstName">First Name</label>
+						<div class="col-sm-8">
+							<input type="text" name="FirstName" id="FirstName" value="" class="form-control" required data-validation-required-message="Please enter a First Name" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="LastName">Last Name</label>
+						<div class="col-sm-8">
+							<input type="text" name="LastName" id="LastName" value="" class="form-control" required data-validation-required-message="Please enter a Last Name" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="BusPhone">Business Phone</label>
+						<div class="col-sm-8">
+							<input type="text" name="BusPhone" id="BusPhone" value="" class="form-control" required data-validation-required-message="Please enter Business Phone" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="BusEmail">Business Email</label>
+						<div class="col-sm-8">
+							<input type="email" name="BusEmail" id="BusEmail" value="" class="form-control" data-validation-email-message="Not a Valid Email Address" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="MobilePhone">Mobile Phone</label>
+						<div class="col-sm-8">
+							<input type="text" name="MobilePhone" id="MobilePhone" value="" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="HomePhone">Home Phone</label>
+						<div class="col-sm-8">
+							<input type="text" name="HomePhone" id="HomePhone" value="" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="OtherPhone">Other Phone</label>
+						<div class="col-sm-8">
+							<input type="text" name="OtherPhone" id="OtherPhone" value="" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Fax">Fax</label>
+						<div class="col-sm-8">
+							<input type="text" name="Fax" id="Fax" value="" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Fax">Active</label>
+						<div class="col-sm-8">
+							<input type="checkbox" name="Active" id="ContactActive" value="1" checked="checked" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+
+
+				</div>
+
+				<div class="modal-footer">
+					<div class="pull-left has-success" id="contactSavedFeedback" style="display: none;">
+						<div class="control-label successFeedback">Contact Saved</div>
+					</div>
+					<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+					<input type="button" class="btn btn-default deleteContact" style="display: none;" id="deleteContact" value="Delete Contact" />
+					<input type="submit" class="btn btn-primary" value="Save Contact" />
+				</div>
+			</form>
+
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="shipToAddressModal" tabindex="-1" role="dialog" aria-labelledby="shipToAddressModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="shipToAddressModalLabel">Add Ship To Address</h4>
+			</div>
+
+			<form class="form-horizontal" method="post" novalidate onsubmit="return false" id="shipToAddressForm">
+				<input type="hidden" value="" name="shipToAddressID" id="shipToAddressID" />
+				<input type="hidden" value="<?php echo $customerId ?>" name="CustomerID" id="shipToCustomerID" />
+
+				<div class="modal-body">
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Name">Ship To Name</label>
+						<div class="col-sm-8">
+							<input type="text" name="Name" id="shipToAddressName" value="" class="form-control" required data-validation-required-message="Please enter a ship to name" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Address">Address</label>
+						<div class="col-sm-8">
+							<input type="text" name="Address" id="shipToAddressAddress" value="" class="form-control" required data-validation-required-message="Please enter an address" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Address2">Address 2</label>
+						<div class="col-sm-8">
+							<input type="text" name="Address2" id="shipToAddressAddress2" value="" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="City">City</label>
+						<div class="col-sm-8">
+							<input type="text" name="City" id="shipToAddressCity" value="" class="form-control" required data-validation-required-message="Please enter a city" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="State">State</label>
+						<div class="col-sm-8">
+							<input type="text" name="State" id="shipToAddressState" value="" class="form-control" required data-validation-required-message="Please enter a state" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Zip">Zip</label>
+						<div class="col-sm-8">
+							<input type="text" name="Zip" id="shipToAddressZip" value="" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="ConsignedName">Consignee Name</label>
+						<div class="col-sm-8">
+							<input type="text" name="ConsignedName" id="shipToAddressConsignedName" value="<?php echo isset($customerData->Name) ? $customerData->Name : '' ?>" class="form-control" required data-validation-required-message="Please enter a consignee name" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Nickname">Nickname</label>
+						<div class="col-sm-8">
+							<input type="text" name="Nickname" id="shipToAddressNickname" value="" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-4 control-label" for="Active">Active</label>
+						<div class="col-sm-8">
+							<input type="checkbox" name="Active" id="shipToAddressActive" value="1" checked="checked" class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="modal-footer">
+					<div class="pull-left has-success" id="shipToAddressSavedFeedback" style="display: none;">
+						<div class="control-label successFeedback">
+							Address Saved
+						</div>
+					</div>
+					<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+					<input type="submit" class="btn btn-primary" value="Save Address" />
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<?php
+$this->partial("include/footer_end");

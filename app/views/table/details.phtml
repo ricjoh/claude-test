@@ -1,0 +1,49 @@
+<?php ?>
+<style>
+#autodetails h5,
+#autonotes h5  {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: left;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: .5em;
+}
+#autodetails dl {
+	float: left;
+	padding: .5em 1em;
+	border-right: 1px solid #d6bd99;
+	width: 25%;
+	margin-top: 0;
+	margin-bottom: .5em;
+}
+/* #autodetails dl:last-child {
+	border-right: 0px none transparent;
+} */
+
+#autonotes .notesbody {
+	font-style: italic;
+	padding: 0 1em;
+}
+</style>
+<div class="row" id="autodetails">
+	<div class="col-md-12" style="margin-bottom: 1em;">
+		<h5>Details</h5>
+		<?php foreach ($details as $k => $v): ?>
+		<dl>
+			<dt><?= $k ?></dt>
+			<dd><?= $v ?></dd>
+		</dl>
+		<?php endforeach ?>
+	</div>
+</div>
+
+<?php if ( $notes ): ?>
+<div class="row" id="autonotes">
+	<div class="col-md-12" style="margin-bottom: 1em;">
+		<h5>Notes</h5>
+		<p class="notesbody"><?= $notes ?></p>
+	</div>
+</div>
+<?php endif ?>

@@ -1,0 +1,738 @@
+.searchResults .tablesorter {
+	margin-top: 10px;
+}
+
+.search-results-container {
+	margin-top: 30px;
+}
+
+#clientNavbar h1 {
+	color: #fba344;
+}
+
+#clientNavbar {
+	margin-left: 10em;
+}
+
+.row {
+	margin: 0 auto;
+	/*max-width: 960px; */
+}
+
+.container {
+	width: 1100px; /* was 960 Ric */
+}
+
+#mainContainer {
+	padding: 0;
+	margin-top: 1em;
+}
+
+#pageTitle h1 {
+	margin: 0;
+}
+
+#pageTitle {
+	margin-bottom: 20px;
+	margin-top: 20px;
+}
+
+.navbar {
+	font-size: 1.2em;
+}
+
+.navbar,
+.navbar a,
+.navbar .navbar-text,
+.navbar .navbar-link,
+.navbar .navbar-nav > li > a {
+	color: #fba344;
+}
+
+.navbar-inverse {
+	background-color: #000000;
+	min-height: 0;
+}
+
+.navbar-inverse .navbar-text {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.navbar-default {
+	background-color: #4e0101;
+	min-height: 5em;
+}
+
+.navbar-default .navbar-nav > li:nth-child(odd) {
+	background-color: #680000;
+}
+
+.navbar-default .navbar-nav > li > a {
+	text-align: center;
+	padding: 0.75em 1em;
+}
+
+.navbar-default .navbar-nav > li > a:hover {
+	/*background-color: #FFEFDE;*/
+	color: white;
+}
+
+.navbar-default .navbar-nav > li > a img {
+	/*display: none;*/
+	clear: both;
+	opacity: 0.9;
+	margin-bottom: 0.5em;
+}
+
+.navbar-default .navbar-nav > li > a:hover img {
+	opacity: 1;
+}
+
+.navbar-no-margin {
+	margin: 0;
+}
+
+#logoutLink {
+	margin-top: 16px;
+}
+
+#adminNav {
+	/*border-radius: 0 0 4px 4px;*/
+	border-style: none;
+	min-height: 105px;
+}
+
+.navbar-brand {
+	height: auto;
+	position: absolute;
+	top: -2em;
+	padding: 0;
+}
+
+.navbar-brand img {
+	max-height: 100%;
+}
+
+/***** Tab Panel Start ***/
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+	background-color: white;
+	color: #480303;
+}
+
+.tab-pane {
+	background-color: white;
+	min-height: 25em;
+	padding: 2em;
+	border-left: 1px solid rgb(221, 221, 221);
+	border-right: 1px solid rgb(221, 221, 221);
+	border-bottom: 1px solid rgb(221, 221, 221);
+	border-radius: 0 0 8px 8px;
+}
+
+/***** Tab Panel End ***/
+
+.help-block {
+	color: #a94442;
+}
+
+.form-control {
+	color: #222222;
+}
+
+input[type="checkbox"] {
+	width: auto;
+	box-shadow: none;
+}
+
+.successFeedback {
+	margin: 0;
+	font-size: 19px;
+	color: #3c763d;
+	font-weight: normal;
+}
+
+.table {
+	background: #fff;
+}
+
+.closeModal {
+	margin-right: 5px;
+}
+
+.panel-heading h3 {
+	margin-top: 10px;
+}
+
+.table-hover > tbody > tr:hover {
+	background-color: #dbd9d9;
+}
+
+.trEditRow {
+	cursor: pointer;
+}
+
+.ul {
+	text-decoration: underline;
+}
+
+.section {
+	margin-top: 50px;
+}
+
+#customerEDIFieldset {
+	border: 1px solid #4f0000;
+	border-radius: 3px;
+	padding-top: 1em;
+	padding-right: 1em;
+	margin-bottom: 10px;
+}
+
+.formSection h5 {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: center;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: 1em;
+	margin-top: -30px;
+	padding-top: 15px;
+}
+
+.form-control[disabled],
+fieldset[disabled] .form-control {
+	opacity: 0.5;
+}
+
+.x12Modal {
+	width: 900px !important;
+}
+
+/********** New Chris styles ******************/
+
+.roundedBorder {
+	border-radius: 14px;
+	border: 1px solid #4e0101;
+}
+
+.btn-primary {
+	border-radius: 14px;
+	color: #fff;
+}
+
+.paging-buttons {
+	margin-bottom: 1.5em;
+}
+
+.paging-buttons div {
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
+.paging-buttons a {
+	width: inherit;
+}
+
+.align-right {
+	text-align: right !important;
+}
+
+.btn-default,
+.btn-default:hover {
+	border-radius: 14px;
+	border-color: #4e0101;
+	color: #9c1111;
+}
+
+.btn-default:hover {
+	background-color: #fff5e4;
+}
+
+.subnav {
+	background-color: #d6bd99;
+	padding: 0.75em;
+}
+
+#footerNav {
+	text-align: center;
+	margin-top: 1em;
+}
+
+.mb-0 {
+	margin-bottom: 0 !important;
+}
+
+.small-link {
+	font-size: 0.8em;
+	display: block;
+}
+
+/*
+  _    _                _ _               _____
+ | |  | |              | (_)             |_   _|
+ | |__| | ___  __ _  __| |_ _ __   __ _    | |  ___ ___  _ __  ___
+ |  __  |/ _ \/ _` |/ _` | | '_ \ / _` |   | | / __/ _ \| '_ \/ __|
+ | |  | |  __/ (_| | (_| | | | | | (_| |  _| || (_| (_) | | | \__ \
+ |_|  |_|\___|\__,_|\__,_|_|_| |_|\__, | |_____\___\___/|_| |_|___/
+                                   __/ |
+                                  |___/
+*/
+
+h1.ocs-icon {
+	padding: 0.125em 2.25em 0.125em;
+	background-position: left;
+	background-repeat: no-repeat;
+	background-size: contain;
+}
+
+h1.ocs-lot {
+	background-image: url(/public/images/lot_ico.png);
+}
+h1.ocs-offer {
+	background-image: url(/public/images/offer_ico.png);
+}
+h1.ocs-customers {
+	background-image: url(/public/images/customers_ico.png);
+}
+h1.ocs-vendors {
+	background-image: url(/public/images/vendors_ico.png);
+}
+h1.ocs-factories {
+	background-image: url(/public/images/factories_ico.png);
+}
+h1.ocs-users {
+	background-image: url(/public/images/users_ico.png);
+}
+h1.ocs-edi {
+	background-image: url(/public/images/edi_ico.png);
+}
+h1.ocs-shipping {
+	background-image: url(/public/images/shipping_ico.png);
+}
+
+input.datepicker {
+	padding: 6px 12px;
+}
+
+/*
+   ____   _____  _____   _______    _     _
+  / __ \ / ____|/ ____| |__   __|  | |   | |
+ | |  | | |    | (___      | | __ _| |__ | | ___  ___
+ | |  | | |     \___ \     | |/ _` | '_ \| |/ _ \/ __|
+ | |__| | |____ ____) |    | | (_| | |_) | |  __/\__ \
+  \____/ \_____|_____/     |_|\__,_|_.__/|_|\___||___/
+
+*/
+
+th.rt {
+	text-align: right;
+}
+
+.thick-rounded-border {
+	border-radius: 14px;
+	border: 10px solid #d6bd99;
+	border-collapse: separate;
+	overflow: hidden;
+}
+
+thead,
+.fake-thead {
+	font-size: 1.2em;
+	background-color: #4e0101 !important;
+	color: #fba344;
+}
+
+.datepicker thead {
+	font-size: 1em;
+	background-color: transparent !important;
+	color: rgb(72, 3, 3);
+}
+
+.table thead > tr > th,
+.table .fake-thead th {
+	/* using a big selector to raise priority above bootstrap */
+	padding: 0.8em 1em;
+	background-color: transparent !important;
+	line-height: 1;
+	border-bottom-width: 0;
+	vertical-align: middle;
+}
+
+table.tablesorter thead tr th.header {
+	padding: 0.8em 1.5em 0.8em 0.6em;
+}
+
+.datepicker table thead > tr > th {
+	padding: 5px 5px;
+	border-color: transparent;
+}
+
+.tablesorter.thick-rounded-border th {
+	border-left-width: 0;
+	border-color: #d6bd99;
+}
+
+.tablesorter.thick-rounded-border .datepicker th {
+	border-color: transparent;
+}
+
+.tablesorter.thick-rounded-border th:last-child {
+	border-right-width: 0;
+}
+
+.tablesorter thead {
+	font-size: 1em;
+}
+
+.table-alert {
+	background-color: #d6bd99 !important;
+	color: #880000;
+	border: 1px solid #880000;
+	font-size: 1.2em;
+	margin-bottom: 1rem;
+	padding: 0.75rem;
+	border-radius: 14px;
+	text-align: center;
+}
+
+
+
+/*
+  _           _       ______   __  __            _____
+ | |         | |     / / __ \ / _|/ _|          |  __ \
+ | |     ___ | |_   / / |  | | |_| |_ ___ _ __  | |__) |_ _  __ _  ___  ___
+ | |    / _ \| __| / /| |  | |  _|  _/ _ \ '__| |  ___/ _` |/ _` |/ _ \/ __|
+ | |___| (_) | |_ / / | |__| | | | ||  __/ |    | |  | (_| | (_| |  __/\__ \
+ |______\___/ \__/_/   \____/|_| |_| \___|_|    |_|   \__,_|\__, |\___||___/
+                                                             __/ |
+                                                            |___/
+*/
+
+#lotForm .help-block ul {
+	list-style-type: none;
+	margin-left: -95px; /* must match label width */
+	padding-left: 0;
+	text-align: right;
+	padding-right: 14px;
+}
+
+#lotForm h5 {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: center;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: 1em;
+	margin-top: -30px;
+	padding-top: 15px;
+}
+
+#lotForm .nopadding {
+	padding-left: 0;
+	padding-right: 0;
+	width: auto;
+}
+
+#lotForm label.nopadding {
+	width: 95px;
+	text-align: right;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+#lotForm input,
+#lotForm select {
+	width: 190px;
+	margin-bottom: 10px;
+	margin-right: 10px;
+}
+
+#lotForm input[type="checkbox"] {
+	width: auto;
+}
+
+#lotForm .field-group {
+	width: 33%;
+	float: left;
+	margin: 10px 0 0 0;
+}
+
+#lotForm .field-group .form-group {
+	margin: 0;
+	padding: 0;
+}
+
+#lotForm .field-group.rightBorder {
+	border-right: 1px solid #d6bd99;
+}
+
+#lotForm input:disabled,
+#lotForm select:disabled {
+	opacity: 0.7;
+}
+
+#lotForm label.disabled {
+	color: #555555;
+	opacity: 0.7;
+}
+
+#lotForm input.plain-disabled[type="text"]:disabled {
+	border-color: transparent;
+	background-color: transparent;
+	cursor: text;
+	box-shadow: none;
+	opacity: 1;
+}
+
+#itemTable.table > tbody > tr.vatNote > td,
+#itemTable.table > tbody > tr.itemNote > td,
+#vatTable.table > tbody > tr.vatNote > td,
+#vatTable.table > tbody > tr.itemNote > td {
+	font-size: 0.9em;
+	padding: 2px 8px;
+	cursor: pointer;
+}
+
+#itemTable.table > tbody > tr.vatNote > td.vatNoteLabel,
+#itemTable.table > tbody > tr.itemNote > td.itemNoteLabel,
+#vatTable.table > tbody > tr.vatNote > td.vatNoteLabel,
+#vatTable.table > tbody > tr.itemNote > td.itemNoteLabel {
+	font-weight: bold;
+	text-align: right;
+	width: 110px;
+}
+
+#itemTable .hide {
+	display: none;
+}
+#vatTable .hide {
+	display: none;
+}
+
+#itemTable .editable-click,
+#vatTable .editable-click,
+a.editable-click {
+	border-bottom-style: none;
+}
+#itemTable .editable-click:hover,
+#vatTable .editable-click:hover,
+a.editable-click:hover {
+	border-bottom-style: dashed;
+}
+
+#itemTable .avail,
+#vatTable .avail {
+	background-color: #ffff99;
+}
+
+#itemTable .editable-empty,
+#vatTable .editable-empty,
+.editable-empty:hover,
+.editable-empty:focus {
+	font-style: italic;
+	color: #aaaaaa;
+}
+
+#lotTotals {
+	width: 100%;
+	margin-top: 1.5em;
+	/*padding-left: 20px;*/
+	white-space: nowrap;
+	text-align: center;
+}
+
+#lotTotals .lotTotal {
+	/*float: left;*/
+	margin: 0.4em;
+	display: inline-block;
+}
+
+#lotTotals .lotTotal .ltLabel,
+#lotTotals .lotTotal .ltValue {
+	float: left;
+	padding: 0.5em 1em;
+}
+#lotTotals .lotTotal .ltLabel {
+	font-weight: bold;
+	text-align: right;
+	float: left;
+	background-color: #fbefde;
+	border-radius: 14px 0 0 14px;
+}
+#lotTotals .lotTotal .ltValue {
+	float: right;
+	text-align: center;
+	background-color: white;
+	border-radius: 0 14px 14px 0;
+	border-left: 1px solid #4e0101;
+}
+
+#lotForm .email-field {
+	width: 155px;
+	float: left;
+}
+
+#lotForm .fa-icon-left {
+	width: 155px;
+	float: left;
+}
+
+#lotForm .fa-icon-left-two {
+	width: 135px;
+	float: left;
+}
+
+#lotForm .fa-icon-left-full-width {
+	width: 188px;
+}
+
+#lotForm .fa-icon-right {
+	margin-top: 7px;
+}
+
+#lotForm .room-temp-controls {
+	width: 190px;
+	margin: 0;
+}
+
+#lotForm .room-temp-controls select,
+#lotForm .room-temp-controls input {
+	margin: 0;
+	width: 100%;
+}
+
+#lotForm .room-control {
+	width: 65%;
+	padding-right: 10px;
+}
+
+#lotForm .temp-control {
+	width: 35%;
+}
+
+.roomSiteContainerBorder {
+	border-bottom: 1px solid #d6bd99;
+	margin-bottom: 1em;
+	width: 90%;
+	margin-left: 5%;
+}
+
+#lotForm .email-link {
+	margin-top: 10px;
+	cursor: pointer;
+}
+
+#lotForm .notes-label {
+	width: 165px;
+}
+#lotForm .notes-box {
+	width: 561px;
+	height: 80px;
+}
+
+#lotForm .has-success {
+	margin-top: 108px;
+	margin-bottom: -108px;
+}
+
+#mainContainer a.btn.disabled,
+#mainContainer a.btn[disabled],
+#mainContainer fieldset[disabled] .btn {
+	border-color: #4e0101;
+	color: #aaaaaa;
+	/* opacity: 1; */
+}
+
+button.btn[disabled] {
+	border-color: #4e0101;
+	color: #aaaaaa;
+}
+
+.back-link {
+	margin-bottom: 1em;
+	margin-left: 1.3em;
+	display: inline-block;
+}
+
+#subtitlelinks {
+	margin-top: -2em;
+	margin-bottom: 2em;
+	margin-left: 7em;
+}
+
+#subtitlelinks a {
+	text-decoration: dotted underline;
+}
+
+#subtitlelinks a:hover {
+	text-decoration: solid underline;
+}
+
+#WRPopoverContainer .popover {
+	max-width: none;
+}
+
+.warehouse-checkboxes .btn-default.active {
+	outline: 0;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	color: white;
+	background-color: #680000;
+	border-color: #4f0000;
+	margin-bottom: 0.5rem;
+}
+
+.warehouse-checkboxes .btn-default.active:hover {
+	color: #aaaaaa;
+	opacity: 0.65;
+}
+
+.warehouse-checkboxes .btn-default {
+	border-radius: 14px;
+	border-color: #aaaaaa;
+	color: #aaaaaa;
+	background-color: #fef9f3;
+	margin-bottom: 0.5rem;
+}
+
+.warehouse-checkboxes .btn-default:hover {
+	border-color: #4e0101;
+	color: #4f0000;
+}
+
+.palletInput {
+	display: inline-block;
+	width: 75px;
+	text-align: center;
+	border: 1px solid #cccccc;
+	border-radius: 4px;
+	padding: 6px 12px;
+	color: #222222;
+	font-size: 14px;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.bol-formattingOptions label {
+	width: 15em !important;
+}
+
+/*
+User List
+*/
+
+#userList .button-row {
+	margin-bottom: 1.5em;
+}
+
+#userList .row-user-status-active {
+	background-color: #fff;
+}
+
+#userList .row-user-status-inactive {
+	background-color: #eee;
+}

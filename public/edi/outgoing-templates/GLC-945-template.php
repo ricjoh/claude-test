@@ -1,0 +1,28 @@
+<?php ob_start(); ?>
+ISA*00*          *00*          *01*004798716      *01*018219808      *200521*0603*U*00401*<?= $data{ 'ISACtrlNo' } ?>*0*P*>~
+GS*SW*004798716*4408342500*20200521*0603*<?= $data{ 'GSCtrlNo' } ?>*X*004010~
+ST*945*<?= $data{ 'STCtrlNo' } ?>~
+W06*F*<?= $data{ 'VendorOrderNumber' } ?>*<?= $data{ 'ShipDate' } ?>*<?= $data{ 'ShipmentID' } ?>*<?= $data{ 'AgentShipmentID' } ?>*<?= $data{ 'CustPONumber' } ?>~
+N1*SF**FA*<?= $data{ 'ShipFromID' } ?>~
+N1*ST**ZZ*<?= $data{ 'ShipToID' } ?>~
+N9*MB*<?= $data{ 'MasterBOL' } ?>~
+N9*SN*<?= $data{ 'SealNumber' } ?>~
+N9*CO*<?= $data{ 'CustOrderNumber' } ?>~
+G62*11*<?= $data{ 'ShipDate' } ?>*A*<?= $data{ 'DepartureTime' } ?>*ES~
+W27*M*<?= $data{ 'SCACCode' } ?>*****180464~
+<? foreach ( $lines as $line ) : ?>
+LX*<?= $line{ 'line' } ?>~
+W12*<?= $line{ 'shipstatus' } ?>*<?= $line{ 'qtyordered' } ?>*<?= $line{ 'qtyshipped' } ?>*<?= $line{ 'qtydiff' } ?>*CA**PN*<?= $line{ 'prodnum' } ?>**<?= $line{ 'weight' } ?>*G*L~
+N9*LI*<?= $line{ 'poline' } ?>~
+N9*LV*<?= $line{ 'licenseplate' } ?>~
+N9*LT*<?= $line{ 'custlotno' } ?>~
+<?php endforeach ?>
+W03*<?= $data{ 'totcases' } ?>*<?= $data{ 'totweight' } ?>*LB~
+SE*<?= $data{ 'SECount' } ?>*<?= $data{ 'STCtrlNo' } ?>~
+GE*1*<?= $data{ 'GSCtrlNo' } ?>~
+IEA*1*<?= $data{ 'ISACtrlNo' } ?>~
+<?php 
+$filecontents = ob_get_contents();
+ob_end_clean();
+file_put_contents( $filename, $filecontents );
+?>

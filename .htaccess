@@ -1,0 +1,7 @@
+RewriteEngine On
+
+RewriteRule  .well-known/acme-challenge -	[PT,L]
+RewriteRule  sucuri-.* -			[PT,L]
+RewriteRule  ^as2.* -				[PT,L]
+RewriteRule  ^$		public/			[L]
+RewriteRule  (.*)	public/$1		[L]

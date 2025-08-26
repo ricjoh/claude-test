@@ -1,0 +1,54 @@
+<?php if ( count($shipToAddresses) ) { ?>
+	<table width="100%" class="table table-striped">
+		<?php foreach ( $shipToAddresses as $address ) : ?>
+			<?php if ( $address->Active && !$activeSeen ) : $activeSeen = 1; ?>
+				<tr>
+					<td colspan="5" style="background: white; border: none;">
+						<h4>Active</h4>
+					</td>
+				</tr>
+			<?php endif; ?>
+
+			<?php if ( !$address->Active && !$inactiveSeen ) : $inactiveSeen = 1; ?>
+				<tr>
+					<td colspan="5" style="background: white; border: none;">
+						<h4>Inactive</h4>
+					</td>
+				</tr>
+			<?php endif; ?>
+
+			<tr>
+				<td width="20%">
+					<?= $address->Name ?>
+				</td>
+				<td width="20%">
+					<?= $address->Address ?>
+				</td>
+
+				<td width="20%">
+					<?= $address->City . ', ' . $address->State ?>
+				</td>
+
+				<td width="20%">
+					<?= $address->ConsignedName ?>
+				</td>
+
+				<td width="15%">
+					<?= $address->Nickname ?>
+				</td>
+
+				<td width="5%">
+					<a
+						href="#"
+						class="editShipToAddress"
+						data-ship-to-address-id="<?= $address->ID ?>"
+					>
+						Edit
+					</a>
+				</td>
+			</tr>
+		<?php endforeach; ?>
+	</table>
+<?php } else { ?>
+	This customer has no ship to addresses assigned at this time. Use the "Add Address" button above to add a ship to address.
+<?php } ?>

@@ -1,0 +1,83 @@
+<?php
+
+$widths = array('28%', '27%', '15%', '15%', '15%');
+
+$rContent = '<a type="button" class="btn btn-primary" href="/customer/new">Add New Customer</a>';
+$this->partial(
+	"include/header", 
+	array(
+		'title' => 'Customers', 
+		'header' => 'Customers',
+		'headerIcon' => 'customers',
+		'rightContent' => $rContent
+	)
+);
+
+$activeSeen = 0;
+$inactiveSeen = 0;
+$headerColumns = <<<HTML
+<tr>
+	<th width="{$widths[0]}">
+		Name
+	</th>
+	<th width="{$widths[1]}">
+		Email
+	</th>
+	<th width="{$widths[2]}">
+		Phone
+	</th>
+	<th width="{$widths[3]}">
+		Fax
+	</th>
+	<th width="{$widths[4]}">
+		&nbsp;
+	</th>
+</tr>
+HTML;
+
+
+?>
+
+<div class="row">
+	<div class="col-md-12">
+	<table class="table table-striped thick-rounded-border">
+<?php
+		foreach ( $customers as $c )
+		{
+			if ( $c->Active && !$activeSeen ) {
+				$activeSeen = 1;
+				echo '<thead><tr><th colspan="5">Active</th></tr></thead><tbody>';
+				echo $headerColumns;
+			}
+			if ( !$c->Active && !$inactiveSeen ) {
+				$inactiveSeen = 1;
+				echo '<tr class="fake-thead"><th colspan="5">Inactive</th></tr>';
+				echo $headerColumns;
+			}
+?>
+        <tr>
+          <td width="<?php echo $widths[0] ?>"><?php echo $c->Name ?></td>
+          <td width="<?php echo $widths[1] ?>"><?php echo $c->Email ?></td>
+          <td width="<?php echo $widths[2] ?>"><?php echo $c->Phone ?></td>
+          <td width="<?php echo $widths[3] ?>"><?php echo $c->Fax ?></td>
+          <td width="<?php echo $widths[4] ?>">
+			  <a href="/customer/edit/<?php echo $c->CustomerID ?>">Edit</a> |
+			  <a href="/customer/billingreports/<?php echo $c->CustomerID ?>">Reports</a>
+		  </td>
+        </tr>
+
+<?php
+		}
+?>
+      </tbody>
+    </table>
+
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<?php
+$this->partial("include/footer_end");

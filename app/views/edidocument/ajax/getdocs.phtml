@@ -1,0 +1,98 @@
+<?php if ( count($docs) ):
+	$activeSeen = 0;
+	$inactiveSeen = 0;
+	$widths = array('14px', 'auto', 'auto','auto', 'auto', 'auto','auto', 'auto', 'auto', 'auto');
+	?>
+
+	<?php if (isset($pageNumber)): ?>
+		<script>
+			document.getElementById('pageNumber').value = <?= $pageNumber ?>;
+		</script>
+	<?php endif ?>
+
+	<div class="form-group paging-buttons">
+		<div class="col-sm-3">
+			<?php if ($pageNumber > 1): ?>
+				<input
+					class="btn btn-primary paging-button previousPageButton"
+					type="button"
+					name="previousPage"
+					id="previousPage"
+					value="< Previous Page"
+				/>
+			<?php endif ?>
+		</div>
+
+		<div class="col-sm-6 text-center">
+			<p>Showing docs from <?= $documentCountArray['firstDocDate'] ?> to <?= $documentCountArray['lastDocDate'] ?></p>
+		</div>
+
+		<div class="col-sm-3 align-right">
+			<?php if (count($docs) == EDIDocument::DOCS_PER_PAGE): ?>
+				<input
+					class="btn btn-primary paging-button pull-right nextPageButton"
+					type="button"
+					name="nextPage"
+					id="nextPage"
+					value="Next Page >"
+				/>
+			<?php endif ?>
+		</div>
+		<div style="clear: both;"></div>
+	</div>
+
+	<style>
+	#edidocstable .lefts th {
+		text-align: left;
+		padding-left: 8px;
+	}
+	</style>
+
+	<table class="table table-striped thick-rounded-border" id="edidocstable">
+		<thead class="lefts">
+			<th></th>
+			<th>ID</th>
+			<th>Transaction</th>
+			<th>EDI Key</th>
+			<th>Reference</th>
+			<th>Status</th>
+			<th>Arrived</th>
+			<th>Updated</th>
+			<th style="text-align: center;">Views</th>
+			<th colspan="1" style="text-align: center;">Actions</th>
+		</thead>
+		<tbody>
+		<?php foreach ( $docs as $d ):
+			// Eastern to central <time datetime=""></time>
+			$createTime = date('h:i:s A', strtotime($d['CreateDate'] . ' -1 hours'));
+			$updateTime = date('h:i:s A', strtotime($d['UpdateDate'] . ' -1 hours'));
+		?>
+			<tr>
+				<td width="<?= $widths[0] ?>"><?= $d['Incoming'] ? '&rarr;' : '&larr;' ?></td>
+				<td width="<?= $widths[1] ?>"><?= $d['DocID'] ?></td>
+				<td width="<?= $widths[2] ?>"><?= $d['Transaction'] ?></td>
+				<td width="<?= $widths[3] ?>"><?= $d['EDIKey'] ?></td>
+				<td width="<?= $widths[4] ?>"><?= $referenceArray[$d['DocID']] ?? '' ?></td>
+				<td width="<?= $widths[5] ?>"><?= $d['SecondaryStatus'] ?? $d['Status'] ?></td>
+				<td width="<?= $widths[6] ?>" style="line-height:1.1; font-size:11px;"><?= substr( $d['CreateDate'], 0, 10 ) ?><br><?= $createTime ?></td>
+				<td width="<?= $widths[7] ?>" style="line-height:1.1; font-size:11px;"><?= substr( $d['UpdateDate'], 0, 10 ) ?><br><?= $updateTime ?></td>
+				<td width="<?= $widths[8] ?>">
+					<a href="#" class="xeditDocument" id="editDocument<?= $d['DocID'] ?>" data-document-id="<?= $d['DocID'] ?>">
+					Data</a>|<a href="#" class="viewX12Document" data-document-id="<?= $d['DocID']; ?>">X12</a>
+				</td>
+				<td style="font-size: 10px; text-align: center;" width="<?= $widths[9] ?>">
+					<?php if ($d['SecondaryStatus'] === NULL): ?>
+						<a href="#" class="updateDocument" id="markDuplicate<?= $d['DocID'] ?>" data-action="Duplicate" data-document-id="<?= $d['DocID'] ?>">Mark Duplicate</a>
+						<br>
+						<a href="#" class="updateDocument" id="archiveDoc<?= $d['DocID'] ?>" data-action="Archived" data-document-id="<?= $d['DocID'] ?>">Archive</a>
+					<?php else: ?>
+						<a href="#" class="updateDocument" id="archiveDoc<?= $d['DocID'] ?>" data-action="Clear" data-document-id="<?= $d['DocID'] ?>">Restore</a>
+					<?php endif ?>
+				</td>
+			</tr>
+		<?php endforeach ?>
+		</tbody>
+	</table>
+<?php else: ?>
+	<p class="text-center">There are no documents at this time.</p>
+<?php endif ?>

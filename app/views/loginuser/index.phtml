@@ -1,0 +1,29 @@
+<?php
+
+$this->partial("include/header", array('title' => 'Login', 'header' => 'Please Login Below', 'hideNavBar' => 1));
+?>
+<div class="row">
+	<div class="col-md-12">
+		
+	<form method="post">
+      <div class="form-group">
+        <label for="LoginID">Username</label>
+        <input type="text" id="LoginID" name="LoginID" class="form-control" style="width: 200px;">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" style="width: 200px;">
+      </div>
+      <input class="btn btn-primary" type="submit" value="Login" />
+    </form>		
+		
+	
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<?php
+$this->partial("include/footer_end");

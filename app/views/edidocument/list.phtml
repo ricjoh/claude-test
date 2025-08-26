@@ -1,0 +1,469 @@
+<?php
+
+$rContent = '<a href="#" id="addDocument" class="btn btn-primary" data-toggle="modal" data-target="#docModal">Add New EDI Document</a>';
+$this->partial(
+	"include/header",
+	array(
+		'title' => 'EDI Documents',
+		'header' => "EDI Documents",
+		'headerIcon' => 'edi',
+		// 'rightContent' => $rContent
+	)
+);
+
+
+?>
+
+<div class="row">
+	<form class="form-horizontal formSection" method="post" nonvalidate id="EDIListFilters">
+		<input type="hidden" id="pageNumber" name="pageNumber" value="<?= max($pageNumber, 1) ?? 1 ?>"/>
+		<input type="hidden" id="changePage" name="changePage" value="noChange"/>
+
+		<div class="col-md-12 field-group">
+			<div class="col-sm-12">
+				<h5>Filters</h5>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Transaction">Transaction</label>
+				<div class="col-sm-3">
+					<select
+						name="Transaction"
+						id="Transaction"
+						class="form-control"
+					>
+						<option value="">All</option>
+						<?php foreach ( $transactions as $t ) : ?>
+							<option <?= $this->request->getPost('Transaction') == $t->Transaction ? 'selected ' : '' ?>value="<?= $t->Transaction ?>"><?= $t->Transaction ?></option>
+						<?php endforeach ?>
+					</select>
+				</div>
+
+				<label class="col-sm-3 control-label" for="Reference">Reference</label>
+				<div class="col-sm-3">
+					<input
+						type="text"
+						name="Reference"
+						id="Reference"
+						value="<?php echo $this->request->getPost('Reference'); ?>"
+						class="form-control"
+					/>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Incoming">Direction</label>
+				<div class="col-sm-3">
+					<select
+						name="Incoming"
+						id="Incoming"
+						class="form-control"
+					>
+						<option value=""<?php echo $this->request->getPost('Incoming') ? '' : 'selected'; ?>>All</option>
+						<option value="1" <?php echo $this->request->getPost('Incoming') === '1' ? 'selected' : ""; ?>>Incoming [&rarr;] </option>
+						<option value="0" <?php echo $this->request->getPost('Incoming') === '0' ? 'selected' : ""; ?>>Outgoing [&larr;] </option>
+					</select>
+				</div>
+
+				<label class="col-sm-3 control-label" for="Status">Status</label>
+				<div class="col-sm-3">
+					<select
+						name="Status"
+						id="Status"
+						class="form-control"
+					>
+						<option value="">All</option>
+						<?php foreach ( $statii as $s ) : ?>
+							<option value="<?= $s->Status ?>" <?php echo $this->request->getPost('Status') === $s->Status ? 'selected' : ""; ?>>
+								<?= $s->Status ?>
+							</option>
+						<?php endforeach ?>
+					</select>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="ArrivedFromDate">Arrived From:</label>
+				<div class="col-sm-3">
+					<input
+						type="date"
+						name="ArrivedFromDate"
+						id="ArrivedFromDate"
+						value="<?php echo $this->request->getPost('ArrivedFromDate'); ?>"
+						class="form-control"
+					/>
+				</div>
+
+				<label class="col-sm-3 control-label" for="ArrivedToDate">To: </label>
+				<div class="col-sm-3">
+					<input
+						type="date"
+						name="ArrivedToDate"
+						id="ArrivedToDate"
+						value="<?php echo $this->request->getPost('ArrivedToDate'); ?>"
+						class="form-control"
+					/>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="UpdatedFromDate">Updated From:</label>
+				<div class="col-sm-3">
+					<input
+						type="date"
+						name="UpdatedFromDate"
+						id="UpdatedFromDate"
+						value="<?php echo $this->request->getPost('UpdatedFromDate'); ?>"
+						class="form-control"
+					/>
+				</div>
+
+				<label class="col-sm-3 control-label" for="UpdatedToDate">To: </label>
+				<div class="col-sm-3">
+					<input
+						type="date"
+						name="UpdatedToDate"
+						id="UpdatedToDate"
+						value="<?php echo $this->request->getPost('UpdatedToDate'); ?>"
+						class="form-control"
+					/>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="EDIKey">EDI Key:</label>
+				<div class="col-sm-3">
+					<div class="warehouse-checkboxes" data-toggle="buttons">
+						<?php foreach ($ediKeyArray as $ediKey) { ?>
+							<?php
+								$checked = '';
+								$active = '';
+
+								if (isset($_POST['EDIKeys']) && in_array($ediKey, $_POST['EDIKeys'])) {
+									$checked = ' checked="checked" ';
+									$active = ' active ';
+								}
+							?>
+							<label class="btn btn-default short-margin-bottom <?= $active ?>">
+								<input type="checkbox" name="EDIKeys[]" value="<?= $ediKey ?>" <?= $checked ?> /><?= $ediKey ?>
+							</label>
+						<?php } ?>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-sm-offset-8 col-sm-2">
+					<input
+						class="btn btn-default pull-right"
+						type="submit"
+						name="resetEDIFilters"
+						id="resetEDIFilters"
+						value="Reset Filters"
+					/>
+				</div>
+
+				<div class=" col-sm-2">
+					<input
+						class="btn btn-primary pull-right"
+						type="submit"
+						name="applyEDIFilters"
+						id="applyEDIFilters"
+						value="Apply Filters"
+					/>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+
+<div class="row">
+	<div class="col-md-12" id="docHtml">
+
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+<script>
+
+let lastRequestTs = 0;
+
+function setLoading(isLoading) {
+	$('#docHtml').html(isLoading ? '<p class="text-center"><i class="fa fa-spin fa-spinner"></i> Loading EDI Documents...</p>' : '');
+}
+
+function getDocuments(callback)
+{
+	setLoading(true);
+	$.ajax({
+		url: "/edidocument/getdocs",
+		data: <?= json_encode( $_POST ) ?>,
+		type: "POST",
+		dataType: "html",
+		success: function(docHtml) {
+			$('#docHtml').html(docHtml);
+			if ( callback ) {
+				callback();
+			}
+			setupPaginationActions();
+		},
+		error: function(response) {
+			console.error(response);
+			setLoading(false);
+		}
+	});
+}
+
+function documentAction(action, documentID)
+{
+	$.ajax({
+		url: "/edidocument/updateSecondaryStatus",
+		data: { action: action, documentID: documentID },
+		type: "POST",
+		dataType: "html",
+		success: function(docHtml) {
+			console.log("Action: " + action + " documentID: " + documentID);
+			getDocuments();
+		}
+	});
+}
+
+function clearFilters() {
+	// Loop through each input in the form
+	$('#EDIListFilters *').filter(':input').each(function(){
+		// Need to set these to checked and NOT clear their value
+		if ($(this).attr('name') == "EDIKeys[]") {
+			$(this).prop('checked', false);
+			$(this).parent().removeClass('active')
+		} else if ($(this).attr('type') !== "submit") {
+		// Without this, the button text would get cleared too
+			$(this).val("");
+		}
+	});
+}
+
+function resetPage() {
+	$("#pageNumber").val(1);
+	$("#changePage").val("noChange");
+}
+
+function addFiltersAndSubmitForm() {
+	var filterInput = $("<input>")
+		.attr("type", "hidden")
+		.attr("name", "applyEDIFilters").val('newPageSameFilters');
+	$('#EDIListFilters').append(filterInput);
+	$('#EDIListFilters').submit();
+}
+
+function setupPaginationActions() {
+	$(".nextPageButton").on("click", function() {
+		$("#changePage").val("next");
+		addFiltersAndSubmitForm();
+	});
+
+	$(".previousPageButton").on("click", function() {
+		$("#changePage").val("previous");
+		addFiltersAndSubmitForm();
+	});
+}
+
+jQuery(document).ready(function($) {
+	$("#changePage").val("noChange");
+
+	$( "#resetEDIFilters" ).click(function(event) {
+		clearFilters();
+	});
+
+	$( "body" ).on( "click", ".viewX12Document", function() {
+		var docID = $(this).data('document-id');
+
+		$.ajax({
+			url: "/edidocument/getx12doc/" + docID,
+			type: "GET",
+			dataType: "json",
+			success: function(doc) {
+				$('#docModalLabel').html('View X12 Document');
+				$('#Name').val(docID);
+
+				$( '.modal-body pre' ).text( doc );
+
+				$('#docModal').modal('show');
+				$('#viewX12Document').show();
+			}
+		});
+
+		return false;
+	});
+
+	$( "body" ).on( "click", ".xeditDocument", function() {
+		var docID = $(this).data('document-id');
+
+		$.ajax({
+			url: "/edidocument/getdoc/" + docID,
+			type: "GET",
+			dataType: "json",
+			success: function(doc) {
+				$('#docModalLabel').html('View Document Data');
+				$('#Name').val(docID);
+
+				if (doc) {
+					$( '.modal-body pre' ).text( doc );
+				} else {
+					$( '.modal-body pre' ).text("Failed to get data.");
+				}
+
+				$('#docModal').modal('show');
+				$('#viewX12Document').show();
+			}
+		});
+
+		return false;
+	});
+
+	$("body").on("click", ".updateDocument", function(e) {
+		e.preventDefault();
+		documentAction($(this).data('action'), $(this).data('document-id'));
+	});
+
+	var docCallback = null;
+	<?php if ( $docId ) : ?>
+	docCallback = function() {
+		$( "#editDocument<?= $docId ?>" ).trigger( "click" );
+	};
+	<?php endif ?>
+
+	function debounce(func, wait) {
+    	let timeout;
+
+    	return function() {
+        	let context = this, args = arguments;
+        	let later = function() {
+            	timeout = null;
+            	func.apply(context, args);
+        	};
+        	clearTimeout(timeout);
+        	timeout = setTimeout(later, wait);
+    	};
+	}
+
+	$('select[name="Status"], select[name="Transaction"], select[name="Incoming"], input[name="ArrivedFromDate"], input[name="UpdatedFromDate"], input[name="ArrivedToDate"], input[name="UpdatedToDate"], input[name="EDIKeys[]"]').on('change', function() {
+		resetPage();
+		addFiltersAndSubmitForm();
+	});
+
+	let debouncedAddFiltersAndSubmitForm = debounce(addFiltersAndSubmitForm, 500);
+
+    $(`input[name="Reference"]`).on('keyup', function(){
+		resetPage();
+		debouncedAddFiltersAndSubmitForm();
+    });
+
+	$('#EDIListFilters').on('submit', function(e) {
+    	e.preventDefault();
+
+		let thisRequestTs = Date.now();
+		lastRequestTs = thisRequestTs;
+
+		setLoading(true);
+		$.ajax({
+			url: "/edidocument/getdocs",
+			data: $(this).serialize(),
+			type: "POST",
+			dataType: "html",
+			success: function(docHtml) {
+				if (lastRequestTs !== thisRequestTs) {
+					return;
+				}
+
+				$('#docHtml').html(docHtml);
+				setupPaginationActions();
+			},
+			error: function(response) {
+				console.error(response);
+				setLoading(false);
+			}
+		});
+
+	});
+
+	getDocuments(docCallback);
+
+});
+
+jQuery(function () {
+	jQuery("input,select,textarea").not("[type=submit]").jqBootstrapValidation({
+		preventSubmit: true,
+		submitError: function($form, event, errors) {
+			// Here I do nothing, but you could do something like display
+			// the error messages to the customer, log, etc.
+		},
+		submitSuccess: function($form, event) {
+			// form has been submitted
+
+			if ( $form[0].id == 'docForm' )
+			{
+
+				var mycallback = function() {
+					$('#docSavedFeedback .successFeedback').html('EDI Document Saved');
+					$( "#docSavedFeedback" ).fadeIn( 1000, function() {
+						$( "#docSavedFeedback" ).fadeOut( 1000, function() {
+							$('#docModal').modal('hide');
+						});
+					});
+				};
+
+				$.ajax({
+					url: "/doc/save",
+					type: "POST",
+					data: $('#docForm').serialize(),
+					dataType: "json",
+					success: function(data) {
+						if ( data.success == 1 ) {
+
+							getDocuments(mycallback);
+						}
+						else {
+							bootbox.alert('An error occurred while adding the doc.');
+						}
+					}
+				});
+			}
+		},
+		filter: function() {
+			return jQuery(this).is(":visible");
+		}
+	});
+});
+
+</script>
+
+<div class="modal fade" id="docModal" tabindex="-1" role="dialog" aria-labelledby="docModalLabel" aria-hidden="true"><!--begin doc modal-->
+  	<div class="modal-dialog x12Modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="docModalLabel">Viewer</h4>
+			</div>
+
+			<form class="form-horizontal" method="post" novalidate onsubmit="return false" id="docForm">
+				<input type="hidden" value="" name="DocumentID" id="DocumentID" />
+				<div class="modal-body">
+					<pre></pre>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+					<input type="button" class="btn btn-default deleteDocument" style="display: none;" id="deleteDocument" value="Delete EDI Document" />
+				</div>
+			</form>
+
+		</div>
+  	</div>
+</div><!--end doc modal-->
+
+<?php
+$this->partial("include/footer_end");

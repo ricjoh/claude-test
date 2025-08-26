@@ -1,0 +1,372 @@
+<?php
+$this->partial("include/print_header", array('title' => 'Customer Inventory'));
+
+$colspan = 13;
+$totalCospan = 5;
+
+if ( $printCost || $printTemp )
+{
+	$colspan++;
+	$totalCospan++;
+}
+
+$totalPieces = 0;
+$totalWeight = 0;
+$totalPallets = 0;
+
+?>
+	<style>
+		body {
+			visibility: hidden;
+			background-color: #fff;
+		}
+	</style>
+
+	<div class="right-fixed-inner-landscape hide-on-print">
+		<button class="btn btn-primary openPrint">Print</button>
+		<button class="btn btn-primary exportToExcel">Export to Excel</button>
+	</div>
+
+	<form action="/lot/searchtoxls" target="_blank" id="searchToXlsForm" method="post" style="display: none;">
+		<input type="hidden" value="<?= $printCost ?>" name="printCost" />
+		<input type="hidden" value="<?= $printTemp ?>" name="printTemp" />
+		<input type="hidden" value="<?= $printPallets ?>" name="printPallets" />
+		<input type="hidden" value="<?= $sortList ?>" name="sortList" />
+		<?php echo $fieldsHtml; ?>
+	</form>
+
+	<div class="hide-on-print print-instructions">This report must be printed in landscape mode</div>
+	<div id="printContent"><!--begin printContent-->
+	<div class="page shorten-for-print landscape">
+		<div class="page-inner padding-half-inch landscape">
+			<div id="fullHeader">
+				<?php $this->partial("include/print_masthead"); ?>
+			</div>
+			<? echo '<div id="criteriaFeedback">' . $searchFeedback . '</div>'; ?>
+			<table width="100%" class="table" id="content">
+				<thead>
+					<tr>
+						<th align="left">
+							Lot&nbsp;#
+						</th>
+						<th align="left">
+							Customer
+						</th>
+						<th align="left">
+							Description
+						</th>
+						<th align="right">
+							Make Date
+						</th>
+						<? if ( $printCost ) : ?>
+						<th align="right">
+							Cost
+						</th>
+						<? endif ?>
+						<th align="left">
+							Factory
+						</th>
+						<? if ( $printPallets ) : ?>
+						<th align="right">
+							Pallets
+						</th>
+						<? endif ?>
+						<th align="right">
+							Pieces
+						</th>
+						<th align="right">
+							Net Weight
+						</th>
+						<th align="right">
+							Date<br />In
+						</th>
+						<th align="left">
+							Prod<br />Code
+						</th>
+						<th align="left">
+							Room #
+						</th>
+						<? if ( $printTemp ) : ?>
+						<th align="left">
+							Room<br />
+							Temp
+						</th>
+						<? endif ?>
+						<th align="left">
+							Site
+						</th>
+						<th align="left">
+							Inv Type
+						</th>
+						<th align="left">
+							PO #
+						</th>
+					</tr>
+				</thead>
+			<?php foreach ( $lots as $l ) : ?>
+				<?php
+				$totalPieces += $l['AvailablePieces'];
+				$totalWeight += $l['AvailableWeight'];
+				$totalPallets += $l['availablePallets'] ?? 0;
+				?>
+			<tr>
+				<td align="left">
+					<?= $l['LotNumber'] ?>
+				</td>
+				<td align="left">
+					<?= $l['CustomerName'] ?>
+				</td>
+				<td align="left">
+					<?= $l['Description'] ?>
+				</td>
+				<td align="right">
+					<?= $this->utils->slashDate($l['MakeDate']) ?>
+				</td>
+				<? if ( $printCost ) : ?>
+				<td align="right">
+					<?= $l['Cost'] ?>
+				</td>
+				<? endif ?>
+				<td align="left">
+					<?= $l['FactoryName'] ?>
+				</td>
+				<? if ( $printPallets ) : ?>
+				<td align="right">
+					<?= $l['availablePallets'] ?>
+				</td>
+				<? endif ?>
+				<td align="right">
+					<?= number_format($l['AvailablePieces']) ?>
+				</td>
+				<td align="right">
+					<?= number_format($l['AvailableWeight'], 2, '.', ',') ?>
+				</td>
+				<td align="right">
+					<?= $this->utils->slashDate($l['DateIn']) ?>
+				</td>
+				<td align="left">
+					<?= $l['ProductCode'] ?>
+				</td>
+				<td align="left">
+					<?= $l['RoomNumber'] ?>
+				</td>
+				<? if ( $printTemp ) : ?>
+				<td align="center">
+					<?= $l['RoomTemp'] ?>
+				</td>
+				<? endif ?>
+				<td align="left">
+					<?= $l['Site'] ?>
+				</td>
+				<td align="left">
+					<?= $l['InventoryType'] ?>
+				</td>
+				<td align="left">
+					<?= $l['CustomerPONumber'] ?>
+				</td>
+			</tr>
+			<?php if ( $l['RoomNumber2'] || $l['Site2'] || $l['RoomNumber3'] || $l['Site3'] ) : ?>
+			<tr>
+				<td colspan="<?= $colspan ?>" align="center">
+					Additional Locations:
+			<?php
+				$additionalLocations = array();
+				if ( $l['RoomNumber2'] )	array_push($additionalLocations, 'Room: ' . $l['RoomNumber2']);
+				if ( $l['RoomTemp2'] )		array_push($additionalLocations, $l['RoomTemp2']);
+				if ( $l['Site2'] )			array_push($additionalLocations, 'Site: ' . $l['Site2']);
+				if ( $l['RoomNumber3'] )	array_push($additionalLocations, 'Room: ' . $l['RoomNumber3']);
+				if ( $l['RoomTemp3'] )		array_push($additionalLocations, $l['RoomTemp3']);
+				if ( $l['Site3'] )			array_push($additionalLocations, 'Site: ' . $l['Site3']);
+
+				$commaSeparated = implode(", ", $additionalLocations);
+				echo $commaSeparated;
+			?>
+				</td>
+			</tr>
+			<?php endif ?>
+			<?php endforeach ?>
+				<tr>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<? if ($printCost) : ?>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<? endif ?>
+					<td align="right">
+						<strong>Total:</strong>
+					</td>
+					<? if ($printPallets) : ?>
+						<td align="right">
+						<strong><?= number_format($totalPallets) ?></strong>
+						</td>
+					<? endif ?>
+					<td align="right">
+						<strong><?= number_format($totalPieces) ?></strong>
+					</td>
+					<td align="right">
+						<strong><?= number_format($totalWeight, 2, '.', ',') ?></strong>
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<? if ( $printTemp ) : ?>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<? endif ?>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+					<td style="border: none;">
+						&nbsp;
+					</td>
+				</tr>
+			</table>
+
+
+
+		</div>
+	</div>
+	</div><!--end printContent-->
+
+<div id="miniHeader" style="display:none">
+	<?php $this->partial("include/print_masthead", array('mini' => TRUE, 'subtitle' => "Customer Inventory")); ?>
+</div>
+
+<script type="text/javascript">
+function getPtHeight(obj)
+{
+	var pixelHeight = obj.outerHeight(true);
+	var ptHeight = pixelHeight * 72 / 96;
+	return ptHeight;
+}
+
+function getPtWidth(obj)
+{
+	var pixelWidth = obj.innerWidth();
+	var ptWidth = pixelWidth * 72 / 96;
+	return ptWidth;
+}
+
+$(document).ready(function() {
+	$('.openPrint').click(function() {
+		window.print();
+	});
+
+	$('.exportToExcel').click(function() {
+		$('#searchToXlsForm').submit();
+	});
+
+	/*  --------------------------------------------------
+	     Setup table column widths
+	  -------------------------------------------------- */
+	var cssString = '';
+	var tableWidth = $('#content').width();
+	$( "#content tr th" ).each(function( index ) {
+		var width = $(this).outerWidth();
+		width = (width / tableWidth) * 100;
+		var thWidth = width + '%';
+		$( this ).css( "width", thWidth );
+		var num = index + 1;
+		cssString += '.pageTable tr td:nth-child(' + num + ') {	width: ' + thWidth + '; }';
+	});
+	$("<style type='text/css'> " + cssString + " </style>").appendTo("head");
+
+
+	var totalPtHeight = 0;
+	var mastheadPts = getPtHeight( $('header.masthead').first() );
+	var headerPts = <?= $mastheadPoints ?>;
+	var initialHeight = mastheadPts + getPtHeight($('#criteriaFeedback'));
+	var firstRowHeight = getPtHeight($( "#content tr" ).first());
+	var tableHeaderHtml = $( "#content thead" ).first().prop('outerHTML');
+	var resetHeight = headerPts + firstRowHeight;
+	totalPtHeight = initialHeight;
+	var pages = {1: { rows: [] }};
+	var pageCounter = 1;
+	var totalPages = 1;
+	var today = '<?php echo date('m/d/Y') ?>';
+
+	/*  --------------------------------------------------
+	     go through table rows and separate them into pages
+	  -------------------------------------------------- */
+	$( "#content tr" ).each(function( index ) {
+		var ptHeight = getPtHeight($( this ));
+		totalPtHeight += ptHeight;
+		var pageBreakOn = pageCounter == 1 ? 560 : 540; // the pt height
+		if ( totalPtHeight >= pageBreakOn ) {
+			totalPtHeight = resetHeight;
+			pageCounter++;
+			totalPages = pageCounter;
+			pages[pageCounter] = { rows: [] };
+		}
+
+		// var newHtml = d.find('td').first().html() + ' ' + totalPtHeight + ' ' + pageCounter;
+		// var newHtml = totalPtHeight;
+		// $( this ).find('td').first().html(newHtml);
+
+		// pages[pageCounter].rows.push( d );
+		pages[pageCounter].rows.push( $( this ) );
+	});
+
+	/*  --------------------------------------------------
+	     loop through each page and build html string
+	     to ouput for new body content
+	  -------------------------------------------------- */
+	var html = '';
+	for (var pageNum in pages)
+	{
+		html += '<div class="page shorten-for-print landscape">';
+			html +=	'<div class="page-inner padding-half-inch landscape">';
+			html += '<div class="header-info"><div>' + today + '</div><div>Page ' + pageNum + ' of ' + totalPages + '</div></div>';
+			// html += $('.masthead').prop('outerHTML');
+			if ( pageNum == 1 ) {
+				html += $('#fullHeader').html();
+
+				html += $('#criteriaFeedback').prop('outerHTML');
+			} else {
+				html += $('#miniHeader').html();
+			}
+			html += '<table width="100%" class="table pageTable">';
+			html += tableHeaderHtml;
+			var page = pages[pageNum];
+			var rows = page.rows;
+			var arrayLength = rows.length;
+			for (var i = 0; i < arrayLength; i++) {
+			if ( pageNum == 1 && i == 0 ) {
+				continue;
+			}
+			html += rows[i].prop('outerHTML');
+			}
+			html += '</table>';
+			html += '</div>';
+		html +=	'</div>';
+	}
+	$('body').css('visibility', 'visible').css('background-color', '#FBEFDE');
+	$('#printContent').html(html);
+
+});
+</script>
+
+<?php
+$this->partial("include/print_footer");
+?>

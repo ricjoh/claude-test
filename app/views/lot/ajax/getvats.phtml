@@ -1,0 +1,148 @@
+<!--LOTTOTALS={ "lotPieces" : <?= $lotTotals->lotPieces  ?>, "lotWeight" : <?= $lotTotals->lotWeight  ?>, "lotAvailPieces" : <?= $lotTotals->lotAvailPieces  ?>, "lotAvailWeight" : <?= $lotTotals->lotAvailWeight  ?> }-->
+<style>
+span.double {
+    font-size: .8em;
+    line-height: 1;
+    display: inline-block;
+}
+span.double .vn {
+	font-size: 1.2rem;
+}
+</style>
+<?php if ( $lotId == 'NEW' ) : ?>
+<div style="text-align: center; margin-top: 20px;"><b>NOTE:</b> You must click <b>Save Lot Info</b>, above, before adding vats.</div>
+<? else: ?>
+<h2 style="margin-top: 1.75em;">Vats
+	<button type="submit"
+		class="btn btn-default hide-on-vat-entry"
+		data-toggle="modal"
+		data-target="#vatModal"
+		id="addVat"
+		style="display: inline-block; float: right; margin-right: 25px;<?php if ( $lotId == 'NEW' ) : ?>visibility: hidden;<?php endif ?>">Add New Vat</button>
+</h2>
+<?
+	if ( count($vats) ) // begin show vats
+	{
+		$isEdiLot = count($vats) > 0 && substr($vats[0]->VatNumber, 0, 3) === 'EDI';
+?>
+		  <table style="width: 100%" id="vatTable" class="table tablesorter table-striped thick-rounded-border">
+			<thead>
+			<tr>
+				<th>Make Date</th>
+				<th><?= $isEdiLot ? 'Vat#/LP' : 'Vat No' ?></th>
+				<th>Cust Lot No</th>
+				<th>Pieces</th>
+				<th>Avail Pcs</th>
+				<th class="hide-on-vat-entry">Moisture</th>
+				<th class="hide-on-vat-entry">FDB</th>
+				<th class="hide-on-vat-entry">PH</th>
+				<th class="hide-on-vat-entry">Salt</th>
+				<th>Weight</th>
+				<th>Avail Wt</th>
+				<th class="hide-on-vat-entry">Actions</th>
+			</tr>
+			</thead>
+			<tbody>
+		<?php foreach ( $vats as $v ) : ?>
+
+			<?php
+				$showTrash = true;
+
+				if ( $vatStats->{ $v->VatID }->isOffered or
+					 $v->Pieces > $vatStats->{ $v->VatID }->InvPieces )
+				{
+					$showTrash = false;
+				}
+
+				$vatNumber = $v->VatNumber;
+				$vatLp = $vatLps[$v->VatID] ?: $vatNumber;
+				if ( $isEdiLot )
+				{
+					$vatNumber = '<span class="double"><span class="vn">'  . $vatNumber. '</span><br><span class="lp">' . substr($vatLp, -12) . '</span></span>';
+				}
+			?>
+
+			<tr class="vatDetails" rel="<?= $v->VatID ?>">
+				<td><a href="#"  class="editdate" data-type="date"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="MakeDate"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Select date"><?= $utils->slashFullDate( $v->MakeDate ); ?></a></td>
+
+				<td align="right"><a href="#"  class="editnum"  data-type="text"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="VatNumber"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter Vat Number"><?= $vatNumber ?></a></td>
+
+				<td align="right"><a href="#"  class="editnum"  data-type="text"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="CustomerLotNumber"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter Customer Lot Number"><?= $v->CustomerLotNumber ?></a></td>
+
+				<td align="right"><a href="#"  class="editnum"  data-type="number" data-step="any"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="Pieces"
+												  data-warn="<?= $showTrash ? 'FALSE' : 'TRUE' ?>"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter Total Vat Pieces"><?= $v->Pieces ?></a></td>
+
+				<td class="avail Pieces" align="right"><?= $vatStats->{ $v->VatID }->InvPieces ?></td>
+
+				<td align="right" class="hide-on-vat-entry"><a href="#"  class="editnum"  data-type="number" data-step="any"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="Moisture"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter Moisture"><?= $v->Moisture ?></a></td>
+
+				<td align="right" class="hide-on-vat-entry"><a href="#"  class="editnum"  data-type="number" data-step="any"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="FDB"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter FDB"><?= $v->FDB ?></a></td>
+
+				<td align="right" class="hide-on-vat-entry"><a href="#"  class="editnum"  data-type="number" data-step="any"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="PH"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter PH"><?= $v->PH ?></a></td>
+
+				<td align="right" class="hide-on-vat-entry"><a href="#"  class="editnum"  data-type="number" data-step="any"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="Salt"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter Salt"><?= $v->Salt ?></a></td>
+
+				<td align="right"><a href="#"  class="editnum"  data-type="number" data-step="any"
+												  data-pk="<?= $v->VatID ?>"
+												  data-name="Weight"
+												  data-warn="<?= $showTrash ? 'FALSE' : 'TRUE' ?>"
+												  data-url="/vat/update/<?= $v->VatID ?>"
+												  data-title="Enter Total Vat Weight"><?= $v->Weight ?></a></td>
+
+				<td class="avail Weight" align="right"><?= $vatStats->{ $v->VatID }->InvWeight ?></td>
+				<td class="hide-on-vat-entry">
+					<a href="#" class="editVatNoteButton" title="Edit Note" data-vatid="<?= $v->VatID ?>"><i class="fa fa-pencil fa-lg fa-fw"></i></a>
+					<?php if ( $showTrash ) : ?>
+					<a href="#" class="deleteVat"  title="Delete Vat" data-vatid="<?= $v->VatID ?>"><i class="fa fa-trash-o fa-lg fa-fw"></i></a>
+					<?php endif ?>
+				</td>
+			</tr>
+			<tr class="vatNote <?= (empty( $v->NoteText ) ? 'hide' : ''); ?>" rel="<?= $v->VatID ?>">
+				<td class="vatNoteLabel">Note:</td>
+				<td class="vatNoteText editVatNote" data-name="NoteText" data-type="textarea"
+					data-title="Enter notes" data-pk="<?= $v->VatID ?>" data-vatid="<?= $v->VatID ?>"
+					data-url="/vat/update/<?= $v->VatID ?>" colspan="10"><?= $v->NoteText ?></td>
+			</tr>
+
+		<?php endforeach ?>
+			</tbody>
+		  </table>
+<?php
+	} // end show vats
+	else {
+		echo 'This lot has no vats at this time. Use the <b>Add New Vat</b> button to add a vat.';
+	}
+?>
+<? endif ?>

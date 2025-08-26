@@ -1,0 +1,889 @@
+<?php
+// $title = 'Cheese Tracker';
+
+$buttonDisabled = $lotId ? '' : 'disabled';
+
+$rightContent = <<<HTML
+	<strong>Show: &nbsp;</strong>
+	<div class="btn-group" role="group" aria-label="...">
+		<a href="/lot/printmanifest/$lotId" target="_blank" class="btn btn-default $buttonDisabled">Print Manifest</a>
+		<button type="button" class="btn btn-default" data-toggle="modal" data-target="#activityModal" $buttonDisabled>Activity</button>
+		<a href="/?tab=offers&autosearch=1&lot=$lotData->LotNumber" class="btn btn-default $buttonDisabled" target="_blank">Offers</a>
+		<button type="button" class="btn btn-default" data-toggle="modal" data-target="#testsModal" $buttonDisabled>Tests</button>
+		<a href="/lot/printmanifest/pick/$lotId" target="_blank" class="btn btn-default $buttonDisabled">Order Pick</a>
+		<a href="/lot/printmanifest/move/$lotId" target="_blank" class="btn btn-default $buttonDisabled">Move Sheet</a>
+	</div>
+HTML;
+
+$statusValue = '';
+$statusLink = '';
+if (!empty($lotData->StatusPID)) {
+	foreach ( $statii as $status ) {
+		if ($status['ParameterID'] == $lotData->StatusPID) {
+			$statusValue = $status['Value1'];
+			if ($status['ParameterID'] == Lot::STATUS_TRANSFERRED) {
+				$statusLink = '/lot/edit/' . $transferredTo;
+			}
+		}
+	}
+}
+
+$this->partial(
+	"include/header",
+	array(
+		'title' => 'Edit Lot',
+		'header' => $title,
+		'headerIcon' => 'lot',
+		'rightContent' => $rightContent,
+		'wideRightContent' => true
+	)
+);
+
+?>
+<style>
+
+.stringStatus {
+	display: inline-block;
+	padding: 7px 23px 17px 13px;
+}
+
+#lotTotals .ltLabel {
+	font-family: 'Open Sans Condensed', sans-serif;
+}
+
+#vatHtml {
+	margin-left: 0%;
+}
+
+#vatHtml.vat-entry-active .hide-on-vat-entry {
+	display: none;
+}
+
+#vatModal .modal-dialog {
+	position:absolute;
+	margin: 30px 0;
+	top: 100px;
+	right: 52%;
+}
+
+#lotForm .has-success {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.transfer-button-block {
+	margin-top: 80px;
+	margin-bottom: 130px;
+}
+
+.alert {
+	margin-bottom: 32px;
+}
+
+.status-link {
+	text-decoration: underline;
+}
+
+.status-link-overlay {
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.status-link-overlay:hover {
+	cursor: pointer;
+}
+
+</style>
+
+<div class="row">
+	<div class="col-md-12">
+		<form id="lotForm" class="form-horizontal form-track-change hide-on-vat-entry" style="display: block;" method="post" onsubmit="return false;" action="/lot/save/" novalidate>
+			<input type="hidden" name="LotID" id="LotID" value="<?= $lotData->LotID ?>">
+			<input type="hidden" name="TransferredTo" id="TransferredTo" value="<?= $transferredTo ?>">
+
+			<?php if ( $DRAFTMODE ): ?>
+				<div id="subtitlelinks" style="margin-left: 6em;">
+				<?php if ( $deliveryurl ): ?>
+					<a href="<?= $deliveryurl ?>" TARGET="_blank">See EDI Delivery Details</a> |
+				<?php endif ?>
+				<a href="/lot/list/BABA841F-7D26-4A4D-8342-897F4F500B64">Back to Draft Lots</a></div>
+			<?php endif ?>
+			<div class="field-group rightBorder">
+				<h5>Lot Info</h5>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding" for="LotNumber">Lot #</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text"
+							name="LotNumber"
+							id="LotNumber"
+							value="<?= $lotData->LotNumber ?>"
+							class="form-control"
+							required
+							data-validation-ajax-ajax="/lot/checknumber/<?= $lotData->LotID ?>"
+							data-validation-required-message="Please enter a Lot Number">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Description</label>
+					<div class="col-sm-3 nopadding">
+						<select
+							id="DescriptionPID"
+							name="DescriptionPID"
+							class="form-control"
+							required
+							data-validation-required-message="Please select a description">
+							<?php
+								foreach ( $descs as $desc ) {
+									// $logger->log( $desc );
+									$sel = '';
+									if ( ! empty( $lotData->DescriptionPID ) ) {
+										$sel = $desc['ParameterID'] == $lotData->DescriptionPID ? ' selected="selected" ' : '';
+									}
+									echo '<option value="' . $desc['ParameterID'] . '"' . $sel . '>' . $desc['Value1'] . '</option>';
+								}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding" for="Status">Status</label>
+					<div class="col-sm-3 nopadding">
+						<input class="form-control <?= !empty($statusLink) ? 'status-link' : '' ?>" disabled value="<?= $statusValue ?>">
+						<?php if (!empty($statusLink)): ?>
+							<a class="status-link-overlay" href="<?= $statusLink ?>"></a>
+						<?php endif; ?>
+					</div>
+				</div>
+				<?php
+				// disable if inventory type is storage
+				$disabled = $lotData->InventoryTypePID == '85102C3F-33C1-482A-9750-4FB4A5EA7A7B' ? 'disabled' : '';
+				?>
+				<div id="CostGroup" class="form-group control-group"> <!-- enabled-on-COMMITTED enabled-on-SET-ASIDE enabled-on-RESALE disabled-on-AGING -->
+					<label class="col-sm-3 control-label nopadding <?= $disabled ?>">Cost</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control" id="Cost" name="Cost" value="<?= $lotData->Cost ?>" <?= $disabled ?>>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Date In</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control datepicker"
+								id="DateIn"
+								name="DateIn"
+								required
+								data-validation-required-message="Date In is required"
+								value="<?= $lotId ? $utils->slashDate( $lotData->DateIn ) : date('m/d/y'); ?>">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Vendor</label>
+					<div class="col-sm-3 nopadding">
+						<select
+							id="VendorID"
+							name="VendorID"
+							class="form-control"
+							required
+							data-validation-required-message="Please select a Vendor" >
+							<?php
+								foreach ( $vendors as $vendor ) {
+									$sel = '';
+									if ( ! empty( $lotData->VendorID ) ) {
+										$sel = $vendor['VendorID'] == $lotData->VendorID ? ' selected="selected" ' : '';
+									}
+									echo '<option value="' . $vendor['VendorID'] . '"' . $sel . '>' . $vendor['Name'] . '</option>';
+								}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+
+				<div class="form-group control-group">
+
+					<label class="col-sm-3 control-label nopadding">Factory</label>
+					<div class="col-sm-3 nopadding">
+						<select
+							id="FactoryID"
+							name="FactoryID"
+							class="form-control">
+							<?php
+								foreach ( $factories as $factory ) {
+									$sel = '';
+									if ( ! empty( $lotData->FactoryID ) && $factory['FactoryID'] == $lotData->FactoryID ) {
+										$sel = ' selected="selected"';
+										$selfnum = $factory['Number'];
+									}
+									$fname = $factory['Name'];
+									if ( ! empty( $factory['FacilityLocation'] ) )
+									{
+										$fname .= ' - ' . $factory['FacilityLocation'];
+									}
+									echo '<option value="' . $factory['FactoryID'] . '"' .
+												' data-fnum="' . $factory['Number'] . '"' .
+												$sel . '>' .
+												$fname . '</option>';
+								}
+							?>
+						</select>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Factory #</label>
+					<div class="col-sm-3 nopadding">
+						<input disabled type="text" class="form-control plain-disabled" id="FactoryNumber" name="FactoryNumber" value="<?= $selfnum ?>">
+					</div>
+				</div>
+			</div>
+
+			<div class="field-group rightBorder">
+
+				<h5>Customer Info</h5>
+
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Customer</label>
+					<div class="col-sm-3 nopadding">
+						<select
+							id="CustomerID"
+							name="CustomerID"
+							class="form-control"
+							required
+							data-validation-required-message="Please select a Customer">
+							<?php
+								foreach ( $customers as $cust ) {
+									$sel = '';
+									if ( ! empty( $lotData->CustomerID ) ) {
+										$sel = $cust['CustomerID'] == $lotData->CustomerID ? ' selected="selected" ' : '';
+									}
+									echo '<option value="' . $cust['CustomerID'] . '"' . $sel . '>' . $cust['Name'] . '</option>';
+								}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Cust PO #</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control" id="CustomerPONumber" name="CustomerPONumber" value="<?= $lotData->CustomerPONumber ?>">
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Prod Code</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control" id="ProductCode" name="ProductCode" value="<?= $lotData->ProductCode ?>">
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Inven Type</label>
+
+					<? /****
+					For Javascript
+
+					'COMMITTED' => '9BB1E25F-8E9F-457B-84FB-6ADC005EAE2E',
+					'SET-ASIDE' => '61D4197D-22EB-4B50-8D5F-B94C07CB6509',
+					'RESALE' => 'EF2309C7-8812-467D-9F65-52D2DDF52060',
+					'AGING' => '85102C3F-33C1-482A-9750-4FB4A5EA7A7B'
+					****/ ?>
+
+					<div class="col-sm-3 nopadding">
+						<select
+							id="InventoryTypePID"
+							name="InventoryTypePID"
+							class="form-control"
+							required
+							data-validation-required-message="Please select an inventory type">
+							<?php
+								foreach ( $itypes as $itype ) {
+									// $logger->log( $itype );
+									$sel = '';
+									if ( ! empty( $lotData->InventoryTypePID ) ) {
+										$sel = $itype['ParameterID'] == $lotData->InventoryTypePID ? ' selected="selected" ' : '';
+									}
+									echo '<option value="' . $itype['ParameterID'] . '"' . $sel . '>' . $itype['Value1'] . '</option>';
+								}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+
+				<?php
+				$disabled =
+					$lotData->InventoryTypePID == '85102C3F-33C1-482A-9750-4FB4A5EA7A7B' ||
+					$lotData->InventoryTypePID == 'EF2309C7-8812-467D-9F65-52D2DDF52060'
+						? 'disabled' : '';
+				?>
+				<div class="form-group control-group enabled-on-COMMITTED enabled-on-SET-ASIDE disabled-on-RESALE disabled-on-AGING">
+					<label class="col-sm-3 control-label nopadding <?= $disabled ?>">First Month</label>
+					<div class="col-sm-3 nopadding">
+						<input type="number" class="form-control" id="FirstMonthRate" name="FirstMonthRate" value="<?= $lotData->FirstMonthRate ?>" <?= $disabled ?>>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group enabled-on-COMMITTED enabled-on-SET-ASIDE disabled-on-RESALE disabled-on-AGING">
+					<label class="col-sm-3 control-label nopadding <?= $disabled ?>">Addl Month</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control" id="AdditionalMonthRate" name="AdditionalMonthRate" value="<?= $lotData->AdditionalMonthRate ?>" <?= $disabled ?>>
+					</div>
+				</div>
+			</div>
+
+			<div class="field-group">
+
+				<h5>Storage Info</h5>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Warehouse</label>
+					<div class="col-sm-3 nopadding">
+						<select id="WarehouseID" name="WarehouseID" class="form-control" required data-validation-required-message="Please select a Warehouse">
+						<?php
+							foreach ( $warehouses as $warehouse )
+							{
+								$sel = '';
+								if ( ! empty( $lotData->WarehouseID ) )
+								{
+									$sel = $warehouse['WarehouseID'] == $lotData->WarehouseID ? ' selected="selected" ' : '';
+								}
+								echo '<option value="' . $warehouse['WarehouseID'] . '"' . $sel . '>' . $warehouse['Name'] . '</option>';
+							}
+						?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+
+				<div class="form-group control-group show-on-COMMITTED show-on-SET-ASIDE show-on-RESALE hide-on-AGING">
+					<label class="col-sm-3 control-label nopadding">Owned By</label>
+					<div class="col-sm-3 nopadding">
+						<select id="OwnedBy" name="OwnedBy" class="form-control">
+						<?php
+							foreach ( $warehouses as $warehouse )
+							{
+								$sel = '';
+								if ( ! empty( $lotData->OwnedBy ) )
+								{
+									$sel = $warehouse['WarehouseID'] == $lotData->OwnedBy ? ' selected="selected" ' : '';
+								}
+								echo '<option value="' . $warehouse['WarehouseID'] . '"' . $sel . '>' . $warehouse['Name'] . '</option>';
+							}
+						?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+
+				<?php $counter = 1; ?>
+				<?php foreach ( $lotRooms as $lr ) : ?>
+					<?php
+					$RoomPIDName	= 'RoomPID';
+					$TempName		= 'RoomTemp';
+					$SiteName		= 'Site';
+
+					if ( $counter > 1 )
+					{
+						$RoomPIDName	.= $counter;
+						$TempName		.= $counter;
+						$SiteName		.= $counter;
+					}
+
+					$TempValue = '';
+					if (isset($lr['RoomTemp']) && strlen($lr['RoomTemp']) > 0)
+					{
+						$TempValue = $lr['RoomTemp'];
+					}
+					?>
+					<div class="roomSiteContainer"><!--begin roomSiteContainer-->
+						<div class="form-group control-group">
+							<label class="col-sm-3 control-label nopadding">Room</label>
+							<div class="col-sm-9 nopadding">
+
+								<div class="row nopadding room-temp-controls">
+									<div class="col-sm-6 nopadding room-control">
+										<select
+											id="<?= $RoomPIDName ?>"
+											name="<?= $RoomPIDName ?>"
+											required
+											data-validation-required-message="Please select a room"
+											class="form-control">
+											<?php
+												foreach ( $rooms as $room )
+												{
+													$sel = '';
+													if ( $lr['RoomPID'] )
+													{
+														$sel = ($room['ParameterID'] == $lr['RoomPID']) ? ' selected="selected" ' : '';
+													}
+
+													echo '<option value="' . $room['ParameterID'] . '"' . $sel . '>' . $room['Value1'] . "</option>";
+												}
+											?>
+										</select>
+									</div>
+									<div class="col-sm-6 nopadding temp-control">
+										<input
+											type="text"
+											id="<?= $TempName ?>"
+											name="<?= $TempName ?>"
+											value="<?= $TempValue ?>"
+											readonly="true"
+											xdata-validation-required-message="Please provide a room temperature"
+											placeholder="&deg;F"
+											class="form-control" />
+									</div>
+								</div>
+								<p class="help-block text-danger"></p>
+							</div>
+						</div>
+						<div class="form-group control-group">
+							<label class="col-sm-3 control-label nopadding">Site</label>
+							<div class="col-sm-3 nopadding">
+								<input type="text" maxlength="50" class="form-control fa-icon-left siteTxtInput" id="<?= $SiteName ?>" name="<?= $SiteName ?>" value="<?= $lr['Site'] ?>">
+								<?php if ( $counter > 1 ) : ?>
+									<div class="pull-right fa-icon-right"><a href="#" class="removeRoomSite" title="Remove This Room/Site"><i class="fa fa-trash fa-lg fa-fw"></i></a></div>
+								<?php endif ?>
+								<p class="help-block text-danger"></p>
+							</div>
+						</div>
+						<div class="roomSiteContainerBorder"></div>
+					</div><!--end roomSiteContainer-->
+					<?php $counter++; ?>
+				<?php endforeach ?>
+
+				<?php
+				$disabled = $lotData->InventoryTypePID != '85102C3F-33C1-482A-9750-4FB4A5EA7A7B' ? 'disabled' : '';
+				?>
+				<div class="form-group control-group disabled-on-COMMITTED disabled-on-SET-ASIDE disabled-on-RESALE enabled-on-AGING">
+					<label class="col-sm-3 control-label nopadding <?= $disabled ?>">Handling</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control" id="Handling" name="Handling" value="<?= $lotData->Handling ?>" <?= $disabled ?>>
+					</div>
+				</div>
+				<div class="form-group control-group disabled-on-COMMITTED disabled-on-SET-ASIDE disabled-on-RESALE enabled-on-AGING">
+					<label class="col-sm-3 control-label nopadding <?= $disabled ?>">per</label>
+					<div class="col-sm-3 nopadding">
+						<select id="HandlingUnit" name="HandlingUnit" class="form-control" <?= $disabled ?>>
+						<?php
+							foreach ( ['lb', 'pallet'] as $unit )
+							{
+								$sel = '';
+								if ( ! empty( $lotData->HandlingUnit ) )
+								{
+									$sel = $unit == $lotData->HandlingUnit ? ' selected="selected" ' : '';
+								}
+								echo '<option value="' . $unit . '"' . $sel . '>' . $unit . '</option>';
+							}
+						?>
+						</select>
+					</div>
+				</div>
+				<div class="form-group control-group disabled-on-COMMITTED disabled-on-SET-ASIDE disabled-on-RESALE enabled-on-AGING">
+					<label class="col-sm-3 control-label nopadding <?= $disabled ?>">Storage</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control" id="Storage" name="Storage" value="<?= $lotData->Storage ?>" <?= $disabled ?>>
+					</div>
+				</div>
+				<div class="form-group control-group disabled-on-COMMITTED disabled-on-SET-ASIDE disabled-on-RESALE enabled-on-AGING">
+					<label class="col-sm-3 control-label nopadding <?= $disabled ?>">per</label>
+					<div class="col-sm-3 nopadding">
+						<select id="StorageUnit" name="StorageUnit" class="form-control" <?= $disabled ?>>
+						<?php
+							foreach ( ['lb', 'pallet'] as $unit )
+							{
+								$sel = '';
+								if ( ! empty( $lotData->StorageUnit ) )
+								{
+									$sel = $unit == $lotData->StorageUnit ? ' selected="selected" ' : '';
+								}
+								echo '<option value="' . $unit . '"' . $sel . '>' . $unit . '</option>';
+							}
+						?>
+						</select>
+					</div>
+				</div>
+
+				<div class="roomSiteContainerBorder"></div>
+
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding" for="BillingFrequency">Bill Every</label>
+					<div class="col-sm-3 nopadding">
+						<select
+							id="BillingFrequency"
+							name="BillingFrequency"
+							class="form-control"
+							required
+							data-validation-required-message="Please select a billing frequency">
+							<?php
+								foreach ($billingFrequencyArray as $frequency) {
+									$sel = $lotData->BillingFrequency == $frequency ? 'selected="selected"' : '';
+
+									echo '<option value="' . $frequency . '"' . $sel . '>' . $frequency . '</option>';
+								}
+							?>
+						</select>
+					</div>
+				</div>
+
+				<div class="roomSiteContainerBorder"></div>
+
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Pallets</label>
+					<div class="col-sm-3 nopadding">
+						<input class="form-control" id="Pallets" name="Pallets" type="number" min="<?= $minimumPallets ?>" value="<?= $lotData->Pallets ?>">
+					</div>
+				</div>
+
+				<div class="roomSiteContainerBorder hide-on-COMMITTED hide-on-SET-ASIDE hide-on-RESALE show-on-AGING"></div>
+
+				<div class="form-group control-group hide-on-COMMITTED hide-on-SET-ASIDE hide-on-RESALE show-on-AGING">
+					<label class="col-sm-3 control-label nopadding">Temp Change</label>
+
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control datepicker"
+							id="TempChangeDate"
+							name="TempChangeDate"
+							value="<?= isset($lotData->TempChangeDate) ? $utils->slashDate( $lotData->TempChangeDate ) : ''; ?>">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+
+				<?php if ( $lotId ): ?>
+					<div class="roomSiteContainerBorder hide-on-COMMITTED hide-on-SET-ASIDE hide-on-RESALE show-on-AGING"></div>
+
+					<?php
+					$receipt = null;
+					if (count($lotData->warehousereceipt)) {
+						$receipt = $lotData->getWarehouseReceipt(['order' => 'CreateDate'])->getLast();
+					}
+					?>
+
+					<div class="form-group control-group hide-on-COMMITTED hide-on-SET-ASIDE hide-on-RESALE show-on-AGING">
+						<label class="col-sm-3 control-label nopadding">W Receipt #</label>
+						<div class="col-sm-3 nopadding form-link">
+							<!-- <input disabled type="text" class="form-control fa-icon-left plain-disabled" id="ReceiptNumber" name="ReceiptNumber" value=""> -->
+							<div class="fa-icon-right">
+								<? if ($receipt): ?>
+									<a href="/warehousereceipt/print/<?= $receipt->ReceiptID ?>" target="_blank" class="wr-link"><?= $receipt->ReceiptNumber ?></a>
+								<? endif; ?>
+								<a href="#" id="AddToWR" title="Add to Warehouse Receipt" data-toggle="popover"
+								   data-lotid="<?= $lotData->LotID ?>"><i class="fa fa-plus fa-lg fa-fw"></i></a>
+							</div>
+						</div>
+					</div>
+				<? endif; ?>
+
+				<div class="transfer-button-block">
+					<?php //! LOT TRANSFER DISABLED UNTIL CLIENT APPROVAL
+					if ( false ): //$lotData->StatusPID === Lot::STATUS_EXISTING && $lotTotals->availPieces > 0 ):
+					?>
+						<button id="lotTransferButton" type="button" class="btn btn-primary" style="float: right; margin-right: 15px;">Transfer to New Lot</button>
+					<?php endif ?>
+				</div>
+				<div class="has-success">
+					<div id="lotSavedFeedback" class="control-label successFeedback" style="float: left; display: none; padding-left: 50px;">Lot Saved</div>
+					<button id="lotSaveButton" type="submit" class="btn btn-primary" style="float: right; margin-right: 15px;"><?= $lotData->StatusPID === Lot::STATUS_DRAFT ? 'Save as Existing Lot' : 'Save Lot Info' ?></button>
+				</div>
+			</div>
+
+			<div style="clear: both;"></div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label notes-label">Notes</label>
+				<div class="col-sm-12 nopadding">
+						<textarea placeholder="Notes" name="NoteText" id="Note"
+								  class="form-control notes-box"><?= $lotData->NoteText ?></textarea>
+					<p class="help-block text-danger"></p>
+				</div>
+				<?php if ( !empty($creator) ) : ?>
+					<div style="clear: both;"></div>
+					<label class="col-sm-3 control-label notes-label">Created By</label>
+					<div class="col-sm-12 nopadding" style="padding-top: 7px;">
+						<?= $creator ?>
+					</div>
+				<?php endif; ?>
+				<?php if ( !empty($transferredFromLink) ) : ?>
+					<div style="clear: both;"></div>
+					<label class="col-sm-3 control-label notes-label">Transferred From</label>
+					<div class="col-sm-12 nopadding" style="padding-top: 7px;">
+						<?= $transferredFromLink ?>
+					</div>
+				<?php endif; ?>
+			</div>
+			<div style="clear: both;"></div>
+		</form>
+
+
+
+		<div id="lotTotals">
+			<div class="lotTotal roundedBorder">
+				<div class="ltLabel">Entered Pieces</div>
+				<div class="ltValue" id="lotPieces"><?= number_format( $lotTotals->totPieces ) ?></div>
+			</div>
+			<div class="lotTotal roundedBorder">
+				<div class="ltLabel">Entered Weight</div>
+				<div class="ltValue" id="lotWeight"><?= number_format( $lotTotals->totWeight, 2, '.', ',' ) ?></div>
+			</div>
+			<div class="lotTotal roundedBorder">
+				<div class="ltLabel">Available Pieces</div>
+				<div class="ltValue" id="lotAvailPieces"><?= number_format( $lotTotals->availPieces ) ?></div>
+			</div>
+			<div class="lotTotal roundedBorder">
+				<div class="ltLabel">Available Weight</div>
+				<div class="ltValue" id="lotAvailWeight"><?= number_format( $lotTotals->availWeight, 2, '.', ',' ) ?></div>
+			</div>
+			<div class="lotTotal roundedBorder">
+				<div class="ltLabel">Available Pallets</div>
+				<div class="ltValue" id="lotAvailWeight"><?= number_format( $lotData->availablePallets ) ?></div>
+			</div>
+			<div style="clear: both;"></div>
+		</div>
+
+<!------------ VATS --------------- -->
+		<div id="vatHtml"></div>
+
+	</div>
+</div>
+
+<?php $this->partial("include/footer_start"); ?>
+
+<!-- SCRIPTS -->
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+<script>
+var getVatsUrl = '/lot/getvats/00000000-0000-0000-0000-000000000000';
+<?php if ( $lotId ) : ?>
+LOT_ID = '<?= $lotId ?>';
+getVatsUrl = '/lot/getvats/' + LOT_ID ;
+<?php endif ?>
+</script>
+
+<script src="/public/js/commatize.js"></script>
+<script src="/public/js/lot.js?version=5"></script>
+
+<div class="modal fade" id="vatModal" tabindex="-1" role="dialog" aria-labelledby="vatModalLabel" aria-hidden="true"><!--begin vat add modal-->
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="vatModalLabel">Add Vat</h4>
+			</div>
+			<form class="form-horizontal" method="post" novalidate onsubmit="return false" id="vatForm">
+				<input type="hidden" value="<?php if ( $lotId ) : ?><?= $lotId ?><?php endif ?>" name="LotID" id="vatFormLotID" />
+
+				<div class="modal-body">
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="MakeDate">Make Date</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="MakeDate"
+								id="MakeDate"
+								value=""
+								class="form-control datepicker"
+								x-autocomplete="off"
+								required
+								data-validation-required-message="Please enter a Make Date" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="VatNumber">Vat No.</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="VatNumber"
+								id="VatNumber"
+								value=""
+								class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="CustomerLotNumber">Cust Lot No.</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="CustomerLotNumber"
+								id="CustomerLotNumber"
+								value=""
+								class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="Pieces">Pieces</label>
+						<div class="col-sm-9">
+							<input type="number"
+								name="Pieces"
+								id="Pieces"
+								value=""
+								class="form-control"
+								required
+								data-validation-required-message="Please enter number of Pieces" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="Moisture">Moisture</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="Moisture"
+								id="Moisture"
+								value=""
+								data-validation-regex-regex="[0-9]*(\.\d{1,2})?"
+								data-validation-regex-message="Please enter only an integer or decimal number here"
+								class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="FDB">FDB</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="FDB"
+								id="FDB"
+								value=""
+								data-validation-regex-regex="[0-9]*(\.\d{1,2})?"
+								data-validation-regex-message="Please enter only an integer or decimal number here"
+								class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="PH">PH</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="PH"
+								id="PH"
+								value=""
+								data-validation-regex-regex="[0-9]*(\.\d{1,2})?"
+								data-validation-regex-message="Please enter only an integer or decimal number here"
+								class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="Salt">Salt</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="Salt"
+								id="Salt"
+								value=""
+								data-validation-regex-regex="[0-9]*(\.\d{1,2})?"
+								data-validation-regex-message="Please enter only an integer or decimal number here"
+								class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="Weight">Weight</label>
+						<div class="col-sm-9">
+							<input type="text"
+								name="Weight"
+								id="Weight"
+								value=""
+								required
+								data-validation-required-message="Please enter Weight"
+								data-validation-regex-regex="[0-9]*(\.\d{1,2})?"
+								data-validation-regex-message="Please enter only an integer or decimal number here"
+								class="form-control" />
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+
+					<div class="form-group control-group">
+						<label class="col-sm-3 control-label" for="NoteText">Notes</label>
+						<div class="col-sm-9">
+						  <textarea name="NoteText" id="NoteText" class="form-control" style="height: 8em;"></textarea>
+							<p class="help-block text-danger"></p>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal-footer">
+					<div class="pull-left has-success" id="vatSavedFeedback" style="display: none;"><div class="control-label successFeedback">Vat Saved</div></div>
+					<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+					<input type="button" class="btn btn-default deleteVat" style="display: none;" id="deleteVat" value="Delete Vat" />
+					<input type="submit" class="btn btn-primary" value="Save Vat & Close" />
+					<input type="button" class="btn btn-primary" id="SaveAddButton" value="Save Vat & Add Another" />
+					<input type="hidden" id="vatFormReload" name="reload" value="">
+				</div>
+			</form>
+		</div>
+	</div>
+</div><!--end vat add modal-->
+
+<div class="modal fade" id="activityModal" tabindex="-1" role="dialog" aria-labelledby="activityModalLabel" aria-hidden="true"><!--begin vat add modal-->
+	<div class="modal-dialog modal-lg" style="width: 1150px">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="activityModalLabel">Activity</h4>
+			</div>
+			<div id="activity-body" class="modal-body">
+
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+				<a href="/lot/printactivity/<?= $lotId ?>" target="_blank" class="btn btn-primary print-button">Print</a>
+			</div>
+		</div>
+	</div>
+</div><!--end activity modal-->
+
+<div class="modal fade" id="testsModal" tabindex="-1" role="dialog" aria-labelledby="testsModalLabel" aria-hidden="true"><!--begin vat add modal-->
+	<div class="modal-dialog modal-lg" style="width: 1150px">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="testsModalLabel">Contaminent Tests</h4>
+			</div>
+			<div id="tests-body" class="modal-body">
+
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+				<button id="save-tests-button" type="button" class="btn btn-primary">Save</button>
+			</div>
+		</div>
+	</div>
+</div><!--end tests modal-->
+
+<div id="WRPopoverContainer"></div>
+
+<?php if ( $lotId ): ?>
+	<form id="WRForm" class="form-inline editableform hide">
+		<div class="control-group form-group">
+			<select name="ReceiptID" class="form-control">
+				<option value="0">New Receipt</option>
+				<? foreach ($lotData->getPossibleReceipts() as $receipt): ?>
+					<option value="<?= $receipt->ReceiptID ?>">
+						<?= $receipt->ReceiptNumber ?>
+					</option>
+				<? endforeach; ?>
+			</select>
+			<input type="hidden" name="Lots[]" value="<?= $lotId ?>">
+			<!-- <input type="hidden" name="CustomerID" value="<?= $lotData->CustomerID ?>"> -->
+			<input type="hidden" name="append" value="true">
+			<input type="hidden" name="lotdatein" value="<?= $utils->slashDate( $lotData->DateIn ) ?>">
+			<button type="submit" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-ok"></i></button>
+			<button type="button" class="btn btn-default btn-sm dismiss-popover"><i class="glyphicon glyphicon-remove"></i></button>
+		</div>
+	</form>
+<?php endif; ?>
+
+
+<?php
+$this->partial("include/footer_end");
+

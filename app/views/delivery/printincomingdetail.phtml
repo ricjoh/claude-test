@@ -1,0 +1,187 @@
+<?php
+$this->partial("include/print_header", array('title' => 'Manifest'));
+?>
+
+<?php
+
+$nextPageItems = count($data) ? $data : TRUE;
+
+// Point value to help mark the end of a page. If the point below add up to this, then a new page will be made.
+$maxPoints = 950;
+
+// Points for different elements on the manifest. Each one is representational of of how much space something takes up.
+// If in the WHILE loop, the points reach the maxPoints mark, then a new page is created.
+$lineHeightPoints = 13.5;
+$largeLineHeightPoints = 14.5;
+// do ~1.5 more than the CSS height/line-height
+$cellHeightPoints = 20;
+$extraNotesPoints = 0;
+
+$pageNumber = 0;
+
+$tableExtraPoints = 3;
+$infoListMargin = 20;
+
+while ($nextPageItems) {
+	$pageItems = $nextPageItems;
+	$nextPageItems = NULL;
+
+	$pageNumber++;
+
+	$approxPoints = 0.0;
+	?>
+
+	<div class="page shorten-for-print">
+		<div class="page-inner padding-half-inch">
+			<?php
+			if ($pageNumber === 1) {
+				$this->partial("include/print_masthead");
+				?>
+
+				<h1 style="margin: 0"><?= $title ?></h1>
+
+				<div class="info-list" style="margin: 20pt 0;">
+					<div class="row">
+						<div class="col-4">
+							<label>Vendor:</label>
+							<div class="info-list-value"><?= $details['Vendor'] ?></div>
+						</div>
+
+						<div class="col-4">
+							<label>Vendor PO:</label>
+							<div class="info-list-value"><?= $details['Vendor PO'] ?></div>
+						</div>
+
+						<div class="col-4">
+							<label>EDI Date:</label>
+							<div class="info-list-value"><?= $this->utils->slashDate($details['EDI Date']); ?></div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-4">
+							<label>Ship Date:</label>
+							<div class="info-list-value"><?= $this->utils->slashDate($details['Ship Date']); ?></div>
+						</div>
+
+						<div class="col-4">
+							<label>EDI Control #:</label>
+							<div class="info-list-value"><?= $details['EDI Control Number'] ?></div>
+						</div>
+						<div class="col-4">
+							<label>Carrier:</label>
+							<div class="info-list-value"><?= $details['Carrier'] ?></div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-4">
+							<label>Shipment ID:</label>
+							<div class="info-list-value"><?= $details['Shipment ID'] ?></div>
+						</div>
+						<div class="col-4">
+							<label>Total Pieces</label>
+							<div class="info-list-value"><?= $details['Total Pieces'] ?></div>
+						</div>
+						<div class="col-4">
+							<label>Net Wt:</label>
+							<div class="info-list-value"><?= $details['Net Wt'] ?></div>
+						</div>
+					</div>
+				</div>
+				<?php
+
+				$approxPoints += $mastheadPoints + $lineHeightPoints + $offerInfoMargin * 2 + $lineHeightPoints * 3;
+			} else {
+				$this->partial("include/print_masthead", array('mini' => TRUE, 'subtitle' => "Delivery Details - Page $pageNumber"));
+
+				$approxPoints += $mastheadPoints;
+			}
+			?>
+
+			<?php
+
+			if ($pageItems !== TRUE && count($pageItems) > 0) {
+				$approxPoints += $cellHeightPoints + $tableExtraPoints + 10 * 2
+				?>
+				<div class="border padding-10pt" style="padding-top: 0">
+				<table class="offer-manifest delivery-details full-width align-descendents-right">
+					<thead>
+						<tr class="bold">
+							<th>Qty Rec'd</th>
+							<th>Qty</th>
+							<th>License Plate</th>
+							<th>Prod Num</th>
+							<th>Batch</th>
+							<th>Exp Date</th>
+							<th>PO Line</th>
+							<th>Net Wt</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<?php
+
+							foreach ( $pageItems as $idx => $delivery ) {
+								$approxPoints += $cellHeightPoints;
+
+								// if it's the very last row, take totals into account
+								if ($idx == count($pageItems) - 1) {
+									$approxPoints += $cellHeightPoints;
+								}
+
+								// take totals rows and padding into account
+								if ($approxPoints > $maxPoints) {
+									$nextPageItems = array_slice($pageItems, $idx);
+									break;
+								}
+								?>
+
+							<tr>
+                                    <td class="autocol-0"><?= $delivery["%%CHECKBOX%%"] ?></td>
+                                    <td class="autocol-1"><?= $delivery["Qty"] ?></td>
+                                    <td class="autocol-2"><?= $delivery["LicensePlate"] ?></td>
+                                    <td class="autocol-3"><?= $delivery["PartNum"] ?></td>
+                                    <td class="autocol-4"><?= $delivery["CustomerLot"] ?></td>
+                                    <td class="autocol-5"><?= $delivery["ExpDate"] ?></td>
+                                    <td class="autocol-6"><?= $delivery["LineNum"] ?></td>
+                                    <td class="autocol-7"><?= $delivery["NetWeight"] ?></td>
+							</tr>
+                            <?php } ?>
+					</tbody>
+					</table>
+				</div>
+				<?php
+			}
+
+			if (!$nextPageItems) {
+				$approxPoints += $lineHeightPoints * 2 + 20;
+				$approxPoints += $extraNotesPoints;
+
+				if ($approxPoints > $maxPoints) {
+					$nextPageItems = TRUE;
+				}
+			}
+			?>
+		</div>
+	</div>
+	<?php
+}
+?>
+
+
+<div class="right-fixed-container hide-on-print">
+	<button class="btn btn-primary print-button">Print</button>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$('.print-button').click(function() {
+		window.print();
+	});
+});
+</script>
+
+<?php
+$this->partial("include/print_footer");
+?>

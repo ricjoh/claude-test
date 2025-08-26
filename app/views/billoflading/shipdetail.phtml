@@ -1,0 +1,240 @@
+<?php
+
+$rContent = '';
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title,
+		'headerIcon' => 'shipping',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+<style>
+.bootbox-body h5,
+h4.modal-title {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: left;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: .5rem;
+}
+.bootbox-body a {
+	text-decoration: dotted underline;
+}
+
+.bootbox-body em {
+	font-weight: bold;
+	font-size: 1.2em;
+	display: block;
+	text-align: center;
+	color: #800;
+}
+
+.shipqty {
+	width: 40px;
+	margin-left: 10px;
+	text-align: right;
+}
+/* .autocol-0,
+.autocol-8 {
+	width: 6em;
+}
+.autocol-1 {
+	width: 10em;
+}
+.autocol-2,
+*/
+.autocol-3 {
+	width: 8em;
+}
+.autocol-4 {
+	width: 11em;
+	font-size: 8pt;
+}
+/*
+.autocol-6 {
+	width: 6.5em;
+}
+.autocol-7 {
+	width: 4em;
+} */
+</style>
+
+<?php
+if ( isset( $details ) ) {
+	$this->partial(
+		"table/details",
+		array(
+			'details' => $details
+		)
+	);
+}?>
+
+<form method="post" action="/billoflading/shipdetail/<?= $BOLID ?>" id="orderShipmentForm">
+	<input type="hidden" id="mode" name="mode" value="saveonly">
+	<input type="hidden" id="linecount" name="linecount" value="<?= $linecount ?>">
+	<input type="hidden" id="bolid" name="bolid" value="<?= $BOLID ?>">
+<?php
+$this->partial(
+	"table/builder",
+	array(
+		'headers' => $headers,
+		'data' => $data,
+		'cols' => $cols
+	)
+);
+?>
+
+<div class="row" id="autodetails">
+	<div class="col-md-12" style="margin-bottom: 1em; text-align: center;">
+		<!-- a id="printDetails" type="button" class="btn btn-default" href="/delivery/printincomingdetail/<?= $deliveryID ?>">Print BOL</a -->
+		<!-- a id="save" class="submit-form btn btn-default" href="#">Save Only</a -->
+<?php if ( $ReadOnly != 1 ): ?>
+		<a id="allShipped" type="button" class="btn btn-default" href="#">Mark All Shipped</a>
+		<a id="save" type="button" class="btn btn-primary" href="#">Confirm and Send EDI</a>
+<?php endif ?>
+	</div>
+</div>
+</form>
+
+<?php
+$this->partial("include/footer_start");
+?>
+<?php if ( $ReadOnly != 1 ): ?>
+<script>
+jQuery(document).ready(function($) {
+
+	function doIfAllShipped( f ) {
+		$shipped = $('input[type="checkbox"]:checked').length;
+		$lines = $( '#linecount' ).val()
+		if ( $shipped != $lines ) {
+			bootbox.confirm(
+				'You have only marked ' + $shipped + ' of ' + $lines + ' lines as shipped!<br>All other lines will have 0 shipped items.<br>Continue?',
+				function( result ){ if (result) f(); }
+			);
+		}
+		else
+		{
+			f();
+		}
+	}
+
+	$( '#save' ).click(
+		function(){
+			console.log( 'save' );
+			doIfAllShipped( function(){
+				bootbox.confirm(
+					'This will send an EDI Response.<br><br><em>Are you sure?</em>',
+					function( result ) { if (result) $( '#orderShipmentForm' ).submit(); }
+				);
+			} );
+		}
+	);
+
+	$( '#allShipped' ).click(
+		// Sets all of the input values and checks all of the check boxes in the table
+		function() {
+			console.log( 'All Shipped' );
+
+			// On each row in the table...
+			$( '#autotable tr' ).each(function() {
+				var checkbox = $(this).find( 'input[type="checkbox"].shipped' );
+				var shippedQuantity = $(this).find( '.shipqty' );
+				var vatQuantity = $(this).find( '.vatqty' ).val();
+
+				// If they have changed the value already
+				if ( shippedQuantity.val() != 0 ) {
+					// Set the input to the  value they entered
+					vatQuantity = shippedQuantity.val();
+				}
+
+				shippedQuantity.val(vatQuantity);
+				checkbox.prop('checked', true);
+			});
+		}
+	);
+
+/*
+	$( '#convert' ).click( function(){
+		$( '#mode' ).val( 'convert' );
+		console.log( 'convert' );
+		// var dialog = bootbox.dialog({
+		// 	title: 	'Converting',
+		// 	message: '<p><i class="fa fa-spin fa-spinner"></i> Converting Delivery to Draft Lots...</p>'
+		// });
+
+		// dialog.init(function(){
+		// 	setTimeout(function(){
+				doIfAllShipped( function(){ $( '#orderShipmentForm' ).submit() } );
+		// 	}, 1500);
+		// });
+
+	});
+*/
+
+	$( '#autotable tr' ).click( function(){
+		var cb = $(this).find( 'input[type="checkbox"].shipped' ); // checkbox input
+		var rq = $(this).find( '.shipqty' ).first(); // shipped input field
+		var sq = $(this).find( '.vatqty' ).first().val(); // number that was in the vat originally (static)
+		if ( rq.val() != 0 ) sq = rq.val(); // if they have changed it already, fill the box with the qty thy typed in
+
+		if ( cb.prop( 'checked' ) ) {
+			cb.prop( 'checked', false );
+			rq.val( 0 );
+		}
+		else
+		{
+		(function( clicked_row ) {
+			bootbox.dialog({
+				message: "Confirm quantity " + sq + " for this product: " +
+					$( clicked_row ).find( '.autocol-3' ).first().text() + ': ' +
+					$( clicked_row ).find( '.autocol-4' ).first().text() + "?\n",
+				title: 'Confirm',
+				size: 'large',
+				buttons: {
+					confirm: {
+						label: 'Confirm',
+						className: 'btn-primary',
+						callback: function () {
+							cb.prop( 'checked', true );
+							rq.val( sq );
+						}
+					},
+					qty: {
+						label: 'Edit Qty and Confirm',
+						className: 'btn-default',
+						callback: function () {
+							bootbox.prompt({
+								title: 'Confirm New Quantity',
+								value: sq,
+								callback: function(result){
+									cb.prop( 'checked', true );
+									rq.val( result );
+								}
+							});
+						}
+					},
+					cancel: {
+						label: 'Cancel',
+						className: 'btn-default',
+						callback: function () {
+							// console.log('Back');
+						}
+					}
+				}
+			});
+			})( this );
+		}
+	});
+});
+</script>
+<?php endif ?>
+
+
+<?php
+$this->partial("include/footer_end");

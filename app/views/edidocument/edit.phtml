@@ -1,0 +1,104 @@
+<?php
+
+$widths = array('30%', '13%', '15%', '7%', '10%', '10%', '5%');
+$title = !$vendorId ? 'Add New Vendor' : 'Edit Vendor';
+
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title
+	)
+);
+
+?>
+
+<div class="row">
+	<div class="col-md-12">
+
+		<form class="form-horizontal form-track-change" method="post" novalidate>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Name">Name</label>
+				<div class="col-sm-9">
+				  <input type="text"
+					name="Name"
+					id="Name"
+					value="<?php echo isset($vendorData->Name) ? $vendorData->Name : '' ?>"
+					class="form-control"
+					required
+					data-validation-required-message="Please enter a Vendor Name" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Active">Active</label>
+<?php
+				$checked = '';
+				if ( !$vendorId || !empty($vendorData->Active) ) {
+					$checked = ' checked="checked" ';
+				}
+?>
+				<div class="col-sm-9">
+				  <input type="checkbox"
+					name="Active"
+					id="Active"
+					value="1"
+					<?php echo $checked ?>
+					class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+			<div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+			<input class="btn btn-primary" type="submit" name="saveVendor" id="saveVendor" value="Save Vendor" />
+<?php
+			if ( $vendorId ) {
+?>
+			<input class="btn btn-default deleteVendor" data-name="<?php echo $vendorData->Name ?>" name="deleteVendor" type="submit" value="Delete Vendor" />
+<?php
+			}
+?>
+			</div>
+			</div>
+		</form>
+
+
+	</div>
+</div>
+
+<?php $this->partial("include/footer_start"); ?>
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+
+<script>
+jQuery(document).ready(function($) {
+
+	$('.deleteVendor').click(function() {
+		var deleteIt = confirm('Are you sure you want to delete "' + $(this).data('name') + '"?');
+		return deleteIt;
+	});
+});
+
+jQuery(function () {
+	jQuery("input,select,textarea").not("[type=submit]").jqBootstrapValidation({
+		preventSubmit: true,
+		submitError: function($form, event, errors) {
+			// Here I do nothing, but you could do something like display
+			// the error messages to the customer, log, etc.
+		},
+		submitSuccess: function($form, event) {
+			// form has been submitted
+		},
+		filter: function() {
+			return jQuery(this).is(":visible");
+		}
+	});
+});
+
+</script>
+
+
+<?php
+$this->partial("include/footer_end");

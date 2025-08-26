@@ -1,0 +1,2 @@
+INSERT INTO `Parameter` (ParameterID, ParameterGroupID, Value1, Description, DeactivateDate, ReadOnly, CreateDate, CreateId)
+VALUES('0F409430-F083-4CCE-868F-BE85B5B906EA', '5F7730A1-AF76-4E3D-9B62-35872908944E', 'Transferred', '', '2025-12-31 00:00:00', 0, NOW(), 'E87EA5C0-0152-419C-9D91-5438C7EC5C37');

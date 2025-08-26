@@ -1,0 +1,56 @@
+<?php
+global $mastheadPoints;
+
+$mastheadMargin = 10;
+$headerPMargin = 10;
+if (!isset($lineHeightPoints)) $lineHeightPoints = 13.5;
+
+if ($mini) {
+	?>
+	<header class="center bold">
+		<p>Oshkosh Cold Storage Co., Inc.</p>
+		<p><?= $subtitle ?></p>
+	</header>
+	<?php
+
+	$mastheadPoints = isset($subtitle) ? $headerPMargin * 3 + $lineHeightPoints * 2 : $headerPMargin * 2 + $lineHeightPoints;
+} else {
+	?>
+	<header class="masthead">
+		<img src="/public/images/OCS_color_logo_110x86.png">
+		<div class="addressDiv">
+			<?php if (isset($WarehouseID)) { ?>
+				<?php if ($WarehouseID == 2) { ?>
+					<h1>Oshkosh Cold Storage, LLC</h1>
+					<p>
+						4385 County Rd PP &bull; Plymouth, WI 54901<br>
+						Phone: 920.449.5407 &bull; Fax: 920.449.5417
+					</p>
+				<?php } elseif ($WarehouseID == 3) { ?>
+					<h1>OCS Oostburg, LLC</h1>
+					<p>
+						44 Enterprise Ct. &bull; Oostburg, WI, 53070<br>
+						Phone: 920.400.1263 &bull; Fax: 920.231.9441
+					</p>
+				<?php } else { ?>
+					<h1>Oshkosh Cold Storage Co.</h1>
+					<p>
+						1110 Industrial Avenue &bull; Oshkosh, WI 54901<br>
+						Phone: 920.231.0610 &bull; Fax: 920.231.9441
+					</p>
+				<?php } ?>
+			<?php } else { ?>
+				<h1>Oshkosh Cold Storage Co.</h1>
+				<p>
+					1110 Industrial Avenue &bull; Oshkosh, WI 54901<br>
+					Phone: 920.231.0610 &bull; Fax: 920.231.9441
+				</p>
+			<?php } ?>
+			<div class="signature-underline-box"></div>
+		</div>
+	</header>
+	<?php
+
+	$mastheadPoints = $mastheadMargin + $headerPMargin * 3 + $lineHeightPoints * 4;
+}
+?>

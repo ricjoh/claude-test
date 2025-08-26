@@ -1,0 +1,354 @@
+<?php
+
+$logger->log('phtml edit isEDI: ' . ($isEDI ?: 'false'));
+
+$security = $this->getDI()['securityPlugin'];
+
+/************ Status IDs **************/
+$statii = array(
+	'OPEN' => '9A085965-75B4-4EE2-85A8-02D61924DCC8',
+	'CONTRACT' => '7001E6DC-0378-4B4A-9FC7-7AD78805884B',
+	'EXPIRED' => '319FB16C-19F5-4364-82E3-93AD7627AF38',
+	'SOLD' => 'C5F3B7B9-9340-46B4-820A-504AC2A98A00',
+	'EDIPENDING' => 'C478D7C5-25FC-439B-A5A4-A155493ABC08',
+	'SHIPPED' => 'D05C2544-E8BC-45C9-A3C8-3C7E3AD3F831'
+);
+
+$statusChoices = array(
+	'9A085965-75B4-4EE2-85A8-02D61924DCC8' => 'OPEN',
+	'7001E6DC-0378-4B4A-9FC7-7AD78805884B' => 'CONTRACT',
+	'C478D7C5-25FC-439B-A5A4-A155493ABC08' => 'EDI PENDING'
+);
+
+$_SOLD = false;
+
+if (($offerData->OfferStatusPID == $statii['SOLD'] || $offerData->OfferStatusPID == $statii['SHIPPED'] ) && $offerData->OfferID) {
+	$_SOLD = true;
+	$BOLButton = '<a id="BOLButton" target="_blank" href="/billoflading/edit/' . $offerData->OfferID . '" class="btn btn-default">';
+} else {
+	$BOLButton = '<a id="BOLButton" target="_blank" href="/billoflading/edit/' . $offerData->OfferID . '" disabled class="btn btn-default disabled">';
+}
+
+$buttonDisabled = $offerData->OfferID ? '' : 'disabled';
+
+$rightContent = <<<HTML
+	<strong>Print: &nbsp;</strong>
+	<div class="btn-group" role="group" aria-label="...">
+		<a href="/offer/printmanifest/$offerData->OfferID" target="_blank" class="btn btn-default $buttonDisabled">Manifest</a>
+		$BOLButton BOL</a>
+		<a href="/offer/printoffer/$offerData->OfferID" target="_blank" class="btn btn-default $buttonDisabled">Offer</a>
+
+		<a href="/offer/curinginvoice/$offerData->OfferID" class="btn btn-default $buttonDisabled">Invoicing</a>
+	</div>
+HTML;
+
+$this->partial("include/header", array(
+	'title' => 'Offer',
+	'header' => 'Offer',
+	'headerIcon' => 'offer',
+	'rightContent' => $rightContent
+));
+?>
+
+<style>
+	.stringStatus {
+		display: inline-block;
+		padding-top: 7px;
+		padding-right: 4px;
+	}
+
+	#saveOfferNote {
+		text-align: center;
+		font-style: italic;
+		font-weight: bold;
+	}
+
+	#lotForm .has-success {
+		margin-top: 0px;
+		margin-bottom: 50px;
+	}
+</style>
+
+<div class="row">
+
+	<div class="col-md-12">
+		<form id="lotForm" class="form-horizontal form-track-change" style="display: block;" method="post" onsubmit="return false;" action="/offer/save/" novalidate>
+			<input type="hidden" name="OfferID" id="OfferID" value="<?= $offerData->OfferID ?>">
+			<input type="hidden" name="ItemCount" id="ItemCount" value="0">
+			<input type="hidden" name="StatusSOLD" id="StatusSOLD" value="<?= $_SOLD ? 1 : 0 ?>">
+			<input type="hidden" name="StatusEXPIRED" id="StatusEXPIRED" value="<?= ($offerData->OfferStatusPID == $statii['EXPIRED']) ? 1 : 0 ?>">
+			<input type="hidden" name="TransferredTo" id="TransferredTo" value="<?= $transferredTo ?>">
+
+			<?php if ($customerOrderID != false) : ?>
+				<div id="subtitlelinks">
+					<a href="/customerorder/incomingdetail/<?= $customerOrderID ?>">See EDI Order Detail</a>
+				</div>
+			<?php endif ?>
+			<div class="field-group rightBorder">
+
+				<h5>Customer Info</h5>
+
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Customer</label>
+					<div class="col-sm-3 nopadding">
+						<select id="CustomerID" name="CustomerID" class="form-control" required data-validation-required-message="Please select a Customer">
+							<?php
+							foreach ($customers as $cust) {
+								$sel = '';
+								if (!empty($offerData->CustomerID)) {
+									$sel = $cust['CustomerID'] == $offerData->CustomerID ? ' selected="selected" ' : '';
+								}
+								echo '<option value="' . $cust['CustomerID'] . '"' . $sel . ' data-terms-pid="' . $cust['TermsPID'] . '">' . $cust['Name'] . '</option>';
+							}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Attention</label>
+					<div class="col-sm-3 nopadding">
+						<select id="Attention" name="Attention" class="form-control">
+							<option value='0'>Select Customer</option>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Phone</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control protect" data-sacred="<?= (!$offerData->CustomerPhoneNumber || !$offerData->OfferID) ? 'MALLIABLE' : 'SACRED'; ?>" id="CustomerPhoneNumber" name="CustomerPhoneNumber" value="<?= $offerData->CustomerPhoneNumber ?>">
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Fax</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control protect" id="CustomerFaxNumber" name="CustomerFaxNumber" data-sacred="<?= (!$offerData->CustomerFaxNumber || !$offerData->OfferID) ? 'MALLIABLE' : 'SACRED'; ?>" value="<?= $offerData->CustomerFaxNumber ?>">
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Email</label>
+					<div class="col-sm-3 nopadding">
+						<input type="email" class="form-control protect email-field " id="CustomerEmail" name="CustomerEmail" data-sacred="<?= (!$offerData->CustomerEmail || !$offerData->OfferID) ? 'MALLIABLE' : 'SACRED'; ?>" value="<?= $offerData->CustomerEmail ?>">
+						<a href="mailto:<?= $offerData->CustomerEmail ?>" rel="CustomerEmail" class="email-icon"><i title="Send Email" class="email-link fa fa-envelope fa-lg fa-fw"></i></a>
+					</div>
+				</div>
+			</div>
+
+
+
+			<div class="field-group rightBorder">
+				<h5>Offer Info</h5>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Offer Date</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control datepicker" id="OfferDate" name="OfferDate" required data-validation-required-message="Offer Date is required" value="<?= $offerID ? $utils->slashDate($offerData->OfferDate) : date('m/d/y'); ?>">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Offer Terms</label>
+					<div class="col-sm-3 nopadding">
+						<select id="TermsPID" name="TermsPID" data-sacred="<?= (!$offerData->TermsPID || !$offerData->OfferID) ? 'MALLIABLE' : 'SACRED'; ?>" class="form-control protect">
+							<?php
+							foreach ($terms as $term) {
+								$sel = '';
+								if (!empty($offerData->TermsPID)) {
+									$sel = $term['ParameterID'] == $offerData->TermsPID ? ' selected="selected" ' : '';
+								}
+								echo '<option value="' . $term['ParameterID'] . '"' . $sel . '>' . $term['Value1'] . '</option>';
+							}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Good Until</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control datepicker" id="OfferExpiration" name="OfferExpiration" value="<?= $utils->slashDate($offerData->OfferExpiration); ?>">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">FOB</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control" id="FOB" name="FOB" required data-validation-required-message="Please enter value for FOB" value="<?= $offerData->FOB ?: 'OCS' ?>">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Offer Status</label>
+					<div class="col-sm-3 nopadding">
+
+						<? if ($offerData->OfferStatusPID == $statii["EXPIRED"]) : ?>
+							<span class="stringStatus">EXPIRED</span>
+							<input type="hidden" name="OfferStatusPID" value="<?= $offerData->OfferStatusPID ?>">
+						<? elseif ($offerData->OfferStatusPID == $statii["SHIPPED"]) : ?>
+							<span class="stringStatus">SHIPPED</span>
+							<?php if ($transferredTo) : ?><br><span>(<a href="/lot/edit/<?= $transferredTo ?>">TRANSFERRED TO LOT<?= $transferredToNum ?></a>)</span><?php endif; ?>
+							<input type="hidden" name="OfferStatusPID" value="<?= $offerData->OfferStatusPID ?>">
+						<? elseif ($_SOLD) : ?>
+							<span class="stringStatus">SOLD</span>
+							<input type="hidden" name="OfferStatusPID" value="<?= $offerData->OfferStatusPID ?>">
+						<? else : ?>
+							<select id="OfferStatusPID" name="OfferStatusPID" class="form-control" required data-validation-required-message="Please select a status">
+								<?php
+								foreach (array_keys($statusChoices) as $stat) {
+									// $logger->log( $stat );
+									$sel = '';
+									if (!empty($offerData->OfferStatusPID)) {
+										$sel = ($stat == $offerData->OfferStatusPID) ? ' selected="selected" ' : '';
+									}
+									echo '<option value="' . $stat . '"' . $sel . '>' . $statusChoices[$stat] . '</option>';
+								}
+								?>
+							</select>
+							<p class="help-block text-danger"></p>
+						<? endif ?>
+					</div>
+				</div>
+
+				<div id="sellButtonBlock" style="display: <?= ($offerID && ($offerData->OfferStatusPID == $statii['OPEN'] || $offerData->OfferStatusPID == $statii['CONTRACT'])) ? 'block' : 'none' ?>">
+					<div id="offerSoldFeedback" class="control-label successFeedback" style="float: left; display: none; padding-left: 20px;">Offer Marked Sold</div>
+					<?php $this->partial("offer/ship_sell_button"); ?>
+					<div style="clear: both;"></div>
+				</div>
+				<?php if ( $offerData->OfferStatusPID == $statii['EXPIRED'] && $security->hasRole(User::SU_ROLE_PID) ): ?>
+					<div id="reopenButtonBlock">
+						<div id="offerReopenedFeedback" class="control-label successFeedback" style="float: left; display: none; padding-left: 20px;">Offer Re-Opened</div>
+						<button id="reopenButton" type="button" class="btn btn-primary" style="float: right; margin-right: 55px;">Re-Open Offer</button>
+						<div style="clear: both;"></div>
+					</div>
+				<?php endif ?>
+				<br>
+			</div>
+
+
+
+			<div class="field-group">
+				<h5>OCS Contact Info</h5>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Contact</label>
+					<div class="col-sm-3 nopadding">
+						<select id="UserID" name="UserID" class="form-control" required data-validation-required-message="Please select a user">
+							<?php
+
+							/**********
+
+						onchange UserID AJAX: /user/detail/70D9A0D2-C073-4BD1-BF96-62F034600CDF to re-fill values unless edited
+
+							 ************/
+
+
+							foreach ($users as $user) {
+								// $logger->log( $user );
+								$sel = '';
+								if (!empty($offerData->UserID)) {
+									$sel = $user['UserID'] == $offerData->UserID ? ' selected="selected" ' : '';
+								}
+								echo '<option value="' . $user['UserID'] . '"' . $sel . '>' . $user['FullName'] . '</option>';
+							}
+							?>
+						</select>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Phone</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control protect" id="OCSContactPhoneNumber" name="OCSContactPhoneNumber" data-sacred="<?= (!$offerData->OCSContactPhoneNumber || !$offerData->OfferID) ? 'MALLIABLE' : 'SACRED'; ?>" value="<?= $offerData->OCSContactPhoneNumber ?>">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Fax</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control protect" id="OCSContactFaxNumber" name="OCSContactFaxNumber" data-sacred="<?= (!$offerData->OCSContactFaxNumber || !$offerData->OfferID) ? 'MALLIABLE' : 'SACRED'; ?>" value="<?= $offerData->OCSContactFaxNumber ?>">
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+					<label class="col-sm-3 control-label nopadding">Email</label>
+					<div class="col-sm-3 nopadding">
+						<input type="text" class="form-control email-field protect" id="OCSContactEmail" name="OCSContactEmail" data-sacred="<?= (!$offerData->OCSContactEmail || !$offerData->OfferID) ? 'MALLIABLE' : 'SACRED'; ?>" value="<?= $offerData->OCSContactEmail ?>">
+						<a href="mailto:<?= $offerData->OCSContactEmail ?>" rel="OCSContactEmail" class="email-icon"><i title="Send Email" class="email-link fa fa-envelope fa-lg fa-fw"></i></a>
+						<p class="help-block text-danger"></p>
+					</div>
+				</div>
+				<div class="form-group control-group">
+
+					<label class="col-sm-3 control-label nopadding">Sale Date</label>
+					<div class="col-sm-3 nopadding">
+						<input disabled type="text" class="form-control" id="SaleDateDisplay" name="SaleDateDisplay" value="<?= (isset($offerData->SaleDate)) ? $utils->slashDate($offerData->SaleDate) : 'N/A' ?>">
+						<input type="hidden" id="SaleDate" name="SaleDate" value="<?= $offerData->SaleDate ?>">
+					</div>
+				</div>
+				<div class="has-success">
+					<button id="saveButton" type="submit" class="btn btn-primary" style="float: right; margin-right: 55px;"><? if ($offerID) : ?>Save Offer Info<? else : ?>Save & Add Items<? endif ?></button>
+					<div id="lotSavedFeedback" class="control-label successFeedback" style="float: left; display: none; padding-top: 0; padding-left: 20px;">Offer Saved</div>
+					<div style="clear: both;"></div>
+				</div>
+
+
+			</div>
+
+			<div style="clear: both;"></div>
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label notes-label">Notes</label>
+				<div class="col-sm-12 nopadding">
+					<textarea placeholder="Notes" name="Note" id="Note" class="form-control notes-box"><?= $offerData->Note ?></textarea>
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+
+		</form>
+
+		<!------------ Offer Items ----------------->
+		<div id="itemHtml" <? if (!$offerID) : ?>style="display: none;" <? endif ?>></div>
+		<div id="saveOfferNote" <? if ($offerID) : ?>style="display: none;" <? endif ?>>
+			NOTE: You must save this offer info before adding items.</div>
+	</div>
+</div>
+
+<!---------- Offer Item Detail ------------------->
+<div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-labelledby="vatModalLabel" aria-hidden="true"><!--begin vat add modal-->
+	<div class="modal-dialog modal-lg" style="width: 1000px;">
+		<div class="modal-content" style="padding: 20px;">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="vatModalLabel">Offer Item Detail</h4>
+			</div>
+			<div id="offerItemDetailContent">
+
+			</div>
+		</div>
+	</div>
+</div><!--end vat add modal-->
+<? $this->partial("include/footer_start"); ?>
+
+<script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script>
+<script>
+	// Data to be sent to /public/offer.js
+	var getItemsUrl = '/offer/getitems/00000000-0000-0000-0000-000000000000';
+	<?php if ($offerID) : ?>
+		getItemsUrl = '/offer/getitems/<?= $offerID ?>';
+	<?php endif ?>
+</script>
+
+<? /** JavaScript has been moved here: **/ ?>
+<script src="/public/js/commatize.js"></script>
+<script src="/public/js/offer.js?v=12"></script>
+<script>
+	$(document).ready(function() {
+
+		<? if ($offerData->CustomerID) : // && $offerData->Attention ):
+		?>
+			// select the right contact
+			updateContacts('<?= $offerData->Attention  ?>');
+		<? endif ?>
+
+	});
+</script>
+
+<? $this->partial("include/footer_end"); ?>

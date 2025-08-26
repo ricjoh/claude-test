@@ -1,0 +1,97 @@
+table.vatTable td,
+table.vatTable th {
+	line-height: 14.5pt;
+	height: 14.5pt;
+	font-size: 10pt;
+}
+
+.info-list {
+	font-size: 10pt;
+	line-height: 14.5pt;
+}
+
+.my-input {
+	width: 100%;
+	border: 0;
+	border-bottom: 1px solid black;
+	padding: 5px;
+	font-size: 16px;
+}
+
+input.my-input {
+	background-color: #ffffcc;
+	border: 1px solid #dddddd;
+	border-bottom: 1px solid black;
+}
+
+.underline {
+	border-bottom: 1px solid black;
+}
+
+
+
+.header-input {
+	margin-bottom: 1.5em;
+}
+
+.header-input label {
+	font-size: 16px;
+}
+
+.header-input input {
+	width: 53%;
+	margin-top: 4px;
+	font-size: 14px !important;
+}
+
+.return-to-select {
+	font-size: 16px;
+	text-align-last: center;
+}
+
+/* Stripped from inlined CSS */
+
+h1 {
+	margin-bottom: 2em;
+}
+
+h1.manifest-type-header {
+	margin-bottom: 5px;
+	margin-right: auto;
+	margin-left: auto;
+	width: fit-content;
+}
+
+.info-list {
+	margin: 20pt 0
+}
+
+.totals-overline {
+	border-top: 1px solid black;
+	text-align:right
+}
+
+.moved-margin {
+	margin-top: 19px;
+}
+
+.notes-margin {
+	margin-top: 5px;
+}
+
+.move-date {
+	width: 50%;
+	font-size: 14px !important;
+}
+
+.w80 {
+	width: 80px;
+}
+
+.pr1 {
+	padding-right: 1em;
+}
+
+.pt1 {
+	padding-top: 1em;
+}

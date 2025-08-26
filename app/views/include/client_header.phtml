@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?php echo isset($title) ? $title : '' ?> | Client Access</title>
+    
+    <!-- Load Open Sans from Google Fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+
+    <!-- Bootstrap -->
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/public/css/tablesorter-themes/style.css" rel="stylesheet">
+    <link href="/public/css/ocs.css" rel="stylesheet">
+    <link href="/public/css/ocs-clients.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+	
+<?php
+	if ( isset($stylesheets) && is_array($stylesheets) )
+	{
+		foreach ( $stylesheets as $s ) {
+			echo '<link rel="stylesheet" href="' . $s . '">';
+		}
+	}
+	$tag = isset($page)? $page:"";
+?>
+	
+  </head>
+  <body class="<?= $tag ?> body">
+	<?php
+	if ( !isset($hideNavBar) )
+	{
+		if ( $this->session->get('customerAuth') ) {
+			?>
+			<nav class="navbar navbar-inverse navbar-static-top navbar-no-margin" id="authHeader">
+				<div class="container">
+					<div class="collapse navbar-collapse">
+						<p class="navbar-text navbar-right">
+							Welcome, <?= ucwords(strtolower($this->session->customerAuth['Name'])) ?> | <a href="/clients/logout" class="navbar-link">Logout</a>
+						</p>
+					</div>
+				</div>
+			</nav>
+			<?php
+		}
+		?>
+		<nav class="navbar navbar-default navbar-static-top navbar-no-margin" id="adminNav">
+		<!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. (no longer applicable) -->
+			<div class="container">
+				<div class="navbar-header">
+				  <button data-target="#bs-example-navbar-collapse-6" data-toggle="collapse" class="navbar-toggle collapsed" type="button">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				  </button>
+				  <div class="navbar-brand">
+					<a href="/clients"><img src="/public/images/OCS_color_logo.png" /></a>
+				</div>
+				</div>
+
+				<div class="collapse navbar-collapse" id="clientNavbar">
+				  <p class="navbar-text navbar-left"><h1>Client Access</h1></p>
+				</div><!-- /.navbar-collapse -->
+			</div>
+		</nav>
+		<?php 
+	}
+	
+	if($contained){
+		$fluid = "";
+	} else {
+		$fluid = "-fluid";
+	}
+	echo '<div id="mainContainer" class="container' . $fluid . '">';
+	
+	if ( isset($header) ) 
+	{
+		$columns = 12;
+		$rContent = '';
+		if  ( isset($rightContent) ) {
+			$rContent = '<div class="col-md-4"><div class="pull-right">' . $rightContent . '</div></div>';
+			$columns = 8;
+		}
+		$html = <<<HTML
+		<div class="row" id="pageTitle">
+			<div class="col-md-{$columns}"><h1>{$header}</h1></div>
+			{$rContent}
+		</div>
+HTML;
+		echo $html;
+	}
+	
+	
+    $messages = $this->flashSession->getMessages();
+	if ( $messages and count($messages) > 0) {
+	
+		$messageTypeCss = array(
+			'success' => 'bg-success',
+			'error' => 'bg-danger',
+			'warning' => 'bg-danger',
+			'notice' => 'bg-primary'
+		);
+	
+?>
+	<div class="row">
+		<div class="col-md-12">
+                <?php 
+                foreach ($messages as $messageType => $messageArray) {
+                    foreach ($messageArray as $message) {
+						$cssClass = $messageTypeCss[$messageType];
+                        echo "<div class=\"$cssClass alert\">$message</div>";
+                    }
+                }
+                ?>
+        </div>
+    </div>
+<?php } ?>

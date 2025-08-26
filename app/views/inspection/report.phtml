@@ -1,0 +1,109 @@
+<?php
+$rContent = '<a id="dlXLSButton" type="button" class="btn btn-primary" href="/clients/inspection/reportxls';
+if ($all) $rContent .= '?type=all';
+$rContent .= '">Download Excel Spreadsheet</a>';
+
+$this->partial(
+	"include/client_header", 
+	array(
+		'title' => 'Inspection Report', 
+		'header' => 'Inspection Report',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+
+<a href="/clients/" class="back-link">&laquo; Back to Client Access Home</a>
+
+<div class="row">
+
+	<div class="col-md-12">
+	
+		<table id="reportTable" width="100%" class="table tablesorter table-striped thick-rounded-border">
+			<thead>
+				<tr>
+					<th data-column="ProductCode">
+						LCD Item Number
+					</th>
+					<th data-column="CustomerPONumber">
+						LCD Batch
+					</th>
+					<th data-column="LotNumber">
+						OCS Batch
+					</th>
+					<th data-column="CustomerLotNumber">
+						LCD Lot Number
+					</th>
+					<th data-column="VatNumber">
+						LCD Tank Number
+					</th>
+					<th data-column="Pallet">
+						Pallet
+					</th>
+					<th data-column="MoldCount">
+						Mold Count
+					</th>
+					<th data-column="Comments">
+						Comments
+					</th>
+					<th data-column="InspectionDate">
+						Inspection Date
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($reportData as $row) : ?>
+					<?php $inspectionDate = $this->utils->slashDate($row['InspectionDate']); ?>
+					<tr>
+						<td><?= $row['ProductCode'] ?></td>
+						<td><?= $row['CustomerPONumber'] ?></td>
+						<td><?= $row['LotNumber'] ?></td>
+						<td><?= $row['CustomerLotNumber'] ?></td>
+						<td><?= $row['VatNumber'] ?></td>
+						<td><?= $row['Pallet'] ?></td>
+						<td><?= $row['MoldCount'] ?></td>
+						<td><?= $row['Comments'] ?></td>
+						<td><?= $inspectionDate ?></td>
+					</tr>
+				<?php endforeach ?>
+			</tbody>
+		</table>
+	
+		
+	</div>
+	
+</div>
+
+<?php
+
+$this->partial("include/client_footer_start");
+?>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$(".tablesorter").tablesorter();
+	});
+		
+	$('#reportTable').on('sortEnd', function(e) {
+		console.log(e.target.config.sortList);
+		
+		var sortList = e.target.config.sortList;
+		
+		if (sortList.length) {
+			var newList = [];
+			
+			for (var i = 0; i < sortList.length; i++) {
+				var n = sortList[i][0] + 1;
+				var $col = $('#reportTable th:nth-child('+n+')');
+				
+				newList.push([$col.data('column'), sortList[i][1]]);
+			}
+			
+			$('#dlXLSButton').attr('href', '/clients/inspection/reportxls?type=<?= $all ? 'all' : 'latest' ?>&sort='+encodeURIComponent(JSON.stringify(newList)));
+		} else {
+			$('#dlXLSButton').attr('href', '/clients/inspection/reportxls?type=<?= $all ? 'all' : 'latest' ?>');
+		}
+	});
+</script>
+<?php
+$this->partial("include/client_footer_end");

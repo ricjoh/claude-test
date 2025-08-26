@@ -1,0 +1,52 @@
+<?php if (count($warehouseAdjustmentList) > 0) { ?>
+    <div class="past-adjustments">
+        <div class="modal-header">
+            <h4 class="modal-title" id="vatModalLabel">Past Adjustments</h4>
+        </div>
+
+        <table class="table table-striped thick-rounded-border .tablesorter" id="inventoryListTable">
+            <thead class="lefts">
+                <th width="auto">EDI Sent</th>
+                <th width="auto">Value Type Changed</th>
+                <th width="auto">Old Value</th>
+                <th width="auto">New Value</th>
+                <th width="auto">Reason</th>
+                <th width="auto">Date</th>
+                <th width="auto" style="text-align: center;">Action</th>
+            </thead>
+
+            <tbody id="ediInventoryTableBody">
+                <?php foreach ($warehouseAdjustmentList as $warehouseAdjustment) { ?>
+                    <tr id="tr-<?= $warehouseAdjustment->WarehouseAdjustmentGroup ?>">
+                        <td class="is-sent" width="auto">
+                            <?php if ($warehouseAdjustment->EDIDocumentID != '') { ?>
+                                YES (<?= $warehouseAdjustment->EDIDocumentID ?>)
+                            <?php } else { ?>
+                                NO
+                            <?php } ?>
+                        </td>
+                        <td width="auto"><?= $warehouseAdjustment->ValueTypeChangedPlainText ?></td>
+                        <td width="auto"><?= $warehouseAdjustment->PreviousValue ?></td>
+                        <td width="auto"><?= $warehouseAdjustment->NewValue ?></td>
+                        <td width="auto"><?= $warehouseAdjustment->AdjustmentReason ?></td>
+                        <td width="auto"><?= substr($warehouseAdjustment->CreateDate, 0, 10) ?></td>
+                        <td
+                            style="text-align: center;"
+                            width="auto"
+                            class="send-adjustment-edi"
+                            data-warehouse-adjustment-group="<?= $warehouseAdjustment->WarehouseAdjustmentGroup ?>"
+                        >
+                            <?php if ($warehouseAdjustment->EDIDocumentID == '') { ?>
+                                <a href="#" style="text-decoration: underline;" onclick="return sendPastAdjustment('<?= $customer->EDIKey ?>', '<?= $warehouseAdjustment->WarehouseAdjustmentGroup ?>', '<?= $warehouseAdjustment->VatID ?>')">
+                                    Send EDI
+                                </a>
+                            <?php } else { ?>
+                                EDI Sent
+                            <?php } ?>
+                        </td>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+<?php } ?>

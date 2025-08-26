@@ -1,0 +1,25 @@
+<?php ob_start(); ?>
+ISA*00* *00* *01*004798716 *08*<?= $data['ISAReceiverID'] ?>*<?= date('ymd') ?>*<?= date('Hi') ?>*U*00401*<?= $data['ISACtrlNo'] ?>*0*P*>
+GS*AW*004798716*<?= $data['GSRecCode'] ?>*<?= date('Ymd') ?>*<?= date('Hi') ?>*<?= $data['GSCtrlNo'] ?>*X*004010~
+ST*947*<?= $data['STCtrlNo'] ?>~
+W15*<?= date('Ymd') ?>*<?= $data['WarehouseAdjustmentNumber'] ?>*<?= $data['DepositorAdjustmentNumber'] ?>~
+N1*WH*OSHKOSH COLD STORAGE*9*1234567890802~
+N1*DE*SAPUTO*9*7964262860000~
+<?php foreach ($data['lines'] as $line) { ?>
+W19*<?= $line['adjustmentReasonCode'] ?>*<?= $line['CreditDebitQuantity']?>*VN*<?= $line['productID'] ?>***<?= $line['OshLotNumber'] ?>*<?= $line['netWeight'] ?>*N******<?= $line['inventoryTransactionType'] ?>*<?= date('Ymd') ?>~
+<?php } ?>
+SE*<?= $data['SECount'] ?>*<?= $data['STCtrlNo'] ?>~
+GE*1*<?= $data['GSCtrlNo'] ?>~
+IEA*1*<?= $data['ISACtrlNo'] ?>~
+<?php
+$filecontents = ob_get_contents();
+ob_end_clean();
+header("Content-Type: application/json; charset=UTF-8");
+
+if (file_put_contents($filename, $filecontents)) {
+	echo json_encode(array('success' => 1));
+} else {
+	echo json_encode(array('success' => 0, 'msg' => "Failed to write file: $filename"));
+}
+
+?>

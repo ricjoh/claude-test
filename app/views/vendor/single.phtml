@@ -1,0 +1,79 @@
+<?php
+
+$widths = array('30%', '13%', '15%', '7%', '10%', '10%', '5%');
+$title = !$vendorId ? 'Add New Vendor' : 'Edit Vendor';
+
+$this->partial(
+	"include/header", 
+	array(
+		'title' => $title, 
+		'header' => $title
+	)
+);
+
+echo $vendorId;
+
+?>
+
+<div class="row">
+	<div class="col-md-12">
+	
+		<form class="form-horizontal form-track-change" method="post" novalidate>
+				
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Name">Name</label>
+				<div class="col-sm-9">
+				  <input type="text" 
+					name="Name" 
+					id="Name"
+					value="<?php echo isset($vendorData->Name) ? $vendorData->Name : '' ?>" 
+					class="form-control"
+					required 
+					data-validation-required-message="Please enter a Vendor Name" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+			
+			<div class="form-group control-group">
+				<label class="col-sm-3 control-label" for="Active">Active</label>
+<?php
+				$checked = '';
+				if ( !$vendorId || !empty($vendorData->Active) ) {
+					$checked = ' checked="checked" ';
+				}
+?>
+				<div class="col-sm-9">
+				  <input type="checkbox" 
+					name="Active"
+					id="Active"				
+					value="1" 
+					<?php echo $checked ?>
+					class="form-control" />
+					<p class="help-block text-danger"></p>
+				</div>
+			</div>
+			
+			<div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+			<input class="btn btn-primary" type="submit" name="saveVendor" id="saveVendor" value="Save Vendor" />
+<?php
+			if ( $vendorId ) {
+?>
+			<input class="btn btn-default deleteVendor" data-name="<?php echo $customerData->Name ?>" name="deleteVendor" type="submit" value="Delete Vendor" />
+<?php
+			}
+?>
+			</div>
+			</div>
+		</form>
+
+
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<?php
+$this->partial("include/footer_end");

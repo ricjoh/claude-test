@@ -1,0 +1,137 @@
+<?php
+
+$rContent = '';
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title,
+		'headerIcon' => 'edi',
+		'rightContent' => $rContent
+	)
+);
+?>
+
+<div id="subtitlelinks">
+	<?php if ($title === 'Pending Shipments') { ?>
+		<a href="/billoflading/list/<?= BillOfLading::STATUS_SHIPPED ?>">See Previous Shipments</a>
+	<?php } else { ?>
+		<a href="/billoflading/list/<?= BillOfLading::STATUS_CREATED ?>">See Pending Shipments</a> |
+		<a href="/offer/list/<?= Offer::STATUS_EDIPENDING ?>">See Pending Offers</a>
+	<?php } ?>
+</div>
+
+<div class="row paging-buttons">
+	<div class="col-md-6">
+		<?php if (isset($pageNumber) && $pageNumber > 1) { ?>
+			<a type="button" class="btn btn-primary" href="/billoflading/list/<?= $statusPID ?>/<?= $pageNumber - 1 ?>">< Later Shipments</a>
+		<?php } ?>
+	</div>
+
+	<div class="col-md-6 align-right">
+		<?php if ($isLastPage == false) { ?>
+			<a type="button" class="btn btn-primary" href="/billoflading/list/<?= $statusPID ?>/<?= $pageNumber + 1 ?>">Earlier Shipments ></a>
+		<?php } ?>
+	</div>
+</div>
+
+<style>
+.bootbox-body h5 {
+	font-size: 1.2em;
+	text-transform: uppercase;
+	text-align: left;
+	font-weight: bold;
+	letter-spacing: 0.2em;
+	color: #d6bd99;
+	margin-bottom: .5rem;
+}
+</style>
+<div class="row">
+	<div class="col-md-12">
+		<?php
+		$this->partial(
+			"table/builder",
+			array(
+				'headers' => $headers,
+				'data' => $data,
+				'cols' => $cols
+			)
+		);
+		?>
+	</div>
+</div>
+
+<div class="row paging-buttons">
+	<div class="col-md-6">
+		<?php if (isset($pageNumber) && $pageNumber > 1) { ?>
+			<a type="button" class="btn btn-primary" href="/billoflading/list/<?= $statusPID ?>/<?= $pageNumber - 1 ?>">< Later Shipments</a>
+		<?php } ?>
+	</div>
+
+	<div class="col-md-6 align-right">
+		<?php if ($isLastPage == false) { ?>
+			<a type="button" class="btn btn-primary" href="/billoflading/list/<?= $statusPID ?>/<?= $pageNumber + 1 ?>">Earlier Shipments ></a>
+		<?php } ?>
+	</div>
+</div>
+
+<input type="hidden" id="savebolid" value="">
+<?php
+$this->partial("include/footer_start");
+?>
+
+<script>
+/*
+if EDI order, then detail screen, else confirm order (basically change status).
+*/
+jQuery(document).ready(function($) {
+	$( '#autotable tr' ).click( function(e){
+		e.stopPropagation();
+		if ( $( this ).find( '.autocol-0' ).first().text() !== 'EDI' ) {
+
+			<?php if ($readonly == false) { ?>
+				(function( clicked_row ) {
+				// console.log( clicked_row );
+				rowid = $( clicked_row ).attr( 'id' );
+				// console.log( rowid );
+				parts = rowid.split( '--' );
+				// console.log( parts );
+				$( '#savebolid' ).val( parts[1] );
+
+				bootbox.confirm(
+					'<h5>Non-EDI Bill of Lading</h5>Confirm shipment?',
+					function(result) {
+						if (result) {
+					$.ajax({
+						url: "/billoflading/confirmshipment/" + $( '#savebolid' ).val(),
+						type: "GET",
+						dataType: "json",
+						success: function( data ) {
+								console.log ( data );
+								$( '#row--' + data.bolid  ).fadeOut(800, function(){
+									$( self ).remove() });
+							}
+						});
+							}
+					});
+				})(this);
+			<?php } ?>
+		}
+		else
+		{
+			console.log( this );
+			rowid = $( this ).attr( 'id' );
+			console.log( rowid );
+			parts = rowid.split( '--' );
+			console.log( parts );
+			$( '#savebolid' ).val( parts[1] );
+			location.href="/billoflading/shipdetail/" + parts[1];
+
+			return false;
+		}
+	});
+});
+</script>
+
+<?php
+$this->partial("include/footer_end");

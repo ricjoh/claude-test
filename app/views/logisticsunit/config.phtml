@@ -1,0 +1,178 @@
+<?php
+$llp = 'Last License Plate: <strong>' . $lastplate . '</strong>';
+$title = 'Logistics Configuration';
+
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title,
+		'headerIcon' => 'shipping',
+		'rightContent' => '',
+		'wideRightContent' => true
+	)
+);
+
+$printserver = 'http://' . $data['Zebra_Server_IP_Address'] . ':' . $data['Zebra_Server_Port'];
+$speed = $data['Print_Speed'] ?? '3';
+$top = $data['Label_Top'] ?? '25';
+$left = $data['Label_Left'] ?? '10';
+
+?>
+<div class="row">
+	<div class="col-md-6">
+
+	<p>&nbsp;</p>
+	<p>Dean, I'll name these better, but this is the ip and port of the server I sent you, <b>NOT</b> the printer settings.</p>
+	<p>These are the settings for the print server that the printer is connected to. (It'll always be port 2345 unless you change it on purpose)</p>
+	<p>&nbsp;</p>
+	Top and Left are in dots. 8 dots = 1mm. 24 dots = 3mm. 10 dots = 1.25mm. 1 inch = 25.4mm = 203.2 dots</p>
+	<p>&nbsp;</p>
+
+	<form method="post">
+        <?php foreach ($data as $key => $value) : ?>
+		<div class="form-group">
+			<label for="<?php echo $key ?>"><?php echo $key ?></label>
+			<input type="text" id="<?php echo $key ?>" name="<?php echo $key ?>" class="form-control" style="width: 200px;" value="<?php echo $value ?>">
+		</div>
+		<?php endforeach ?>
+      <input class="btn btn-primary" type="submit" value="Update" />
+    </form>
+	</div>
+
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			$("#status").click(function () {
+				$.get('/logisticsunit/status', function (data) {
+					$("#status-results").html(data);
+				});
+			});
+			$("#test").click(function () {
+
+// walmart label
+let labeldata = { 'label' :
+`^XA
+^FX Doc Setup
+^PR<?= $speed ?>,D,A^PW800^PON^LH<?= $left ?>,<?= $top ?>^MD10
+
+^FX Boxen and Lines
+^FO0,0^GB780,1180,12^FS
+
+^FX Horizontal Lines
+^FO0,184^GB780,6,6^FS
+^FO0,368^GB780,6,6^FS
+^FO0,640^GB780,6,6^FS
+^FO0,750^GB780,6,6^FS
+
+^FX Vertical Lines
+^FO264,0^GB6,184,6^FS
+^FO440,184^GB6,184,6^FS
+
+^FX Ship From
+^CFQ
+^FO20,25^FDSHIP FROM^FS
+
+^CF0,20
+^FO20,68^FDOshkosh Cold Storage^FS
+
+^CF0,18
+^FO20,100^TBN,273,193^FH^FD2233 Address St_0APlymouth, WI 44444^FS
+
+^FX Ship To
+^CFQ
+^FO280,25^FDSHIP TO^FS
+
+^CFS
+^FO280,60^FDWalmart GDC 0000A - ASM DIS^FS
+
+^CF0,18
+^FO280,105^TBN,473,193^FH^FD5841 SW Regional Airport Blvd_0ABentonville, AR 72712^FS
+
+^FX Postal Code
+^CFQ
+^FO20,205^FDPOSTAL CODE^FS
+
+^CFA,20
+^FO160,240^FD(420)72712^FS
+
+^FX Define Code 128 Postal Bar Code
+^BY3,2,80^BCN,80,N,N,N,D
+^FO90,265^FD(420)72712^FS
+
+^FX Carrier
+^CFQ
+^FO460,205^FDCARRIER^FS
+
+^CF0,20
+^FO460,250^FDCarrier Name^FS
+^FO460,280^FDPRO: 1234567890^FS
+^FO460,310^FDB/L: 1234567890^FS
+
+^FX Item Information
+^CFA,22^FO55,400^FDGDC#^FS
+^CFU^FO30,425^FD0000^FS
+
+^CFA,22^FO215,400^FDTYPE^FS
+^CFD,30^FO190,445^FD0033^FS
+
+^CFA,22^FO350,400^FDDEPT^FS
+^CFD,30^FO320,445^FD00012^FS
+
+^CFA,22^FO570,400^FDORDER#^FS
+^CFU^FO480,425^FD01234567890^FS
+
+^CFD,30^FO30,520^FDWMIT: MIXED PALLET^FS
+^CFD,30^FO30,580^FD# of Cases: (48 Cases)^FS
+
+^FX Pallet Description
+^CFU
+^FO230,670^FDMIXED PALLET^FS
+
+^FX SSCC License Plate
+^CFQ
+^FO20,770^FDSSCC LICENSE PLATE^FS
+
+^FX Define Code 128 SSCC License Plate Bar Code
+^BCN,250,N,N,N,D
+^FO150,840^FD(00)001234560000577633^FS
+
+^CFE
+^FO160,1100^FD(00)001234560000577633^FS
+
+^XZ`.trim() + '\n'};
+
+			$.ajax({
+				type: "POST",
+				contentType: "application/x-www-form-urlencoded; charset=utf-8",
+				url: '/logisticsunit/rawprint',
+				data: labeldata,
+				// dataType: 'json'
+			 } );
+			});
+		});
+	</script>
+	<div class="col-md-6">
+		<p><?= $llp ?></p>
+		<p>&nbsp;</p>
+		<a target="_blank" class="btn btn-primary" href="<?= $printserver ?>">Open Print Server</a>
+		<p>&nbsp;</p>
+		<button class="btn btn-primary" id="test">Print Test Label</button>
+		<p>&nbsp;</p>
+		<button class="btn btn-primary" id="status">Get Status</button>
+		<p>&nbsp;</p>
+		<div id="status-results" class="pre"></div>
+	</div>
+
+	</div>
+<h3><?= $status ?></h3>
+
+</div>
+
+<?php
+
+$this->partial("include/footer_start");
+?>
+<?php
+$this->partial("include/footer_end");

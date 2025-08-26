@@ -1,0 +1,90 @@
+<?php ?>
+^XA
+^FX Doc Setup
+^PR3,2,2^PW800^PON^LH10,25^MD10
+
+^FX Boxen and Lines
+^FO0,0^GB780,1180,12^FS
+
+^FX Horizontal Lines
+^FO0,184^GB780,6,6^FS
+^FO0,368^GB780,6,6^FS
+^FO0,640^GB780,6,6^FS
+^FO0,750^GB780,6,6^FS
+
+^FX Vertical Lines
+^FO264,0^GB6,184,6^FS
+^FO440,184^GB6,184,6^FS
+
+^FX Ship From
+^CFQ
+^FO20,25^FDSHIP FROM^FS
+
+^CF0,20
+^FO20,68^FD<?= $data[ 'shipfrom' ] ?>^FS
+
+
+^CF0,18
+^FO20,100^TBN,273,193^FH^FD2233 Address St_0APlymouth, WI 44444^FS
+^FX Ship To
+^CFQ
+^FO280,25^FDSHIP TO^FS
+
+^CFS
+^FO280,60^FD<?= $data[ 'ShipTo' ] ?>^FS
+
+^CF0,18
+^FO280,105^TBN,473,193^FH^FD<?= $data[ 'Address' ] ?>^FS
+
+^FX Postal Code
+^CFQ
+^FO20,205^FDPOSTAL CODE^FS
+
+^CFA,20
+^FO160,240^FD(420)<?= $data[ 'PostalCode' ] ?>^FS
+
+^FX Define Code 128 Postal Bar Code
+^BY3,2,80^BCN,80,N,N,N,D
+^FO90,265^FD(420)<?= $data[ 'PostalCode' ] ?>^FS
+
+^FX Carrier
+^CFQ
+^FO460,205^FDCARRIER^FS
+
+^CF0,20
+^FO460,250^FD<?= $data[ 'Carrier' ] ?>^FS
+^FO460,280^FDPRO: <?= $data[ 'Program' ] ?>^FS
+^FO460,310^FDB/L: <?= $data[ 'BOL' ] ?>^FS
+
+^FX Item Information
+^CFA,22^FO55,400^FDGDC#^FS
+^CFU^FO30,425^FD<?= $data[ 'DistributionCenter' ] ?>^FS
+
+^CFA,22^FO215,400^FDTYPE^FS
+^CFD,30^FO190,445^FD<?= $data[ 'ProductType' ] ?>^FS
+
+^CFA,22^FO350,400^FDDEPT^FS
+^CFD,30^FO320,445^FD<?= $data[ 'ProductDept' ] ?>^FS
+
+^CFA,22^FO570,400^FDORDER#^FS
+^CFU^FO480,425^FD<?= $data[ 'CustOrder' ] ?>^FS
+
+^CFD,30^FO30,520^FDWMIT: MIXED PALLET^FS
+^CFD,30^FO30,580^FD# of Cases: (<?= $data[ 'TotalPieces' ] ?> Cases)^FS
+
+^FX Pallet Description
+^CFU
+^FO230,670^FDMIXED PALLET^FS
+
+^FX SSCC License Plate
+^CFQ
+^FO20,770^FDSSCC LICENSE PLATE^FS
+
+^FX Define Code 128 SSCC License Plate Bar Code
+^BCN,250,N,N,N,D
+^FO150,840^FD(00)<?= $data[ 'LicensePlate' ] ?>^FS
+
+^CFE
+^FO160,1100^FD(00)<?= $data[ 'LicensePlate' ] ?>^FS
+
+^XZ

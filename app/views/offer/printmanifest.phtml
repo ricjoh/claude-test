@@ -1,0 +1,430 @@
+<?php
+$this->partial("include/print_header", array('title' => 'Cheese Offer - Manifest'));
+
+//$offerData = array_merge($offerData, $offerData, $offerData);
+
+$nextPageItems = count($offerData) ? $offerData : TRUE;
+
+$pageNumber = 0;
+
+$maxPoints = 720; // 450;
+$thresholdPoints = 250;
+
+$lineHeightPoints = 13.5;
+$cellHeightPoints = 12;
+$tableExtraPoints = 3;
+$offerInfoMargin = 20;
+
+$offerItemId = '';
+
+$hasTests = FALSE;
+$testsPass = FALSE;
+
+while ($nextPageItems) {
+	// if ($idx > 0) echo '<br>';
+	$pageItems = $nextPageItems;
+	$nextPageItems = NULL;
+
+	$pageNumber++;
+
+	$approxPoints = 0.0;
+	?>
+	<div class="page shorten-for-print <?= $testsPass ? 'with-tests' : 'without-tests' ?>">
+		<div class="page-inner padding-half-inch">
+			<?php
+			if ($pageNumber === 1) {
+				$this->partial("include/print_masthead");
+				?>
+
+				<h1 style="margin: 0">Cheese Offer - Manifest</h1>
+
+				<div class="info-list" style="margin: 20pt 0;">
+					<div class="row">
+						<div class="col-5">
+							<label>Customer Name:</label>
+							<div class="info-list-value"><?= $offerData[0]['CustomerName'] ?></div>
+						</div>
+						<div class="col-4 pull-right">
+							<label>Offer Date:</label>
+							<div class="info-list-value"><?= $this->utils->slashDate($offerData[0]['OfferDate']); ?></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-5">
+							<label>Attention:</label>
+							<div class="info-list-value"><?= $offerData[0]['Attention'] ? $offerData[0]['Attention'] : '' ?></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-5">
+							<label>Phone:</label>
+							<div class="info-list-value"><?= $offerData[0]['CustomerPhoneNumber'] ? $offerData[0]['CustomerPhoneNumber'] : '' ?></div>
+						</div>
+						<div class="col-3">
+							<label>Fax:</label>
+							<div class="info-list-value"><?= $offerData[0]['CustomerFaxNumber'] ? $offerData[0]['CustomerFaxNumber'] : '' ?></div>
+						</div>
+						<div class="col-4">
+							<label>Email:</label>
+							<div class="info-list-value"><?= $offerData[0]['CustomerEmail'] ? $offerData[0]['CustomerEmail'] : '' ?></div>
+						</div>
+					</div>
+				</div>
+				<?php
+
+				$approxPoints += $mastheadPoints + $lineHeightPoints + $offerInfoMargin * 2 + $lineHeightPoints * 3;
+			} else {
+				$this->partial("include/print_masthead", array('mini' => TRUE, 'subtitle' => "Cheese Offer - Manifest - Page $pageNumber"));
+				$approxPoints += $mastheadPoints;
+			}
+
+			?>
+			<!-- <div class="ruler" style="height:<?= $approxPoints ?>pt;"></div> -->
+			<?php
+
+			if ($pageItems !== TRUE && count($pageItems) > 0) {
+				?>
+				<div class="border padding-10pt" style="padding-top: 0">
+					<?php
+					$pageOfferItemId = '';
+					// $offerDate;
+					$needsClosed = FALSE;
+
+					$approxPoints += 10 * 2; // div padding
+
+					foreach ($pageItems as $idx => $offer) {
+						if ($offer['OfferItemID'] != $pageOfferItemId) {
+							$pageOfferItemId = $offer['OfferItemID'];
+							$before = '';
+
+							if ($pageOfferItemId != $offerItemId) {
+								$before .= '<div class="offer-group">';
+
+								$approxPoints += 10;
+							} else {
+								$approxPoints += $lineHeightPoints + 10;
+								$before .= '<div>(CONTINUED)</div><div class="offer-group">';
+							}
+
+							$needsClosed = TRUE;
+
+							if ($testData[$offer['LotID']]) $hasTests = TRUE;
+
+							$tempTests = $testsPass ? $testData[$offer['LotID']] : FALSE;
+							$tempTestsPoints = $tempTests ? $lineHeightPoints * 2 + 1 : 0;
+
+							$approxPoints += ($cellHeightPoints + $tableExtraPoints) * 2;
+							if ($approxPoints + $lineHeightPoints * 2 + $tempTestsPoints > $maxPoints) { // make sure there's room for at least one row of data, tests (if applicable) and totals
+								$nextPageItems = array_slice($pageItems, $idx);
+								echo closeOffer();
+								break;
+							}
+
+							// get header columns for this lot's item identifier columns
+							$itemIdentifierColumnHeaders = implode(' ', array_map(function($column) {
+								return '<th class="' . ([
+									'LicensePlate' => 'lp">License Plate',
+									'CustomerLotNumber' => 'cl">Customer Lot #',
+									'VatNumber' => 'vat">Vat',
+								])[$column] . '</th>';
+							}, $itemIdentifierColumns[$offer['LotNumber']]));
+
+							$offerItemId = $pageOfferItemId;
+
+							echo $before;
+							?>
+
+							<table class="offer-heading full-width">
+								<tr>
+									<td><span class="bold" style="margin-right: 5pt">Lot</span> <?= $offer['LotNumber'] ?></td>
+									<td><span class="bold" style="margin-right: 5pt">Desc</span> <?= $offer['OfferItemDescription'] ?></td>
+									<?php if ($offer["OfferItemPallets"] > 0) { ?>
+										<td><span class="bold" style="margin-right: 5pt">Pallets</span> <?= $offer['OfferItemPallets'] ?></td>
+									<?php } ?>
+									<td class="productCode"><span class="bold" style="margin-right: 5pt">Product</span> <?= $offer['ProductCode'] ?></td>
+									<td class="location"><span class="bold" style="margin-right: 5pt">Loc</span> <?= $locations[ $offer['LotNumber'] ] ?></td>
+								</tr>
+							</table>
+							<table class="offer-manifest full-width align-descendents-right">
+								<thead>
+									<tr class="bold">
+										<th class="align-left">Make Date</th>
+										<?= $itemIdentifierColumnHeaders ?>
+										<th>Pieces</th>
+										<th>Moist</th>
+										<th>FDB</th>
+										<th>PH</th>
+										<th>Salt</th>
+										<th>Weight</th>
+									</tr>
+								</thead>
+								<tbody>
+							<?php
+						}
+
+						$after = '';
+
+						$approxPoints += $lineHeightPoints;
+
+						if ($pageItems[$idx + 1]['OfferItemID'] != $offerItemId) {
+							// $after .= '</tbody></table>';
+
+							// if ($bolData[showTestResults] && $tests = $testData[$offer[LotID]]) {
+							// 	$after .= getTestResultsTable($tests, $approxPoints);
+
+							// 	$approxPoints += $lineHeightPoints * 2;
+							// }
+
+							$tests = $testsPass ? $testData[$offer['LotID']] : FALSE;
+							$testsPoints = $tests ? $lineHeightPoints * 2 + 1 : 0;
+
+							if ($idx == count($pageItems) - 1) {
+								$after .= closeOffer($offer, $totPieces, $totWeight, $totPallets, $tests);
+								 // plus some border fudge
+								$approxPoints += $lineHeightPoints;
+							} else {
+								$after .= closeOffer($offer, FALSE, FALSE, FALSE, $tests);
+							}
+
+							$approxPoints += $lineHeightPoints + 1 + $testsPoints;
+						}
+
+						if ($approxPoints > $maxPoints) {
+							$nextPageItems = array_slice($pageItems, $idx);
+							echo closeOffer();
+							break;
+						}
+
+						// get values for this lot's item identifier columns
+						$itemIdentifierColumnValues = implode(' ',
+							array_map(function($column) use ($offer) {
+									return '<td>' . $offer[$column] . '</td>';
+								}, $itemIdentifierColumns[$offer['LotNumber']])
+						);
+
+						?>
+						<tr>
+							<td class="align-left"><?= $this->utils->slashDate($offer['MakeDate']) ?></td>
+							<?= $itemIdentifierColumnValues ?>
+							<td><?= $offer['PiecesfromVat'] ?></td>
+							<td><?= $offer['Moisture'] ?></td>
+							<td><?= $offer['FDB'] ?></td>
+							<td><?= $offer['PH'] ?></td>
+							<td><?= $offer['Salt'] ?></td>
+							<td><?= number_format($offer['WeightfromVat'], 2) ?></td>
+						</tr>
+						<?php
+
+						echo $after;
+					}
+
+					// $approxPoints += 10; // from the padding
+					?>
+				</div>
+				<?php
+			}
+
+			if (!$nextPageItems) {
+				// restart for a tests pass
+				if ($hasTests && !$testsPass) {
+					$testsPass = TRUE;
+
+					$offerItemId = '';
+					$pageNumber = 0;
+
+					// $offerData = array_merge($offerData, $offerData, $offerData);
+					$nextPageItems = $offerData;
+				}
+
+				if ($offerData[0]['Note']) {
+					?>
+					<div class="notes" style="display:none; margin-top: 24px;">
+						<p>
+							<span class="bold">Notes:</span><br>
+							<?= str_replace("\n", "<br>", $offerData[0]['Note']) ?>
+						</p>
+					</div>
+					<?php
+				}
+			}
+			?>
+			<!-- <div class="ruler" style="height:<?=$approxPoints ?>pt;"></div> -->
+		</div>
+	</div>
+	<?php
+}
+?>
+
+<div class="left-fixed-container hide-on-print">
+	<?php
+	if ($hasTests) {
+		?>
+		<div class="left-fixed-inner">
+			<button id="showTestResults" class="btn btn-default">Show Test Results</button>
+			<button id="hideTestResults" class="btn btn-default" style="display:none">Hide Test Results</button>
+		</div>
+		<?php
+	}
+
+	if ($offerData[0]['Note']) {
+		?>
+		<div class="left-fixed-inner">
+			<button id="showNotes" class="btn btn-default">Show Notes</button>
+			<button id="hideNotes" class="btn btn-default" style="display: none">Hide Notes</button>
+		</div>
+		<?php
+	}
+	?>
+
+	<?php if ($hasProductCode) { ?>
+		<div class="left-fixed-inner">
+			<button id="toggleProductCode" class="btn btn-default">Show Product Code(s)</button>
+		</div>
+	<?php } ?>
+	<div class="left-fixed-inner">
+		<button id="toggleLocation" class="btn btn-default">Show Lot Location(s)</button>
+	</div>
+	<div class="left-fixed-inner">
+		<label style="font-weight: normal;"><input type="checkbox" id="toggleVatDate">&nbsp;Vat Column is Exp Date.</label>
+	</div>
+</div>
+
+<div class="right-fixed-container hide-on-print">
+	<button class="btn btn-primary print-button">Print</button>
+</div>
+
+<style>
+	#vatTable td, #vatTable th {
+		border-width: 0;
+	}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$('.with-tests').hide();
+	$('.productCode').hide();
+	$('.location').hide();
+	$('.print-button').click(function() {
+		window.print();
+	});
+
+	$('.with-tests').hide()
+
+	$('#hideTestResults').click(function() {
+		$('.with-tests').hide(); // .appendTo('#recycleBin');
+		$('.without-tests').prependTo('body').show();
+
+		$(this).hide();
+		$('#showTestResults').show();
+	});
+
+	$('#showTestResults').click(function() {
+		$('.without-tests').hide();
+		$('.with-tests').prependTo('body').show();
+
+		$(this).hide();
+		$('#hideTestResults').show();
+	});
+
+
+	$('#hideNotes').click(function() {
+		$('.notes').hide();
+
+		$(this).hide();
+		$('#showNotes').show();
+	});
+
+	$('#showNotes').click(function() {
+		$('.notes').show();
+
+		$(this).hide();
+		$('#hideNotes').show();
+	});
+
+	$('#toggleProductCode').click(function() {
+		$(this).text(($('.productCode').is(":hidden") ? 'Hide': 'Show') + ' Product Code(s)');
+		$('.productCode').toggle();
+	});
+
+	$('#toggleLocation').click(function() {
+		$(this).text(($('.location').is(":hidden") ? 'Hide': 'Show') + ' Lot Location(s)');
+		$('.location').toggle();
+	});
+
+	$('#toggleVatDate').click(function() {
+		$( 'th.vat' ).text( $(this).is(':checked') ? 'Exp Date' : 'Vat' );
+	});
+});
+</script>
+
+<?php
+$this->partial("include/print_footer");
+
+function closeOffer($offer = FALSE, $totPieces = FALSE, $totWeight = FALSE, $totPallets = FALSE, $tests = FALSE) {
+	$html = '';
+
+	if ($offer) {
+		$offerItemWeight = number_format($offer['OfferItemWeight'], 2);
+
+		$html .= <<<HTML
+		<tr>
+			<td class="bold">Total:</td>
+			<td></td>
+			<td></td>
+			<td style="border-top: 1px solid black;">$offer[OfferItemPieces]</td>
+			<td colspan="4"></td>
+			<td style="border-top: 1px solid black;">$offerItemWeight</td>
+		</tr>
+HTML;
+	}
+
+	if ($tests) {
+		$html .= '<tr><td colspan="9">' . getTestResultsTable($tests) . '</td></tr>';
+	}
+
+	if ($totPieces && $totWeight) {
+		$html .= <<<HTML
+		<tr>
+			<td style="border-top: 1px dotted black;" class="bold">Grand Total:</td>
+			<td style="border-top: 1px dotted black;" colspan="3">$totPieces</td>
+HTML;
+		if ($totPallets > 0) {
+			$html .= <<<HTML
+			<td style="border-top: 1px dotted black;" colspan="3"><strong>Pallets:</strong> $totPallets</td>
+			<td style="border-top: 1px dotted black;" class="bold align-center" colspan="1"><!-- Grand Total Weight/Price: --></td>
+HTML;
+		} else {
+			$html .= <<<HTML
+			<td style="border-top: 1px dotted black;" class="bold align-center" colspan="4"><!-- Grand Total Weight/Price: --></td>
+HTML;
+		}
+
+		$html .= <<<HTML
+			<td style="border-top: 1px dotted black;">$totWeight</td>
+		</tr>
+HTML;
+	}
+
+	$html .= '</tbody></table></div>';
+
+	return $html;
+}
+
+function getTestResultsTable($tests) {
+	$html = '';
+
+	$html .= '<table class="test-results-table"><tr>';
+
+	foreach ($tests as $testIdx => $test) {
+		if ($testIdx == 5) $html .= '</tr><tr>';
+
+		$testResults = $test['TestResults'] ? $test['TestResults'] : 'N/A';
+		$html .= "<td class=\"test-performed\">$test[TestPerformed]</td>
+			<td class=\"test-results\">$testResults</td>";
+	}
+
+	$html .= '</tr></table>';
+
+	return $html;
+}
+?>

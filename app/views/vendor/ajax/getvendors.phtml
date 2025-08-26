@@ -1,0 +1,39 @@
+<?php
+if ( count($vendors) )
+{
+	$activeSeen = 0;
+	$inactiveSeen = 0;
+	$widths = array('84%', '8%', '8%');
+?>
+	<table class="table table-striped thick-rounded-border">
+	<?php
+			foreach ( $vendors as $v )
+			{
+				if ( $v->Active && !$activeSeen ) {
+					$activeSeen = 1;
+					echo '<thead><tr><th colspan="3">Active</th></tr></thead><tbody>';
+				}
+				if ( !$v->Active && !$inactiveSeen ) {
+					$inactiveSeen = 1;
+					echo '<tr class="fake-thead"><th colspan="3">Inactive</th></tr>';
+				}
+	?>
+	        <tr>
+	          <td width="<?php echo $widths[0] ?>"><?php echo $v->Name ?></td>
+	          <td width="<?php echo $widths[1] ?>"><a href="#" class="editVendor" id="editVendor<?php echo $v->VendorID ?>" data-vendor-id="<?php echo $v->VendorID ?>">Edit</a></td>
+	          <td width="<?php echo $widths[2] ?>"><a href="#" class="deleteVendor" data-name="<?php echo htmlentities($v->Name, ENT_QUOTES); ?>" data-vendor-id="<?php echo $v->VendorID ?>">Delete</a></td>
+	        </tr>
+
+	<?php
+			}
+	?>
+      </tbody>
+    </table>
+<?php
+}
+else
+{
+	echo 'There are no vendors at this time.';
+}
+?>
+

@@ -1,0 +1,71 @@
+<?php
+if ( count($offers) )
+{
+?>
+				<div>Offers: <?= number_format(count($offers)) ?> listed</div>
+				<table width="100%" class="table tablesorter table-striped table-hover">
+					<thead>
+						<tr>
+							<th>
+								Customer
+							</th>
+							<th>
+								Status
+							</th>
+							<th>
+								Offer Date
+							</th>
+							<th>
+								Expiration Date
+							</th>
+							<th>
+								Sale Date
+							</th>
+							<th>
+								Weight
+							</th>
+							<th>
+								Pieces
+							</th>
+							<!-- <th>
+								Pallets
+							</th> -->
+						</tr>
+					</thead>
+				<?php foreach ( $offers as $o ) : ?>
+				<tr class="trEditRow linkRow" data-new-win="1" data-url="/offer/edit/<?= $o['OfferID'] ?>">
+					<td>
+						<?= $o['CustomerName'] ?>
+					</td>
+					<td>
+						<?= $o['Status'] ?>
+					</td>
+					<td>
+						<?= $this->utils->slashDate($o['OfferDate']) ?>
+					</td>
+					<td>
+						<?= $this->utils->slashDate($o['OfferExpiration']) ?>
+					</td>
+					<td>
+						<?php if ( $o['SaleDate'] ) : ?>
+						<?= $this->utils->slashDate($o['SaleDate']) ?>
+						<?php endif ?>
+					</td>
+					<td>
+						<?= number_format($o['OfferWeight'], 2, '.', '') ?>
+					</td>
+					<td>
+						<?= $o['OfferPieces'] ?>
+					</td>
+					<!-- <td>
+						<?= $o['EstPallets'] ?>
+					</td> -->
+				</tr>
+				<?php endforeach ?>
+				</table>
+<?php
+} 
+else {
+	echo 'No data found based on your search criteria.';
+}
+?>

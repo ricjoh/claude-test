@@ -1,0 +1,351 @@
+<?php
+
+$rContent = '';
+$this->partial(
+	"include/header",
+	array(
+		'title' => $title,
+		'header' => $title,
+		'headerIcon' => 'edi',
+		'rightContent' => $rContent
+	)
+);
+
+?>
+<style>
+	.bootbox-body h5,
+	h4.modal-title {
+		font-size: 1.2em;
+		text-transform: uppercase;
+		text-align: left;
+		font-weight: bold;
+		letter-spacing: 0.2em;
+		color: #d6bd99;
+		margin-bottom: .5rem;
+	}
+
+	.bootbox-body a {
+		text-decoration: dotted underline;
+	}
+
+	input.expdate {
+		padding: 1px 2px;
+	}
+
+	.bootbox-body em {
+		font-weight: bold;
+		font-size: 1.2em;
+		display: block;
+		text-align: center;
+		color: #800;
+	}
+
+	.recdqty {
+		width: 40px;
+		margin-left: 10px;
+		text-align: right;
+	}
+
+	.licenseplate {
+		width: 125px;
+		margin-left: 0px;
+	}
+
+	.expdate {
+		width: 100px;
+	}
+
+	.autocol-8 input {
+		width: 4em;
+	}
+
+	.autocol-7 input {
+		width: 6em;
+	}
+
+	.autocol-2 {
+		text-align: center;
+	}
+</style>
+
+<?php
+if (isset($details)) {
+	$this->partial(
+		"table/details",
+		array(
+			'details' => $details
+		)
+	);
+} ?>
+
+<form method="post" action="/delivery/incomingdetail/<?= $deliveryID ?>" id="deliveryReceiptForm">
+	<input type="hidden" id="mode" name="mode" value="saveonly">
+	<input type="hidden" id="linecount" name="linecount" value="<?= $linecount ?>">
+	<?php
+
+	$this->partial(
+		"table/builder",
+		array(
+			'headers' => $headers,
+			'data' => $data,
+			'cols' => $cols
+		)
+	);
+	?>
+
+	<div class="row" id="autodetails">
+		<div class="col-md-12" style="margin-bottom: 1em; text-align: center;">
+			<?php if ($error) : ?>
+				<p style="color:#880000; font-weight: bold;"><?= $error ?></p>
+			<?php endif ?>
+			<a id="printDetails" type="button" class="btn btn-default" href="/delivery/printincomingdetail/<?= $deliveryID ?>">Print Receiver</a>
+			<!-- a id="save" class="submit-form btn btn-default" href="#">Save Only</a -->
+			<?php if ($ReadOnly != 1 && empty($error) ) : ?>
+				<a id="allReceived" type="button" class="btn btn-default" href="#">Mark All Received</a>
+				<a id="save" type="button" class="btn btn-primary" href="#">Confirm and Convert to Draft Lots</a>
+			<?php endif ?>
+
+		</div>
+	</div>
+</form>
+
+<?php $this->partial("include/footer_start"); ?>
+
+<?php if ($ReadOnly != 1) : ?>
+	<script>
+		jQuery(document).ready(function($) {
+			$(".datepicker").datepicker({
+				dateFormat: "mm/dd/y"
+			});
+
+			function doIfAllShipped(f) {
+				$received = $('input[type="checkbox"]:checked').length;
+				$lines = $('#linecount').val()
+				if ($received != $lines) {
+					bootbox.confirm(
+						'You have only marked ' + $received + ' of ' + $lines + ' lines as received!<br>All other lines will have 0 received items.<br>Continue?',
+						function(result) {
+							if (result) f();
+						}
+					);
+				} else {
+					f();
+				}
+			}
+
+			$('#save').click(
+				function() {
+					console.log('save');
+
+					if (someFieldsAreBlank()) {
+						bootbox.confirm(
+							'Batch or Exp Date is blank on one or more lines.<br><em>Would you like to continue?</em><br>',
+							function(bbResult) {
+								if (bbResult) {
+									checkLPAndSubmitForm();
+								}
+							}
+						);
+					} else {
+						checkLPAndSubmitForm();
+					}
+				}
+			);
+
+			$(document).on("click", '#allReceived', function() {
+
+				console.log('All Received');
+
+				// Create an object to store the seen data-license-plate values
+				const seenLicensePlates = {};
+
+				// On each row in the table...
+				$('#autotable tr').each(function() {
+					var checkbox = $(this).find('input[type="checkbox"].received');
+					var receivedQuantity = $(this).find('.recdqty');
+					var shippedQuantity = $(this).find('.shipqty').val();
+
+					// If they have changed the value already
+					if (receivedQuantity.val() != 0) {
+						// Set the input to the value they entered
+						shippedQuantity = receivedQuantity.val();
+					}
+
+					receivedQuantity.val(shippedQuantity);
+					checkbox.prop('checked', true);
+
+					const $currentLicensePlate = $(this).find(".autocol-8").find("[data-license-plate]");
+					console.log('CLP: ', $currentLicensePlate);
+					const currentLicensePlateValue = $currentLicensePlate.data("license-plate");
+
+					// If the license plate value has been seen before, set it to 0; otherwise, set it to 1
+					if (seenLicensePlates[currentLicensePlateValue]) {
+						$currentLicensePlate.val("0");
+					} else {
+						$currentLicensePlate.val("1");
+						seenLicensePlates[currentLicensePlateValue] = true;
+					}
+				});
+			});
+
+			$('#autotable tr>td.autocol-0 input.received').click(function(e) {
+
+				var cb = $(this); // checkbox input
+				console.log("CB Testing: ", cb);
+
+				var rq = $(this).parent().find('.recdqty').first(); // received input FIELD
+				console.log("RCD: " + rq.val());
+				var sq = $(this).parent().find('.shipqty').first().val(); // number VALUE that was shipped originally (static)
+				console.log("Original: " + sq);
+
+				const $palletItemCount = $(this).parent().parent().find(`[name="palletCount[]"]`);
+
+				if (rq.val() != 0) sq = rq.val(); // if they have changed it already, fill the box with the qty they typed in
+
+				var seenLicensePlates = {};
+
+				// Iterate through all previous rows and populate seenLicensePlates
+				$(this).parent().parent().prevAll('tr').each(function() {
+					var previousLicensePlate = $(this).find(`[name="palletCount[]"]`).data("license-plate");
+					seenLicensePlates[previousLicensePlate] = true;
+				});
+
+				// Get the current license plate value
+				var currentLicensePlateValue = $(this).parent().parent().find(`[name="palletCount[]"]`).data("license-plate");
+
+				if (!cb.prop('checked')) { // it got unchecked on the way in
+					rq.val(0); // set value to zero.
+					$(clicked_row).find(`.autocol-6`).css("text-decoration", "none");
+					$palletItemCount.val("0")
+				} else {
+					cb.prop('checked', false); // make sure it's not checked and only check it if they confirm.
+					(function(clicked_element) {
+						clicked_row = $(clicked_element).parent().parent();
+						bootbox.dialog({
+							message: "Confirm quantity " + sq + " for this pallet/license plate: " + $(clicked_row).prop('id').split('-')[1] + "?\n",
+							title: 'Confirm',
+							size: 'large',
+							buttons: {
+								confirm: {
+									label: 'Confirm',
+									className: 'btn-primary',
+									callback: function() {
+										cb.prop('checked', true);
+										rq.val(sq);
+										$(clicked_row).find(`.autocol-6`).css("text-decoration", "none");
+										// Set to 1 only if the current license plate value has not been seen before
+										$palletItemCount.val(seenLicensePlates[currentLicensePlateValue] ? "0" : "1");
+									}
+								},
+								qty: {
+									label: 'Edit Qty and Confirm',
+									className: 'btn-default',
+									callback: function() {
+										bootbox.prompt({
+											title: 'Confirm New Quantity',
+											value: sq,
+											callback: function(result) {
+												cb.prop('checked', true);
+												rq.val(result);
+												// Set to 1 only if the current license plate value has not been seen before
+												$palletItemCount.val(seenLicensePlates[currentLicensePlateValue] ? "0" : "1");
+												console.log("RQ: " + rq.val());
+												console.log("SQ: " + sq);
+												if ( rq.val() != sq ) {
+													$(clicked_row).find(`.autocol-6`).css("text-decoration", "line-through");
+												}
+												else
+												{
+													$(clicked_row).find(`.autocol-6`).css("text-decoration", "none");
+												}
+											}
+										});
+									}
+								},
+								cancel: {
+									label: 'Cancel',
+									className: 'btn-default',
+									callback: function() {
+										// console.log('Back');
+									}
+								}
+							}
+						});
+					})(this);
+				}
+			});
+
+			$(document).on("change", `[name="recdqty[]"]`, function() {
+				// if qty <> original qty, cross out the readonly qty
+				console.log("Change ", $(this).val());
+				console.log("Orig ", $(this).parent().parent().find(`.shipqty`).val());
+				if ($(this).val() != $(this).parent().parent().find(`.shipqty`).val() && $(this).val() != 0) {
+					$(this).parent().parent().find(`.autocol-6`).css("text-decoration", "line-through");
+				}
+				else {
+					$(this).parent().parent().find(`.autocol-6`).css("text-decoration", "none");
+				}
+			});
+
+			function checkLPAndSubmitForm() {
+				var licensePlateArray = $(".lp-input").map(function() {
+					if ($(this).val() != '') {
+						return $(this).val();
+					}
+				}).get();
+
+				$.ajax({
+					url: "/delivery/checklicenseplate/" + licensePlateArray,
+					type: "POST",
+					dataType: "json",
+					data: {
+						licensePlateArray: licensePlateArray
+					},
+					success: function(data) {
+						if (data.success == 1) {
+							doIfAllShipped(function() {
+								bootbox.confirm(
+									'This will send an EDI Response and create Draft Lots.<br><br><em>Are you sure?</em>',
+									function(result) {
+										if (result) $('#deliveryReceiptForm').submit();
+									}
+								);
+							});
+						} else {
+							bootbox.alert(data.message);
+						}
+					},
+					error: function(error) {
+						console.log('Error in User AJAX');
+						console.log(JSON.stringify(error));
+					}
+				});
+			}
+
+			function someFieldsAreBlank() {
+				var elements = $('input.validateInput');
+				var blankCheck = false;
+
+				if (elements) {
+					elements.each(function() {
+						if ($(this).val() == '') {
+							blankCheck = true;
+						}
+					});
+				}
+
+				return blankCheck;
+			}
+		});
+	</script>
+<?php else: ?>
+	<script>
+		jQuery(document).ready(function($) {
+			$("input").attr('disabled', 'disabled');
+		});
+	</script>
+<?php endif ?>
+
+
+<?php
+$this->partial("include/footer_end");

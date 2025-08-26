@@ -1,0 +1,73 @@
+<form id="testForm" class="form-horizontal form-track-change" style="display: block;" method="post"
+	  onsubmit="return false;" action="/contaminenttest/save/" novalidate>
+	<input type="hidden" name="LotID" id="LotID" value="<?= $lotId ?>">
+
+	<div class="form-group control-group">
+		<label class="col-sm-3 control-label nopadding">Test Date</label>
+		<div class="col-sm-9 nopadding">
+			<input type="text" class="form-control datepicker"
+			       id="TestDate"
+			       name="TestDate"
+			       required
+			       data-validation-required-message="Test Date is required"
+			       value="<?= $this->utils->slashDate($testGroup['TestDate']) ?>">
+			<p class="help-block text-danger"></p>
+		</div>
+	</div>
+
+	<div class="form-group control-group">
+		<label class="col-sm-3 control-label nopadding">Note</label>
+		<div class="col-sm-9 nopadding">
+			<textarea name="NoteText" id="NoteText" class="form-control"><?= $testGroup['NoteText'] ?></textarea>
+		</div>
+	</div>
+
+	<hr style="border-color: #e5e5e5">
+
+	<?php
+	foreach ($cheeseTests as $cheeseTestParam) {
+		$testPerformedPID = $cheeseTestParam['ParameterID'];
+		$testPerformed = $cheeseTestParam['Value1'];
+
+		if (isset($tests[$testPerformedPID])) {
+			$testResultsPID = $tests[$testPerformedPID]['TestResultsPID'];
+			// $testResults = $tests[$testPerformedPID]['TestResults'];
+			$noteText = $tests[$testPerformedPID]['NoteText'];
+		} else {
+			$testResultsPID = '00000000-0000-0000-0000-000000000000';
+			$noteText = '';
+		}
+		?>
+		<div class="form-group control-group">
+			<label class="col-sm-3 control-label nopadding"><?= $testPerformed ?></label>
+			<div class="col-sm-3 nopadding">
+				<select
+					id="<?= $testPerformedPID ?>"
+					name="<?= $testPerformedPID ?>"
+					class="form-control">
+					<?php
+						foreach ( $cheeseTestResults as $resultsParam ) {
+							$sel = $resultsParam['ParameterID'] == $testResultsPID ? ' selected="selected" ' : '';
+
+							echo '<option value="' . $resultsParam['ParameterID'] . '"' . $sel . '>' . $resultsParam['Value1'] . '</option>';
+						}
+					?>
+				</select>
+			</div>
+			<label class="col-sm-1 control-label nopadding">Note</label>
+			<div class="col-sm-5 nopadding">
+				<input type="text" class="form-control" id="note_<?= $testPerformedPID ?>" name="note_<?= $testPerformedPID ?>" value="<?= $noteText ?>">
+			</div>
+		</div>
+		<?php
+	}
+	?>
+
+	<!-- <div class="has-success">
+		<div id="bolSavedFeedback" class="control-label successFeedback" style="float: left; display: none; padding-left: 50px;">Bill of Lading Saved</div>
+		<button type="submit" name="doPrint" value="1" class="btn btn-primary" style="float: right; margin-right: 15px;">Save and Print</button>
+		<button type="submit" name="doPrint" value="0" class="btn btn-default" style="float: right; margin-right: 15px;">Save</button>
+	</div> -->
+
+</form>
+<!-- <script src="/public/js/jqBootstrapValidation-1.3.7.min.js"></script> -->

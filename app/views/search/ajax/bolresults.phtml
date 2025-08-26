@@ -1,0 +1,45 @@
+<?php
+if ( count($bols) )
+{
+?>
+				<div>Bill of Ladings: <?= number_format(count($bols)) ?> listed</div>
+				<table width="100%" class="table tablesorter table-striped table-hover">
+					<thead>
+						<tr>
+							<th>
+								Shipper Number
+							</th>
+							<th>
+								Create Date
+							</th>
+							<th>
+								Seal Number
+							</th>
+							<th>
+								Shipped To
+							</th>
+						</tr>
+					</thead>
+				<?php foreach ( $bols as $b ) : ?>
+				<tr class="trEditRow linkRow" data-new-win="1" data-url="/billoflading/print/<?= $b->BOLID ?>">
+					<td>
+						<?= $b->ShipperNumber ?>
+					</td>
+					<td>
+						<?= $this->utils->slashDate($b->CreateDate) ?>
+					</td>
+					<td>
+						<?= $b->SealNumber ?>
+					</td>
+					<td>
+						<?= $b->ShippedToName ?>
+					</td>
+				</tr>
+				<?php endforeach ?>
+				</table>
+<?php
+} 
+else {
+	echo 'No data found based on your search criteria.';
+}
+?>

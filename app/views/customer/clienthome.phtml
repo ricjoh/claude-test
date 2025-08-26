@@ -1,0 +1,280 @@
+<?php
+$this->partial(
+	"include/client_header", 
+	array(
+		'title' => 'Home', 
+		'header' => '',
+		'contained' => true,
+	)
+);
+
+?>
+
+<style>
+	ul {
+		padding-left: 2rem;
+	}
+	
+	.form-group {
+		margin-bottom: 0;
+	}
+	
+	.form-horizontal .control-label {
+		padding-top: 0;
+	}
+	
+	.modal-body {
+		padding: 30px 15px;
+	}
+	
+	.modal-dialog {
+	    width: 645px;
+	}
+</style>
+
+<div class="row">
+
+	<?php if($allowGrading === true): ?>
+	<div class="separator-bottom col-md-6">
+		<h2>Grading</h2>
+		<ul>
+			<li>
+				<a 
+					href="#" 
+					class="openExportModal" 
+					data-toggle="modal" 
+					data-title="Grading Export" 
+					data-action="/clients/grading/export" 
+					data-target="#exportModal">Generate Grading XLS</a>
+			</li>
+			<li>
+				<!-- <a href="#" data-toggle="modal" data-target="#gradingImportModal">Import Grading XLS</a> -->
+				<a href="/clients/grading/import">Import Grading XLS</a>
+			</li>
+			<li>
+				<a href="/clients/grading/report">Grading Report - Latest</a>
+			</li>
+			<li>
+				<a href="/clients/grading/report?type=all">Grading Report - All</a>
+			</li>
+		</ul>
+		
+	</div>
+	<?php endif ?>
+	<?php if($allowInspection === true): ?>
+
+	<div class="separator-bottom col-md-6">
+		
+		<h2>Inspection</h2>
+		
+		<ul>
+			<li>
+				<a 
+					href="#" 
+					class="openExportModal" 
+					data-toggle="modal" 
+					data-title="Inspection Export" 
+					data-action="/clients/inspection/export" 
+					data-target="#exportModal">Generate Inspection XLS</a>
+			</li>
+			<li>
+				<!-- <a href="#" data-toggle="modal" data-target="#InspectionImportModal">Import Inspection XLS</a> -->
+				<a href="/clients/inspection/import">Import Inspection XLS</a>
+			</li>
+			<li>
+				<a href="/clients/inspection/report">Inspection Report - Latest</a>
+			</li>
+			<li>
+				<a href="/clients/inspection/report?type=all">Inspection Report - All</a>
+			</li>
+		</ul>
+		
+	</div>
+	<?php endif ?>
+
+</div>
+
+<div class="row">
+
+	<h2 style="padding-left:15px;">Inventory Reports</h2>
+	<div class="col-md-6">
+		
+		<h3>Summary Inventory Report</h3>
+		<ul>
+			<li><a href="/clients/inventoryreport" class="change-cursor-on-click">All Inventory</a></li>
+			<li><a href="/clients/inventoryreport?invType=AGING">Only AGING</a></li>
+			<li><a href="/clients/inventoryreport?invType=SET-ASIDE">Only SET-ASIDE</a></li>
+			<li><a href="/clients/inventoryreport?invType=COMMITTED">Only COMMITTED</a></li>
+		</ul>
+	</div>
+	<div class="col-md-6">
+		<h3>Detailed Inventory Reports</h3>
+		<ul>
+			<li><a href="/clients/inventorydetailreport" class="change-cursor-on-click">All Inventory</a></li>
+			<li><a href="/clients/inventorydetailreport?invType=AGING">Only AGING</a></li>
+			<li><a href="/clients/inventorydetailreport?invType=SET-ASIDE">Only SET-ASIDE</a></li>
+			<li><a href="/clients/inventorydetailreport?invType=COMMITTED">Only COMMITTED</a></li>
+		</ul>
+	</div>
+</div>
+
+<?php
+
+$this->partial("include/client_footer_start");
+?>
+
+<!-- Modal -->
+<!-- <div class="modal fade" id="gradingImportModal" tabindex="-1" role="dialog" aria-labelledby="gradingImportModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+  
+    <div class="modal-content">
+	
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title">Grading Import</h4>
+		</div>
+
+		<form class="form-horizontal" method="post" action="/clients/grading/import" enctype="multipart/form-data">
+		
+		  <div class="modal-body">
+			<div class="form-group control-group">
+				<label class="col-sm-4 control-label">Select File to Import</label>
+				<div class="col-sm-8">
+				  <input type="file" name="gradingImport" />
+				</div>
+			</div>
+		  </div>
+		  
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+			<input type="submit" class="btn btn-primary" value="Import Grading File" />
+		  </div>
+		  
+		</form>
+	  
+    </div>
+	
+  </div>
+  
+</div> -->
+
+<!-- Modal -->
+<!-- <div class="modal fade" id="InspectionImportModal" tabindex="-1" role="dialog" aria-labelledby="InspectionImportModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+  
+    <div class="modal-content">
+	
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title">Inspection Import</h4>
+		</div>
+
+		<form class="form-horizontal" method="post" action="/clients/inspection/import" enctype="multipart/form-data">
+		
+		  <div class="modal-body">
+			<div class="form-group control-group">
+				<label class="col-sm-4 control-label">Select File to Import</label>
+				<div class="col-sm-8">
+				  <input type="file" name="inspectionImport" />
+				</div>
+			</div>
+		  </div>
+		  
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+			<input type="submit" class="btn btn-primary" value="Import Inspection File" />
+		  </div>
+		  
+		</form>
+	  
+    </div>
+	
+  </div>
+  
+</div> -->
+
+<!-- Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+  
+    <div class="modal-content">
+	
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title" id="exportTitle"></h4>
+		</div>
+		
+		<div class="col-sm-12" style="padding-top: 2rem; padding-bottom: 2rem;">
+			<form id="exportForm" method="post" action="">
+				<input type="hidden" name="lotNumbers" id="lotNumbers" value="">
+				<div class="form-group">
+					<label>Enter OCS batch numbers to export below (Separate by spaces, commas or new lines)</label>
+					<textarea class="form-control" id="lotsInput" style="height: 24rem; margin-bottom: 1rem;"></textarea>
+				</div>
+			</form>		
+		</div>	
+		<div style="clear:both;"></div>
+
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default closeModal" data-dismiss="modal">Close</button>
+			<input type="button" class="btn btn-primary" value="Generate Export File" id="generateExportFile" />
+		  </div>
+		  	  
+    </div>
+	
+  </div>
+  
+</div>
+<script>
+jQuery(document).ready(function($) {
+	$('.openExportModal').click(function() {
+		$('#lotsInput').val('');
+		$('#exportTitle').html($(this).data('title'));
+		$('#exportForm').prop( "action", $(this).data('action') );
+	});
+	
+	$('#exportModal').on('shown.bs.modal', function() {
+		$('#lotsInput').focus();
+	});
+	
+	$('#generateExportFile').click(function() {
+		$.ajax({
+			url: "/clients/validateclientlots",
+			type: "POST",
+			dataType: "json",
+			data: {lotsInput: $('#lotsInput').val()},
+			success: function(data) {
+				if ( data.invalidLots.length > 0 ) 
+				{
+					var msg = '';
+					if ( data.invalidLots.length == 1 ) {
+						msg += 'The following OCS batch number is invalid. Please correct it and try again.';
+					}
+					else {
+						msg += 'The following OCS batch numbers are invalid. Please correct them and try again.';
+					}
+					msg += '\n' + data.invalidLots.join(', ');
+					alert(msg);
+					return false;
+				}
+				if ( data.validLots.length == 0 ) 
+				{
+					alert('No valid OCS batch numbers have been entered. Please try again.');
+					return false;
+				}
+				var lotNumbers = data.validLots.join(',');
+				$('#lotNumbers').val(lotNumbers);
+				$('#exportForm').submit();
+				$('#exportModal').modal('hide');
+			}
+		});	
+	});
+	
+	$('.change-cursor-on-click').click(function() {
+		$(this).css('cursor', 'wait');
+	});
+});
+
+</script>
+<?php
+$this->partial("include/client_footer_end");

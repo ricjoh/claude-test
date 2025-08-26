@@ -1,0 +1,190 @@
+<style>
+.pc {
+    font-size: 0.8em;
+}
+#lotTotals.offerTotals {
+    margin: 0  -5px 0 0;
+    width: auto;
+}
+
+#lotTotals.offerTotals .offerPieces {
+	margin-right: <?= $offerUsesPallets && $totPallets > 0 ? "10" : "85" ?>px;
+	float: right;
+}
+
+#lotTotals.offerTotals .offerPallets {
+    margin-right: 85px;
+    float: right;
+}
+
+#lotTotals.offerTotals .offerWeight {
+    margin-right: 10px;
+    float: right;
+}
+
+#lotTotals.offerTotals .offerPrice {
+    float: right;
+    margin-right: 110px;
+}
+
+#lotTotals.offerTotals{
+    font-family: 'Open Sans Condensed', sans-serif;
+    font-weight: 700;
+}
+
+.mismatch {
+    background-color: #F9C0C0 !important;
+    cursor: pointer;
+}
+.mismatch:after {
+    opacity: 0;
+    transition: opacity .3s;
+    content: "Click to add this item to the original EDI Order";
+    left: 2.5%;
+    background-color: #ffffffaa;
+    position: absolute;
+    display: block;
+    width: 95%;
+    text-align: center;
+    line-height: 53px;
+    font-weight: bold;
+    font-size: 25px;
+}
+.mismatch:hover:after {
+    transition: opacity .3s;
+    opacity: 1;
+}
+</style>
+<!-- ITEMCOUNT=<?= count($items) ?> DO NOT DELETE, DATA TRANSFER TO JS-->
+<h2 style="margin-top: 1.75em;">Items
+
+<?php $offerUsesPallets = true; ?>
+
+<button type="submit"
+    class="btn btn-default"
+    data-toggle="modal"
+    data-target="#itemModal"
+    id="addItem"
+    style="display: inline-block; float: right; margin-right: 25px;<?php if ( $lotId == 'NEW' ) : ?>visibility: hidden;<?php endif ?>">Add New Item</button>
+<div id="itemSavedFeedback"
+     class="control-label successFeedback"
+     style="float: right; display: none; padding-right: 20px; padding-top: 7px;">Item Saved</div>
+</h2>
+
+<?php
+if ( $lotId == 'NEW' )
+{
+    echo 'You must first create a lot above before adding new items.';
+}
+else
+{
+    if ( count($items) ) // begin show items
+    {
+?>
+          <table style="width: 100%" id="itemTable" class="table tablesorter table-striped thick-rounded-border">
+            <thead>
+                <tr>
+                    <th>Lot No</th>
+                    <th>Make Date</th>
+                    <th>Product</th>
+                    <th>Weight</th>
+                    <th>Pieces</th>
+                    <th>Cost Out</th>
+                    <th>Total Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+        <?php
+            $totPieces = 0;
+            $totCost = 0;
+            $totWeight = 0;
+			$totPallets = 0;
+        ?>
+        <?php foreach ( $items as $i ) : ?>
+
+            <?php
+				$lot = $i->getLot();
+
+                $price = round($i->Weight * $i->Cost * 10000) / 10000.0;
+                $totPieces += $i->Pieces;
+                $totPrice  += $price;
+                $totWeight += $i->Weight;
+				$totPallets += $i->Pallets ?? 0;
+                $desc = Parameter::getValue( $lot->DescriptionPID );
+            ?>
+
+            <tr class="itemDetails" rel="<?= $i->OfferItemID ?>"
+                <?= $isEDI && !empty($lot->ProductCode) ? 'data-product-code="' . $lot->ProductCode . '"' : '' ?>
+                <?= $isEDI && !empty($desc) ? 'data-product-desc="' . $desc . '"' : '' ?>
+                >
+				<td align="right"><?= $lot->LotNumber ?></td>
+
+                <td><?= $utils->slashDate( $i->MakeDate ); ?></td>
+
+				<td align="left"><?= $desc ?>
+                <?php if ( !empty($lot->ProductCode) ) {
+                    echo "<div class='pc'>ProductCode: {$lot->ProductCode}</div>";
+                } ?>
+
+                </td>
+
+                <td align="right"><?= number_format( $i->Weight, 2, '.', ','  ) ?></a></td>
+
+                <td align="right"><?=  number_format( $i->Pieces, 0, '.', ',' ) ?></td>
+
+                <td align="right"><?= $i->Cost ?></td>
+
+                <td align="right"><?= number_format( $price, 2, '.', ','  ) ?></td>
+
+                <td style="width: 100px">
+                    <a href="#" class="editItemButton" title="Edit Item" data-itemid="<?= $i->OfferItemID ?>"><i class="fa fa-edit fa-lg fa-fw"></i></a>
+                    <a href="#" class="editItemNoteButton" title="Edit Note" data-itemid="<?= $i->OfferItemID ?>"><i class="fa fa-pencil fa-lg fa-fw"></i></a>
+
+
+                    <?php if ( ( ! $isSoldOrExpired ) && ( $i->Weight + $i->Pieces <= 0 ) ) : ?>
+                    <a href="#" class="deleteItem"  title="Delete Item" data-itemid="<?= $i->OfferItemID ?>"><i class="fa fa-trash-o fa-lg fa-fw"></i></a>
+                    <?php endif ?>
+
+                </td>
+            </tr>
+            <tr class="itemNote <?= (empty( $i->NoteText ) ? 'hide' : ''); ?>" rel="<?= $i->OfferItemID ?>">
+                <td class="itemNoteLabel">Note:</td>
+                <td class="itemNoteText editItemNote" data-name="NoteText" data-type="textarea" data-title="Enter notes" data-pk="<?= $i->OfferItemID ?>" data-itemid="<?= $i->OfferItemID ?>" data-url="/offer/updateitem/<?= $i->OfferItemID ?>" colspan="10"><?= $i->NoteText ?></td>
+            </tr>
+
+        <?php endforeach ?>
+            </tbody>
+          </table>
+
+    <div id="lotTotals" class="offerTotals">
+        <div class="lotTotal roundedBorder offerPrice">
+            <div class="ltLabel">Total</div>
+            <div class="ltValue" id="totOfferCost"><?= number_format( $totPrice, 2, '.', ',' ) ?></div>
+        </div>
+
+		<?php if ($offerUsesPallets && $totPallets > 0) { ?>
+			<div class="lotTotal roundedBorder offerPallets">
+				<div class="ltLabel">Tot Pallets</div>
+				<div class="ltValue" id="totOfferPallets"><?= number_format($totPallets) ?></div>
+			</div>
+		<?php } ?>
+
+        <div class="lotTotal roundedBorder offerPieces">
+            <div class="ltLabel">Tot Pieces</div>
+            <div class="ltValue" id="totOfferPieces"><?= number_format($totPieces) ?></div>
+        </div>
+        <div class="lotTotal roundedBorder offerWeight">
+            <div class="ltLabel">Tot Weight</div>
+            <div class="ltValue" id="totOfferWeight"><?= number_format( $totWeight, 2, '.', ',' ) ?></div>
+        </div>
+        <div style="clear: both;"></div>
+    </div>
+
+<?php
+    } // end show items
+    else {
+        echo 'This offer has no items at this time. Use the <b>Add New Item</b> button to add a item.';
+    }
+}
+?>

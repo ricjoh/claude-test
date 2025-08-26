@@ -1,0 +1,59 @@
+<table id="activity-table" class="table tablesorter table-striped">
+	<thead>
+		<tr>
+			<th align="left">Customer</th>
+			<th align="left">Note</th>
+			<th align="left">Status</th>
+			<th class="rt">Offer Date</th>
+			<th class="rt">Expiration</th>
+			<th class="rt">Date Sold</th>
+			<th align="left">B/L</th>
+			<th class="rt">Pieces Sold</th>
+			<th class="rt">Piece Balance</th>
+			<th class="rt">Weight Sold</th>
+			<th class="rt">Weight Balance</th>
+			<th class="rt">Pallets Sold</th>
+			<th class="rt">Pallet Balance</th>
+			<th class="rt">Cost Out</th>
+		</tr>
+	</thead>
+	<tbody>
+		<?php
+		$piecesBal = $totals->totPieces;
+		$weightBal = $totals->totWeight;
+		$palletBal = $totals->totPallets;
+
+		foreach ($activity as $row) {
+			$offerDate = $this->utils->slashDate($row['OfferDate']);
+			$expiration = $this->utils->slashDate($row['OfferExpiration']);
+			$dateSold = $this->utils->slashDate($row['SaleDate']);
+
+			$pieces = $row['Status'] == 'SOLD' || $row['Status'] == 'SHIPPED' ? $row['Pieces'] : 0;
+			$weight = $row['Status'] == 'SOLD' || $row['Status'] == 'SHIPPED' ? $row['Weight'] : 0.0;
+			$pallets = $row['Status'] == 'SOLD' || $row['Status'] == 'SHIPPED' ? $row['Pallets'] : 0;
+
+			$piecesBal -= $pieces;
+			$weightBal -= $weight;
+			$palletBal -= $pallets;
+			?>
+			<tr>
+				<td align="left"><?= $row['CustomerName'] ?></td>
+				<td align="left"><?= $row['Note'] ?></td>
+				<td align="left"><?= $row['Status'] ?></td>
+				<td align="right"><?= $offerDate ?></td>
+				<td align="right"><?= $expiration ?></td>
+				<td align="right"><?= $dateSold ?></td>
+				<td align="left"><?= $row['ShipperNumber'] ?></td>
+				<td align="right"><?= $pieces ?></td>
+				<td align="right"><?= $piecesBal ?></td>
+				<td align="right"><?= number_format($weight, 2) ?></td>
+				<td align="right"><?= number_format($weightBal, 2) ?></td>
+				<td align="right"><?= number_format($pallets, 0) ?></td>
+				<td align="right"><?= number_format($palletBal, 0) ?></td>
+				<td align="right"><?= $row['Cost'] ?></td>
+			</tr>
+			<?php
+		}
+		?>
+	</tbody>
+</table>

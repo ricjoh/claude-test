@@ -1,0 +1,1 @@
+CREATE INDEX Transaction ON EDIDocument (Transaction);

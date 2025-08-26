@@ -1,0 +1,78 @@
+@page {
+	size: letter portrait;
+	page-orientation: upright;
+	margin: 0;
+	padding: 0;
+}
+
+@media print {
+
+	body {
+		margin: 0;
+		padding: 0;
+	}
+
+	.hide-on-print,
+	.ruler {
+		display: none !important;
+	}
+
+	/* Firefox has issues with block when there are multiple pages UPDATE: but Chrome inserts a blank page at the beginning with inline-block */
+	.browser-firefox .page {
+		display: inline-block;
+	}
+
+	/* set default state SUPPORT-2290 */
+	.page {
+		overflow: visible;
+		height: 1056px;
+		page-break-after: always;
+		break-after: page;
+	}
+
+	/* you may find you need to shorten a page in order to get page breaks to work properly */
+	.page.shorten-for-print {
+		/* height: 1008px; */
+	}
+
+	.page.shorten-for-print.warehouse-receipt {
+		overflow: hidden;
+	}
+
+	.page.landscape.shorten-for-print {
+		height: 768px;
+	}
+
+	.test-results-table .test-results {
+		background-color: #eeeeee;
+	}
+
+	.type-notes {
+		page-break-inside: avoid;
+		overflow-y: hidden;
+		overflow-x: visible;
+	}
+
+	.return-to-select,
+	.temp-select select {
+		/* for Firefox */
+		-moz-appearance: none;
+		/* for Chrome */
+		-webkit-appearance: none;
+		appearance: none;
+		border: none;
+		/* If you want to remove the border as well */
+		background: none;
+	}
+
+	input.my-input {
+		background: none;
+		border: 1px solid #ffffff !important;
+		border-bottom: 1px solid black !important;
+	}
+
+	.notes {
+		page-break-inside: avoid;
+		overflow: auto;
+	}
+}

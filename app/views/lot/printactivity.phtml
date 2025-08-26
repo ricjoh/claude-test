@@ -1,0 +1,107 @@
+<?php
+$this->partial("include/print_header", array('title' => 'Lot Activity'));
+
+
+	?>
+<style>
+table#activity-table {
+	border-collapse: collapse !important;
+}
+table#activity-table th {
+	border: 1px solid white !important;
+	border-bottom: 2px solid #444 !important;
+	background-color: #444;
+	color: white;
+	text-align: unset;
+}
+table#activity-table .rt {
+	text-align: right;
+}
+table#activity-table thead {
+	border: 2px solid #444 !important;
+}
+</style>
+
+	<div class="page page-fluid padding-half-inch">
+		<!-- <div class="page-inner"> -->
+			<table id="activity-table" class="table tablesorter table-striped condensed">
+				<thead>
+					</tr>
+						<th>Status</th>
+						<th class="rt">Offer Date</th>
+						<th class="rt">Expiration</th>
+						<th class="rt">Date Sold</th>
+						<th>B/L</th>
+						<th class="rt">Pieces Sold</th>
+						<th class="rt">Piece Balance</th>
+						<th class="rt">Weight Sold</th>
+						<th class="rt">Weight Balance</th>
+						<th class="rt">Pallets Sold</th>
+						<th class="rt">Pallet Balance</th>
+						<th class="rt">Cost Out</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					<?php
+					$piecesBal = $totals->totPieces;
+					$weightBal = $totals->totWeight;
+					$palletBal = $totals->totPallets;
+
+					foreach ($activity as $row) {
+						$offerDate = $this->utils->slashDate($row['OfferDate']);
+						$expiration = $this->utils->slashDate($row['OfferExpiration']);
+						$dateSold = $this->utils->slashDate($row['SaleDate']);
+
+						$pieces = $row['Status'] == 'SOLD' || $row['Status'] == 'SHIPPED' ? $row['Pieces'] : 0;
+						$weight = $row['Status'] == 'SOLD' || $row['Status'] == 'SHIPPED' ? $row['Weight'] : 0.0;
+						$pallets = $row['Status'] == 'SOLD' || $row['Status'] == 'SHIPPED' ? $row['Pallets'] : 0;
+
+						$piecesBal -= $pieces;
+						$weightBal -= $weight;
+						$palletBal -= $pallets;
+						?>
+						<tr>
+							<td style="padding-bottom: 0; font-family: 'Open Sans'; font-weight: bold;" align="left" colspan="14"><?= $row['CustomerName'] ?> &bull; <?= $row['Note'] ?></td>
+						</tr>
+						<tr>
+							<td align="left"><?= $row['Status'] ?></td>
+							<td align="right"><?= $offerDate ?></td>
+							<td align="right"><?= $expiration ?></td>
+							<td align="right"><?= $dateSold ?></td>
+							<td align="left"><?= $row['ShipperNumber'] ?></td>
+							<td align="right"><?= $pieces ?></td>
+							<td align="right"><?= $piecesBal ?></td>
+							<td align="right"><?= number_format($weight, 2) ?></td>
+							<td align="right"><?= number_format($weightBal, 2) ?></td>
+							<td align="right"><?= number_format($pallets, 0) ?></td>
+							<td align="right"><?= number_format($palletBal, 0) ?></td>
+							<td align="right"><?= $row['Cost'] ?></td>
+						</tr>
+						<?php
+					}
+					?>
+				</tbody>
+			</table>
+		<!-- </div> -->
+	</div>
+	<?php
+//}
+?>
+<div class="right-fixed-container hide-on-print">
+	<div class="right-fixed-inner">
+		<button class="btn btn-primary print-button">Print</button>
+	</div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$('.print-button').click(function() {
+		window.print();
+	});
+});
+</script>
+
+<?php
+$this->partial("include/print_footer");
+?>

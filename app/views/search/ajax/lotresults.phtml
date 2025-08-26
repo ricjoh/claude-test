@@ -1,0 +1,162 @@
+<?php
+if ( count($lots) )
+{
+	$totalPieces = 0;
+	$totalWeight = 0;
+?>
+				<div>Inventory Items: <?= number_format(count($lots)) ?> listed</div>
+				<table width="100%" class="table tablesorter table-striped table-hover">
+					<thead>
+						<tr>
+							<th align="left" data-sort-column="cast(LotNumber as unsigned)">
+								Lot&nbsp;#
+							</th>
+							<th align="left" data-sort-column="CustomerName">
+								Cust
+							</th>
+							<th align="left" data-sort-column="Description">
+								Desc
+							</th>
+							<th class="rt" data-sort-column="MakeDate">
+								Make Date
+							</th>
+							<th align="left" data-sort-column="VendorName">
+								Vend/Fact
+							</th>
+							<th class="rt" data-sort-column="Cost">
+								Cost
+							</th>
+							<th class="rt" data-sort-column="VatPieces">
+								Pcs
+							</th>
+							<th class="rt" data-sort-column="AvailablePieces">
+								Avail<br />Pcs
+							</th>
+							<th class="rt" data-sort-column="VatWeight">
+								Wt
+							</th>
+							<th class="rt" data-sort-column="AvailableWeight">
+								Avail<br />Wt
+							</th>
+							<th class="rt" data-sort-column="DateIn">
+								Date<br />In
+							</th>
+							<th align="left" data-sort-column="RoomNumber">
+								Room #
+							</th>
+							<th align="left" data-sort-column="RoomTemp">
+								Temp
+							</th>
+							<th align="left" data-sort-column="CustomerPONumber">
+								Cust<br />PO
+							</th>
+							<th align="left" data-sort-column="ProductCode">
+								Prod<br />Code
+							</th>
+						</tr>
+					</thead>
+				<?php foreach ( $lots as $l ) : ?>
+				<?php
+				$totalPieces += $l['AvailablePieces'];
+				$totalWeight += $l['AvailableWeight'];
+				?>
+				<tr class="trEditRow linkRow" data-new-win="1" data-url="/lot/edit/<?= $l['LotID'] ?>">
+					<td align="left">
+						<?= $l['LotNumber'] ?>
+					</td>
+					<td align="left">
+						<?= $l['CustomerName'] ?>
+					</td>
+					<td align="left">
+						<?= $l['Description'] ?>
+					</td>
+					<td align="right">
+						<?= $this->utils->slashDate($l['MakeDate']) ?>
+					</td>
+					<td align="left">
+						<div><?= $l['VendorName'] ?></div>
+						<div><?= $l['FactoryName'] ?></div>
+					</td>
+					<td align="right">
+						<?= $l['Cost'] ?>
+					</td>
+					<td align="right">
+						<?= number_format($l['VatPieces']) ?>
+					</td>
+					<td align="right">
+						<?= $l['AvailablePieces'] ?>
+					</td>
+					<td align="right">
+						<?= number_format($l['VatWeight'], 2, '.', ',') ?>
+					</td>
+					<td align="right">
+						<?= number_format($l['AvailableWeight'], 2, '.', ',') ?>
+					</td>
+					<td align="right">
+						<?= $this->utils->slashDate($l['DateIn']) ?>
+					</td>
+					<td align="left">
+						<?= $l['RoomNumber'] ?>
+					</td>
+					<td align="left">
+						<?= $l['RoomTemp'] ?>
+					</td>
+					<td align="left">
+						<?= $l['CustomerPONumber'] ?>
+					</td>
+					<td align="left">
+						<?= $l['ProductCode'] ?>
+					</td>
+				</tr>
+				<?php endforeach ?>
+				<tr>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td align="right">
+						<strong>Total:</strong>
+					</td>
+					<td align="right">
+						<strong><?= number_format($totalPieces) ?></strong>
+					</td>
+					<td align="right">
+						<strong><?= number_format($totalWeight, 2, '.', ',') ?></strong>
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+					<td>
+						&nbsp;
+					</td>
+				</tr>
+				</table>
+<?php
+} 
+else {
+	echo 'No data found based on your search criteria.';
+}
+?>
